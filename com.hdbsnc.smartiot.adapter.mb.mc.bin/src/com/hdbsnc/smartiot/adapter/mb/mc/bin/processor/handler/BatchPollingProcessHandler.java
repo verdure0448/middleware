@@ -230,9 +230,10 @@ public class BatchPollingProcessHandler extends AbstractTransactionTimeoutFuncti
 	 * @param key
 	 * @param value
 	 * @param targetJsonObj
+	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private void putStringIntoObj(String key, String value, String type, JSONObject targetJsonObj) {
+	private void putStringIntoObj(String key, String value, String type, JSONObject targetJsonObj) throws Exception {
 
 		if (type.equals("INTEGER")) {
 			targetJsonObj.put(key, Integer.parseInt(value));
@@ -240,6 +241,8 @@ public class BatchPollingProcessHandler extends AbstractTransactionTimeoutFuncti
 			targetJsonObj.put(key, value);
 		} else if (type.equals("LONG")) {
 			targetJsonObj.put(key, Long.parseLong(value));
+		} else {
+			throw new Exception("존재하지 않는 타입입니다. 프로파일을 확인해주세요");
 		}
 	}
 
@@ -273,7 +276,7 @@ public class BatchPollingProcessHandler extends AbstractTransactionTimeoutFuncti
 		outboundCtx.getParams().put("code", "W9001");
 		outboundCtx.getParams().put("type", "warn");
 		outboundCtx.getParams().put("msg", "트랜젝션이 잠겨 있습니다.(다른 request가 선행 호출되어 있을 수 있습니다.)");
-		outboundCtx.setTransmission("res");		
+		outboundCtx.setTransmission("res");
 
 		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));
 	}

@@ -34,11 +34,11 @@ public class BlcokBatchPollingProcessHandler extends AbstractTransactionTimeoutF
 
 	private Log _log = null;
 	private Log _parentsLog = null;
-	
+
 	private JSONObject _schema;
 
-	public BlcokBatchPollingProcessHandler(String name, long timeout, MitsubishiQSeriesApi api, List<RequestReadObj> readObjList,
-			List<RequestWriteObj> writeObjList, JSONObject schema, Log log) {
+	public BlcokBatchPollingProcessHandler(String name, long timeout, MitsubishiQSeriesApi api,
+			List<RequestReadObj> readObjList, List<RequestWriteObj> writeObjList, JSONObject schema, Log log) {
 		super(name, timeout);
 		this.api = api;
 		this.readObjList = readObjList;
@@ -77,7 +77,7 @@ public class BlcokBatchPollingProcessHandler extends AbstractTransactionTimeoutF
 						outboundCtx.getParams().put("type", "error");
 						outboundCtx.setTransmission("res");
 						_log.err(UrlParser.getInstance().convertToString(outboundCtx));
-						
+
 						return;
 					}
 				}
@@ -102,7 +102,7 @@ public class BlcokBatchPollingProcessHandler extends AbstractTransactionTimeoutF
 				_log.debug("재연결 시도 2.");
 				try {
 					api.reConnect();
-					
+
 					if (readObjList != null) {
 						String rowData = api.multipleRead(readObjList);
 						String jsonData = hexToJson(rowData, readObjList, _schema);
@@ -116,7 +116,7 @@ public class BlcokBatchPollingProcessHandler extends AbstractTransactionTimeoutF
 						outboundCtx.setContent(ByteBuffer.wrap(jsonData.getBytes()));
 						_log.trace(UrlParser.getInstance().convertToString(outboundCtx));
 					}
-					
+
 				} catch (Exception e1) {
 					throw e1;
 				}
@@ -151,14 +151,15 @@ public class BlcokBatchPollingProcessHandler extends AbstractTransactionTimeoutF
 	 * @return
 	 * @throws Exception
 	 */
-	private String hexToJson(String hexData, List<RequestReadObj> reqReadObjList, JSONObject resultObj) throws Exception {
+	private String hexToJson(String hexData, List<RequestReadObj> reqReadObjList, JSONObject resultObj)
+			throws Exception {
 		// payload가 있다면 아래에 json으로 가공함
 		String subHexData;
 
 		int index = 0; // 문자열 시작
 		int length = 0;// 문자열 사이즈
 
-		//스코어와 시작 지점을 계산하여 필요한 부분만 잘라 내 준다.
+		// 스코어와 시작 지점을 계산하여 필요한 부분만 잘라 내 준다.
 		for (RequestReadObj readObj : reqReadObjList) {
 			length = Integer.parseInt(readObj.getDevScore()) * BLOCK_SIZE;
 			subHexData = hexData.substring(index, index + length);
@@ -172,6 +173,7 @@ public class BlcokBatchPollingProcessHandler extends AbstractTransactionTimeoutF
 
 	/**
 	 * 사용자가 정의한 formatter를 보고 Json의 깊이까지 들어가서 Json객체를 추가 한다.
+	 * 
 	 * @param hexData
 	 * @param readObj
 	 * @param resultObj
@@ -184,68 +186,75 @@ public class BlcokBatchPollingProcessHandler extends AbstractTransactionTimeoutF
 		JSONObject targetJsonObj = null;
 		JSONObject tempJsonObj = resultObj;
 		JSONArray tmpArray = null;
-		int index; 
-		
-		//formatter에 정의되어 있는 내용을 하나씩 가지고 온다.
+		int index;
+
+		// formatter에 정의되어 있는 내용을 하나씩 가지고 온다.
 		for (FormatterObj formatter : readObj.getFormater()) {
-			//사용자가 정의한 formatterName
+			// 사용자가 정의한 formatterName
 			keys = formatter.getName().split("\\.");
-			//tempJsonObj에 틀이되는 Json을 담아 준다.
-			tempJsonObj=resultObj;
-			
-			//key가 -1이 될때까지 반복해준다.
-			for(index=0; index<keys.length-1; index++) {
-				
-				//선택된 객체가 Object형태라면 Object 형으로 한번안으로 들어간다.
-				if(tempJsonObj.get(keys[index]) instanceof JSONObject) {
+			// tempJsonObj에 틀이되는 Json을 담아 준다.
+			tempJsonObj = resultObj;
+
+			// key가 -1이 될때까지 반복해준다.
+			for (index = 0; index < keys.length - 1; index++) {
+
+				// 선택된 객체가 Object형태라면 Object 형으로 한번안으로 들어간다.
+				if (tempJsonObj.get(keys[index]) instanceof JSONObject) {
 					targetJsonObj = (JSONObject) tempJsonObj.get(keys[index]);
-					tempJsonObj = targetJsonObj;				
-				}else {
-					//선택된 객체가 List라면 List형으로 한번안으로 들어간다.
+					tempJsonObj = targetJsonObj;
+				} else {
+					// 선택된 객체가 List라면 List형으로 한번안으로 들어간다.
 					tmpArray = (JSONArray) tempJsonObj.get(keys[index]);
 					tempJsonObj = targetJsonObj;
 				}
 			}
 
-			//tartJsonObj가 null이라면 tempJson으로 취환한다.
+			// tartJsonObj가 null이라면 tempJson으로 취환한다.
 			if (targetJsonObj == null)
 				targetJsonObj = resultObj;
-			
-			//값을 넣어야 하는 Json이 Object라면 Object객체를 넣는 함수를 호출한다.
-			if(resultObj.get(keys[index-1]) instanceof JSONObject) {
-				putStringIntoObj(keys[keys.length - 1],EditUtil.parserRecvData(hexData, formatter.getPattern()), formatter.getType(), targetJsonObj);
-			}else if(resultObj.get(keys[index-1]) instanceof JSONArray) {
-				//값을 넣어야 하는  Json이 List라면 List객체에 값을 넣는 함수를 호출한다.
-				putStringIntoList(keys[keys.length - 1],EditUtil.parserRecvData(hexData, formatter.getPattern()), formatter.getType(), formatter.getIndex(), tmpArray);
-			}else {
-				//JSONObject, JSONList 둘다 아니라면 사용자 형식이 잘못되었기 때문에 예외를 던저준다.
+
+			// 값을 넣어야 하는 Json이 Object라면 Object객체를 넣는 함수를 호출한다.
+			if (resultObj.get(keys[index - 1]) instanceof JSONObject) {
+				putStringIntoObj(keys[keys.length - 1], EditUtil.parserRecvData(hexData, formatter.getPattern()),
+						formatter.getType(), targetJsonObj);
+			} else if (resultObj.get(keys[index - 1]) instanceof JSONArray) {
+				// 값을 넣어야 하는 Json이 List라면 List객체에 값을 넣는 함수를 호출한다.
+				putStringIntoList(keys[keys.length - 1], EditUtil.parserRecvData(hexData, formatter.getPattern()),
+						formatter.getType(), formatter.getIndex(), tmpArray);
+			} else {
+				// JSONObject, JSONList 둘다 아니라면 사용자 형식이 잘못되었기 때문에 예외를 던저준다.
 				throw new Exception("사용자가 정의한 형식이 올바르지 않습니다. 다시 한번 확인해주세요");
 			}
 		}
 	}
-	
+
 	/**
 	 * JsonObjec에 Key,Value 하나를 추가 한다.
+	 * 
 	 * @param key
 	 * @param value
 	 * @param targetJsonObj
+	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private void putStringIntoObj(String key, String value, String type, JSONObject targetJsonObj) {
+	private void putStringIntoObj(String key, String value, String type, JSONObject targetJsonObj) throws Exception {
 
-		if(type==null) {
+		if (type == null) {
 			targetJsonObj.put(key, value);
-		}else if(type.equals("INTEGER")) {
+		} else if (type.equals("INTEGER")) {
 			targetJsonObj.put(key, Integer.parseInt(value));
-		}else if(type.equals("STRING")) {
+		} else if (type.equals("STRING")) {
 			targetJsonObj.put(key, value);
-		}else if(type.equals("LONG")) {
+		} else if (type.equals("LONG")) {
 			targetJsonObj.put(key, Long.parseLong(value));
+		} else {
+			throw new Exception("존재하지 않는 타입입니다. 프로파일을 확인해주세요");
 		}
 	}
 
 	/**
 	 * JSONList안에 Index가 맞는 곳에 JsonObject를 추가한다.
+	 * 
 	 * @param key
 	 * @param value
 	 * @param index
@@ -254,17 +263,17 @@ public class BlcokBatchPollingProcessHandler extends AbstractTransactionTimeoutF
 	@SuppressWarnings("unchecked")
 	private void putStringIntoList(String key, String value, String type, String index, JSONArray targetJsonArray) {
 
-		if(type==null) {
+		if (type == null) {
 			((JSONObject) targetJsonArray.get(Integer.parseInt(index))).put(key, value);
-		}else if(type.equals("INTEGER")) {
+		} else if (type.equals("INTEGER")) {
 			((JSONObject) targetJsonArray.get(Integer.parseInt(index))).put(key, Integer.parseInt(value));
-		}else if(type.equals("LONG")) {
+		} else if (type.equals("LONG")) {
 			((JSONObject) targetJsonArray.get(Integer.parseInt(index))).put(key, Long.parseLong(value));
-		}else {
+		} else {
 			((JSONObject) targetJsonArray.get(Integer.parseInt(index))).put(key, value);
 		}
 	}
-	
+
 	@Override
 	public void rejectionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 		outboundCtx.getPaths().add("nack");
@@ -275,7 +284,7 @@ public class BlcokBatchPollingProcessHandler extends AbstractTransactionTimeoutF
 		outboundCtx.getParams().put("code", "W9001");
 		outboundCtx.getParams().put("type", "warn");
 		outboundCtx.getParams().put("msg", "트랜젝션이 잠겨 있습니다.(다른 request가 선행 호출되어 있을 수 있습니다.)");
-		outboundCtx.setTransmission("res");		
+		outboundCtx.setTransmission("res");
 
 		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));
 	}

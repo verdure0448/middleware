@@ -150,6 +150,36 @@ public class EditUtil {
 //
 //		return result;
 	}
+	
+	/**
+	 * 8자리 에디안 변환(WORD단위의 BYTE 순서 변환) 
+	 * 
+	 * @param src
+	 * @return
+	 * @throws Exception
+	 */
+	public static byte[] word8ToBigEndianBytes(byte[] bVal) throws Exception {
+
+		byte[] result = new byte[bVal.length];
+
+		int length;
+		//바이트가 짝수인 경우 
+		if (bVal.length % 4 == 0) {
+			length = bVal.length / 4; 
+		}else{
+			// 바이트가 홀수인 경우
+			length = (bVal.length / 4) - 1;
+		}
+		
+		for (int i = 0; i < length; i++) {
+			result[i * 4] = bVal[i * 4 + 3];
+			result[i * 4 + 1] = bVal[i * 4 + 2];
+			result[i * 4 + 2] = bVal[i * 4 + 1];
+			result[i * 4 + 3] = bVal[i * 4 + 0];
+		}
+		
+		return result;
+	}
 
 	/**
 	 * 바이트 배열 내부의 null(0x00)을 대체값으로 변환
@@ -199,11 +229,11 @@ public class EditUtil {
 	 */
 	public static String bytesToIntStr(byte[] bVal, String split) {
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < bVal.length / 2; i++) {
+		for (int i = 0; i < bVal.length / 4; i++) {
 			if (sb.length() > 0)
 				sb.append(split);
-			int int16 = (int) (((bVal[i * 2] & 0xFF) << 8) | (bVal[i * 2 + 1] & 0xFF));
-			sb.append(String.valueOf(int16));
+			int int32 = (int) ((bVal[i * 2] & 0xff)<<24 | (bVal[i * 2+1] & 0xff)<<16 | ((bVal[i * 2+2] & 0xFF) << 8) | (bVal[i * 2 + 3] & 0xFF));
+			sb.append(String.valueOf(int32));
 		}
 
 		return sb.toString();
@@ -218,10 +248,11 @@ public class EditUtil {
 	 */
 	public static String bytesToShortStr(byte[] bVal, String split) {
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < bVal.length; i++) {
+		for (int i = 0; i < bVal.length / 2; i++) {
 			if (sb.length() > 0)
 				sb.append(split);
-			sb.append(String.valueOf((short) (bVal[i] & 0xFF)));
+			int int16 = (int) (((bVal[i * 2] & 0xFF) << 8) | (bVal[i * 2 + 1] & 0xFF));
+			sb.append(String.valueOf(int16));
 		}
 		return sb.toString();
 	}
@@ -318,7 +349,7 @@ public class EditUtil {
 		case "UINT":
 			// 대상(범위) 데이터 추출
 			pData = data.substring(first * 4, first * 4 + 4 * second);
-			bytes = hexStr4ToBigEndianBytes(pData);
+			bytes = word8ToBigEndianBytes(hexStrToBytes(pData));
 			result = bytesToIntStr(bytes, " ");
 			break;
 		case "SHORT":
