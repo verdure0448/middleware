@@ -1,0 +1,252 @@
+<eventcontextlist>
+	<!-- ################################################################ -->
+	<!-- 아반떼 DISK D 가공라인 데이터를 REDIS DB에 저장                  -->
+	<!-- ################################################################ -->
+	<eventcontext isautostart="true">
+		<eid>mh.eh.service.redis.buffer</eid>
+		<name>RedisDB</name>
+		<type>storage</type>
+		<remark></remark>
+		<devicelist>
+		</devicelist>
+		<patternlist>
+			<!-- 툴정보에 관해 필터할 장치 식별자로 미들웨어의 [DID/사용중인 속성및 기능]를 넣어 줍니다. -->
+			
+			<!-- 센서 데이터 패턴 -->
+			<pattern>BSN_0001/mqtt/sub/bsn2.*</pattern>	
+			<pattern>BSN_0002/mqtt/sub/bsn2.*</pattern>	
+			
+			<!-- Melsec 데이터 패턴 -->
+			<pattern>mc.std1/disk/mc1/standard.*</pattern>	
+			
+			<!-- HMI DBF DATA -->
+			<pattern>ab.hmi2/mh/asan/hmi.*</pattern>	
+			
+			<!-- HMI DBF DATA -->
+			<pattern>mc.xray1/xray/mc1/machine.*</pattern>	
+		</patternlist>
+		<eventhandlerlist>
+			<eventhandler seq="0">
+				<!-- 설비 정보를 REDIS DB에 저장하기 위한 서비스 -->
+				<ehid>com.hdbsnc.smartiot.service.redis.buffer</ehid>
+				<name></name>
+				<type>storage</type>
+				<remark></remark>
+				<parameterlist>
+					<parameter name="buffer.type">ASAN</parameter>
+				</parameterlist>
+			</eventhandler>
+		</eventhandlerlist>
+	</eventcontext>
+
+	<!-- ################################################################ -->
+	<!-- 명화공업 BSN100 센서정보를 KAFKA 인터페이스를 사용하여 서버로 전달 -->
+	<!-- ################################################################ -->
+	<eventcontext isautostart="true">
+		<eid>mh.eh.service.std.kafka.producer.bsn100</eid>
+		<name>Publisher</name>
+		<type>storage</type>
+		<remark></remark>
+		<devicelist>
+		</devicelist>
+		<patternlist>
+		</patternlist>
+		<eventhandlerlist>
+			<eventhandler seq="0">
+				<ehid>com.hdbsnc.smartiot.service.kafka.producer</ehid>
+				<name>원격 MSSQL DB 저장</name>
+				<type>storage</type>
+				<remark></remark>
+				<parameterlist>
+					<!-- 헤더정보-->
+					<parameter name = "workshop.id">4010</parameter>
+					<!-- 디바이스 명을 이용하여 가공설비의 공정을 매핑 [DID:공정명]-->
+					<parameter name = "opcode">BSN_0001:#104-4,BSN_0002:#104-2</parameter>
+					<parameter name = "type">BSN</parameter>
+					<parameter name = "version">20190327</parameter>
+					
+					<!-- Redis DB에 저장하기 위한 유일 식별자 [DID/레디스저장 키네임] -->				
+					<parameter name="key.name">BSN_0001/2001,BSN_0001/2002,BSN_0002/2001,BSN_0002/2002,BSN_0002/2003</parameter>
+					<!--Redis DB에 저장된 데이터를 SELECT할 경우 최대 갯수 -->
+					<parameter name="pop.count">50</parameter>
+				
+					<!--KAFKA 전송 최대 갯수 -->
+					<parameter name="max.block.ms">1000</parameter>
+					<!-- 전송간격 -->
+					<parameter name="interval.millisec">500</parameter>
+					<!-- 토픽 이름 -->
+					<parameter name="topic">data_asan</parameter>
+					<!-- 테스트 서버-->
+					<!--parameter name="bootstrap.servers">222.96.103.244:9092</parameter-->
+					<!-- 서버도메인주소 -->
+					<parameter name="bootstrap.servers">sf1.mhas.co.kr:6667,sf2.mhas.co.kr:6667</parameter>
+					<!-- 커넥션 timeout 유지 시간 -->
+					<parameter name="connections.max.idle.ms">3000</parameter>
+					<!-- 요청응답 시간 -->
+					<parameter name="request.timeout.ms">3000</parameter>
+					<!-- 복수 전송시 건별 wait시간 -->
+					<parameter name="linger.ms">5</parameter>
+					<!-- 프로듀서 전송 타임아웃(ms) -->
+					<parameter name="producer.send.timeout">3000</parameter>
+				</parameterlist>
+			</eventhandler>
+		</eventhandlerlist>
+	</eventcontext>	
+	<!-- ################################################################ -->
+	<!-- 명화공업 표준화데이터 정보를 KAFKA 인터페이스를 사용하여 서버로 전달 -->
+	<!-- ################################################################ -->
+	<eventcontext isautostart="true">
+		<eid>mh.eh.service.std.kafka.producer.melsec</eid>
+		<name>Publisher</name>
+		<type>storage</type>
+		<remark></remark>
+		<devicelist>
+		</devicelist>
+		<patternlist>
+		</patternlist>
+		<eventhandlerlist>
+			<eventhandler seq="0">
+				<ehid>com.hdbsnc.smartiot.service.kafka.producer</ehid>
+				<name></name>
+				<type>storage</type>
+				<remark></remark>
+				<parameterlist>
+					<!-- 헤더정보-->
+					<parameter name = "workshop.id">4010</parameter>
+					<!-- 디바이스 명을 이용하여 가공설비의 공정을 매핑 [DID:공정명]-->
+					<parameter name = "opcode">mc.std1:#104-5</parameter>					
+					<parameter name = "type">CpcMelsec</parameter>
+					<parameter name = "version">20190403</parameter>
+					
+					<!-- Redis DB에 저장하기 위한 유일 식별자 [DID/레디스저장 키네임] -->
+					<parameter name="key.name">mc.std1/Melsec</parameter>
+					<!--Redis DB에 저장된 데이터를 SELECT할 경우 최대 갯수 -->
+					<parameter name="pop.count">50</parameter>
+				
+					<!--KAFKA 전송 최대 갯수 -->
+					<parameter name="max.block.ms">1000</parameter>
+					<!-- 전송간격 -->
+					<parameter name="interval.millisec">500</parameter>
+					<!-- 토픽 이름 -->
+					<parameter name="topic">data_asan</parameter>
+					<!-- 테스트 서버-->
+					<!--parameter name="bootstrap.servers">222.96.103.244:9092</parameter-->
+					<!-- 서버도메인주소 -->
+					<parameter name="bootstrap.servers">sf1.mhas.co.kr:6667,sf2.mhas.co.kr:6667</parameter>
+					<!-- 커넥션 timeout 유지 시간 -->
+					<parameter name="connections.max.idle.ms">3000</parameter>
+					<!-- 요청응답 시간 -->
+					<parameter name="request.timeout.ms">3000</parameter>
+					<!-- 복수 전송시 건별 wait시간 -->
+					<parameter name="linger.ms">5</parameter>
+					<!-- 프로듀서 전송 타임아웃(ms) -->
+					<parameter name="producer.send.timeout">3000</parameter>
+				</parameterlist>
+			</eventhandler>
+		</eventhandlerlist>
+	</eventcontext>	
+	<eventcontext isautostart="true">
+		<eid>mh.eh.service.std.kafka.producer.hmi2</eid>
+		<name>Publisher</name>
+		<type>storage</type>
+		<remark></remark>
+		<devicelist>
+		</devicelist>
+		<patternlist>
+		</patternlist>
+		<eventhandlerlist>
+			<eventhandler seq="0">
+				<ehid>com.hdbsnc.smartiot.service.kafka.producer</ehid>
+				<name></name>
+				<type>storage</type>
+				<remark></remark>
+				<parameterlist>
+					<!-- 헤더정보-->
+					<parameter name = "workshop.id">4010</parameter>
+					<!-- 디바이스 명을 이용하여 가공설비의 공정을 매핑 [DID:공정명]-->
+					<parameter name = "opcode">ab.hmi2:#104-3</parameter>					
+					<parameter name = "type">Hmi</parameter>
+					<parameter name = "version">20190423</parameter>
+					
+					<!-- Redis DB에 저장하기 위한 유일 식별자 [DID/레디스저장 키네임] -->
+					<parameter name="key.name">ab.hmi2/FurnaceTemp,ab.hmi2/MoldTemp,ab.hmi2/Pressure</parameter>
+					<!--Redis DB에 저장된 데이터를 SELECT할 경우 최대 갯수 -->
+					<parameter name="pop.count">50</parameter>
+				
+					<!--KAFKA 전송 최대 갯수 -->
+					<parameter name="max.block.ms">1000</parameter>
+					<!-- 전송간격 -->
+					<parameter name="interval.millisec">50</parameter>
+					<!-- 토픽 이름 -->
+					<parameter name="topic">data_asan</parameter>
+					<!-- 테스트 서버-->
+					<!-- parameter name="bootstrap.servers">222.96.103.244:9092</parameter-->
+					<!-- 서버도메인주소 -->
+					<parameter name="bootstrap.servers">sf1.mhas.co.kr:6667,sf2.mhas.co.kr:6667</parameter>
+					<!-- 커넥션 timeout 유지 시간 -->
+					<parameter name="connections.max.idle.ms">3000</parameter>
+					<!-- 요청응답 시간 -->
+					<parameter name="request.timeout.ms">3000</parameter>
+					<!-- 복수 전송시 건별 wait시간 -->
+					<parameter name="linger.ms">5</parameter>
+					<!-- 프로듀서 전송 타임아웃(ms) -->
+					<parameter name="producer.send.timeout">3000</parameter>
+				</parameterlist>
+			</eventhandler>
+		</eventhandlerlist>
+	</eventcontext>	
+	<!-- ################################################################ -->
+	<!-- xray 검사기 결과 데이터를 빅데이터 서버로 전송 -->
+	<!-- ################################################################ -->
+	<eventcontext isautostart="true">
+		<eid>mh.eh.service.std.kafka.producer.xray</eid>
+		<name>Publisher</name>
+		<type>storage</type>
+		<remark></remark>
+		<devicelist>
+		</devicelist>
+		<patternlist>
+		</patternlist>
+		<eventhandlerlist>
+			<eventhandler seq="0">
+				<ehid>com.hdbsnc.smartiot.service.kafka.producer</ehid>
+				<name></name>
+				<type>storage</type>
+				<remark></remark>
+				<parameterlist>
+					<!-- 헤더정보-->
+					<parameter name = "workshop.id">4010</parameter>
+					<!-- 디바이스 명을 이용하여 가공설비의 공정을 매핑 [DID:공정명]-->
+					<parameter name = "opcode">mc.xray1:#108</parameter>					
+					<parameter name = "type">Xray</parameter>
+					<parameter name = "version">20190611</parameter>
+					
+					<!-- Redis DB에 저장하기 위한 유일 식별자 [DID/레디스저장 키네임] -->
+					<parameter name="key.name">mc.xray1/Xray</parameter>
+					<!--Redis DB에 저장된 데이터를 SELECT할 경우 최대 갯수 -->
+					<parameter name="pop.count">50</parameter>
+				
+					<!--KAFKA 전송 최대 갯수 -->
+					<parameter name="max.block.ms">1000</parameter>
+					<!-- 전송간격 -->
+					<parameter name="interval.millisec">500</parameter>
+					<!-- 토픽 이름 -->
+					<parameter name="topic">data_test</parameter>
+					<!-- 테스트 서버-->
+					<!--parameter name="bootstrap.servers">192.168.0.151:9092</parameter-->
+					<!-- 서버도메인주소 -->
+					<parameter name="bootstrap.servers">sf1.mhas.co.kr:6667,sf2.mhas.co.kr:6667</parameter>
+					<!-- 커넥션 timeout 유지 시간 -->
+					<parameter name="connections.max.idle.ms">3000</parameter>
+					<!-- 요청응답 시간 -->
+					<parameter name="request.timeout.ms">3000</parameter>
+					<!-- 복수 전송시 건별 wait시간 -->
+					<parameter name="linger.ms">5</parameter>
+					<!-- 프로듀서 전송 타임아웃(ms) -->
+					<parameter name="producer.send.timeout">3000</parameter>
+				</parameterlist>
+			</eventhandler>
+		</eventhandlerlist>
+	</eventcontext>	
+	
+</eventcontextlist>

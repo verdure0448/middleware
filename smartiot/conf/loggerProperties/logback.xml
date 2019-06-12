@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 30초마다 설정 파일의 변경을 확인. 파일이 변경되면 다시 로딩한다 -->
+<configuration scan="true" scanPeriod="30 seconds">
+	<!-- log packagename -->
+	<property name="LOG_PACKAGE_NAME" value="com.hdbsnc" />
+	<!-- log file path -->
+	<property name="LOG_PATH" value="logs" />
+	<!-- log file name -->
+	<property name="LOG_FILE_NAME" value="hdbsnc_log" />
+	<!-- log days -->
+	<property name="LOG_DAYS" value="30" />
+	<!-- log filesize log -->
+	<property name="LOG_FILESIZE_LOG" value="200MB" />
+	<!-- log filesize total -->
+	<property name="LOG_TOTAL_FILESIZE" value="15GB" />
+	<!-- pattern -->
+	<property name="LOG_PATTERN" value="%level[%d{HH:mm:ss.SSS} %thread] %msg%n" />
+	<!-- LEVEL trace/debug/info/warn/error -->
+	<property name="LOG_OUTPUT_LEVEL" value="trace" />
+
+	<!-- log file save -->
+	<appender name="FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${SMARTIOT_HOME}/${LOG_PATH}/${LOG_FILE_NAME}.log</file>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>
+				${SMARTIOT_HOME}/${LOG_PATH}/%d{yyyy-MM-dd}/${LOG_FILE_NAME}_%i.zip
+			</fileNamePattern>
+			<maxHistory>${LOG_DAYS}</maxHistory>
+			<maxFileSize>${LOG_FILESIZE_LOG}</maxFileSize>
+			<totalSizeCap>${LOG_TOTAL_FILESIZE}</totalSizeCap>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="ERROR"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>error</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+		<file>${SMARTIOT_HOME}/${LOG_PATH}/error.log</file>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>
+				${SMARTIOT_HOME}/${LOG_PATH}/%d{yyyy-MM-dd}/error_%i.txt
+			</fileNamePattern>
+			<maxHistory>${LOG_DAYS}</maxHistory>
+			<maxFileSize>${LOG_FILESIZE_LOG}</maxFileSize>
+			<totalSizeCap>${LOG_TOTAL_FILESIZE}</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>${LOG_PATTERN}</pattern>
+		</layout>
+	</appender>
+
+	<root level="${LOG_OUTPUT_LEVEL}">
+		<appender-ref ref="FILE" /> 
+		<appender-ref ref="STDOUT" /> 
+		<appender-ref ref="ERROR" /> 
+	</root>
+
+</configuration>
