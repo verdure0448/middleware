@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <!-- TITLE -->
+    <title>현대BS&C SmartIoT</title>
+    
+  
+    <!-- META -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow" /> <!-- remove this on prod --> 
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="author" content="" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+   
+    <!-- FAVICON -->
+    <link rel="shortcut icon" href="images/favicon.ico" />
+        
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css" />   
+	<link rel="stylesheet" href="css/bootstrap.css" />   
+    <link rel="stylesheet" href="css/highlight_themes/dark.css" />
+    <link rel="stylesheet" href="css/theme-fresh.css?ignore=notused14">
+	<link rel="stylesheet" href="css/ag-grid.css?ignore=notused14">
+	<link rel="stylesheet" href="fonts/css.css"/>
+	<link rel="stylesheet" href="fonts/nanummyeongjo.css"/>
+	<link rel="stylesheet" href="fonts/nanumgothic.css"/>
+	
+    <!-- JS -->
+	<script src="js/angular.min.js"></script>
+    <script src="js/jquery.1.11.1.js"></script> 
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/ag-grid.js?ignore=notused14"></script>
+    <script src="js/jquery.nicescroll.min.js"></script>
+	<script src="js/OtpApi.js"></script>
+	<script src="jscore/coreVariables.js"></script>
+	<script src="jscore/coreFunctions.js"></script>
+	<script src="js/bootbox.min.js"></script>
+	<script src="jscore/index.js"></script><!-- 윤영진 추가  -->
+</head>
+<body class="intro page_login">
+
+<div id="intro_login" class="wrap">
+	<form class="form-signin" action="?" method="post">
+	<p class="form-signin-heading">Please enter your username and password</p>
+	<label for="user_did" class="sr-only">Email address</label>
+	<input type="txt" id="user_sid" class="form-control" placeholder="웹소켓 ID를 입력하세요." autofocus onkeydown="enterLogin()">
+	<label for="user_id" class="sr-only">Email address</label>
+	<input type="txt" id="user_id" class="form-control" placeholder="유저 ID를 입력하세요." onkeydown="enterLogin()">
+	<label for="user_pass" class="sr-only">Password</label>
+	<input type="password" id="user_pass" class="form-control" placeholder="패스워드를 입력하세요." onkeydown="enterLogin()">
+	<p class="line"></p>
+	<button class="btn btn-lg btn-primary btn-block" id="login_submit" type="button" onclick="login()">LOGIN</button>
+	</form>
+
+	<h2><img src="images/intro_title.png" alt="Smart IoT" /></h2>
+</div>
+<!-- END .intro_login -->
+
+
+

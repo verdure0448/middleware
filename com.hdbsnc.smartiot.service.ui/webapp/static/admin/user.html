@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+
+<!-- TITLE -->
+<title>현대BS&C SmartIoT</title>
+
+<!-- META -->
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow" />
+<!-- remove this on prod -->
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="" />
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+
+<!-- FAVICON -->
+<link rel="shortcut icon" href="images/favicon.ico" />
+
+<!-- CSS -->
+<link rel="stylesheet" href="css/jquery.splitter.css" />
+<link rel="stylesheet" href="css/sub.css" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/bootstrap.css" />
+<link rel="stylesheet" href="css/highlight_themes/dark.css" />
+<link rel="stylesheet" href="css/theme-fresh.css?ignore=notused14">
+<link rel="stylesheet" href="css/ag-grid.css?ignore=notused14">
+<link rel="stylesheet" href="fonts/css.css"/>
+<link rel="stylesheet" href="fonts/nanummyeongjo.css"/>
+<link rel="stylesheet" href="fonts/nanumgothic.css"/>
+
+<!-- JS -->
+<script src="js/jquery.1.11.1.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/angular.min.js"></script>
+<script src="js/ag-grid.js?ignore=notused14"></script>
+<script src="js/jquery.nicescroll.min.js"></script>
+<script src="js/OtpApi.js"></script>
+<script src="js/angular-route.js"></script>
+<script src="jscore/coreVariables.js"></script>
+<script src="jscore/coreFunctions.js"></script>
+<script src="jscore/user.js"></script>
+<script src="js/bootbox.min.js"></script>
+<script src="js/jquery.splitter-0.14.0.js"></script>
+<script src="jscore/loginApi.js"></script>
+
+</head>
+<body class="user" ng-app="agApps">
+	<header>
+		<!-- ********* HEADER ********* -->
+		<div id="header_inner" class="wrap">
+			<div id="logo">
+				<a href="monitoring.html"><img src="images/logo.png" alt="현대BS&C" /></a>
+			</div>
+			<h1 id="addrIP"></h1>
+		</div>
+	</header>
+
+	<nav id="navBar">
+		<div id=nav_group>
+			<div id=menu_items>
+				<ul class="horizontalUl">
+					<!-- <li><a href="main.html">메인메뉴</a></li> -->
+					<li><a href="monitoring.html">관제&모니터링</a></li>
+					<li><a href="adapter.html">아답터</a></li>
+					<li><a href="instance.html">인스턴스</a></li>
+					<li><a href="device.html">장치</a></li>
+					<li><a class="activeItems" href="user.html">유저</a></li>
+					<li><a href="domain.html">도메인</a></li>
+				</ul>
+			</div>
+			<div id="menu_icon">
+				<ul class="horizontalUl">
+					<li class ="serverMessageInfo"><a href="#" data-toggle="modal" style="color:red" data-target="#serverMessagePopUp" title="세션종료상세" onclick="serverMessageListFunc()"><span class="glyphicon glyphicon-bell" aria-hidden="true"></span></a></li>
+					<li class ="serverMessageInfo"><span style="color:white">세션종료 알림 </span><label style="color:yellow;margin-bottom: 0px" id="serverMessageCount"></label></li>
+					<li><a href="#" onclick="userInfo()" title="유저정보"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></a></li>
+					<li><a href="#" onclick="versionInfo()" title="SmartIoT정보"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a></li>
+					<li><a href="http://222.96.103.243:9000/manual/smartIotHelper.pdf" target="adapterDocument" title="도움말"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></li>
+					<li><a href="#" onclick="navIconLogout()" title="로그아웃"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></li>
+				</ul>
+			</div>
+		</div>
+		<!--/.nav-collapse -->
+	</nav>
+	<!-- 모달 팝업 -->
+	<div class="modal fade popUpDefault" id="popUpAddUserPool" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">
+						<span aria-hidden="true">×</span><span class="sr-only">Close</span>
+					</button>
+					<h4 class="modal-title myModalLabel">유저풀 등록</h4>
+				</div>
+				<div class="modal-body modalHeightSize">
+					<div class="popUpContents">
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3 control-label modalLabel"><span class="essentialKey">*&nbsp;</span>유저풀ID</label>
+							<div class="col-xs-9">
+								<input id="userPoolId" maxlength="256" type="text" placeholder="UserPool ID" class="form-control">
+							</div>
+						</div>
+
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3 control-label modalLabel"><span class="essentialKey">*&nbsp;</span>유저풀명</label>
+							<div class="col-xs-9">
+								<input id="userPoolName" maxlength="256" type="text" placeholder="UserPool Name" class="form-control">
+							</div>
+						</div>
+
+						<div class="col-xs-12">
+							<label class="col-xs-3 control-label modalLabel">&ensp;비고</label>
+							<div class="col-xs-9">
+								<input id="userPoolRemark" maxlength="512" type="text" placeholder="UserPool Remark" class="form-control">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer popUpFooter">
+					<button type="button" onclick="updateUserPool(form_mode);" class="btn btn-primary popUpDefaultBtn">등록</button>
+					<button type="button" class="btn btn-default popUpCancleBtn" data-dismiss="modal">취소</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 모달 팝업 -->
+	<div class="modal fade popUpDefault" id="popUpAddUser" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">
+						<span aria-hidden="true">×</span><span class="sr-only">Close</span>
+					</button>
+					<h4 class="modal-title myModalLabel">유저 등록</h4>
+				</div>
+				<div class="modal-body modalHeightSize">
+					<div class="popUpContents">
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3  control-label modalLabel"><span class="essentialKey">*&nbsp;</span>유저ID</label>
+							<div class="col-xs-9 ">
+								<input id="userId" maxlength="256" type="text" placeholder="User ID" class="form-control">
+							</div>
+						</div>
+
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3  control-label modalLabel"><span class="essentialKey">*&nbsp;</span>유저패스워드</label>
+							<div class="col-xs-9 ">
+								<input id="userPass" maxlength="256" type="password" placeholder="User Password" class="form-control">
+							</div>
+						</div>
+
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3 control-label modalLabel"><span class="essentialKey">*&nbsp;</span>유저풀ID</label>
+							<div class="col-xs-9">
+								<input id="searchUserPoolId" maxlength="256" type="text" placeholder="UserPool ID" readonly="readonly" class="col-xs-12 readonlyStyle"> 
+								<!-- <input type="button" value="조회" data-toggle="modal" data-target="#userPoolSearchModal" class="btn btn-info itemSearchBtn" onclick="showSearchUserPoolList()"> -->
+							</div>
+						</div>
+						
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3  control-label modalLabel">&ensp;유저명</label>
+							<div class="col-xs-9 ">
+								<input id="userName" maxlength="50" type="text" placeholder="User Name" class="form-control">
+							</div>
+						</div>
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3  control-label modalLabel">&ensp;회사명</label>
+							<div class="col-xs-9 ">
+								<input id="compName" maxlength="50" type="text" placeholder="Company Name" class="form-control">
+							</div>
+						</div>
+
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3  control-label modalLabel">&ensp;부서명</label>
+							<div class="col-xs-9 ">
+								<input id="departName" maxlength="50" type="text" placeholder="Department Name" class="form-control">
+							</div>
+						</div>
+						<div class="form-group col-xs-12  ">
+							<label class="col-xs-3  control-label modalLabel">&ensp;직위</label>
+							<div class="col-xs-9 ">
+								<input id="jobTitle" maxlength="50" type="text" placeholder="Job Title" class="form-control">
+							</div>
+						</div>
+
+						<div class="col-xs-12">
+							<label class="col-xs-3 control-label modalLabel">&ensp;비고</label>
+							<div class="col-xs-9 ">
+								<input id="userRemark" maxlength="512" type="text" placeholder="User Remark" class="form-control">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer popUpFooter">
+					<button type="button" onclick="updateUser(form_mode);" class="btn btn-primary popUpDefaultBtn">등록</button>
+					<button type="button" class="btn btn-default popUpCancleBtn" data-dismiss="modal">취소</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 모달 팝업 -->
+	<div class="modal fade popUpDefault" id="popUpAddAuthorFilter" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">
+						<span aria-hidden="true">×</span><span class="sr-only">Close</span>
+					</button>
+					<h4 class="modal-title myModalLabel">필터 등록</h4>
+				</div>
+				<div class="modal-body modal-body">
+					<div class="popUpContents">
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3 control-label modalLabel"><span class="essentialKey">*&nbsp;</span>유저ID</label>
+							<div class="col-xs-9 ">
+								<input id="userFilterUserId" maxlength="256" type="text" placeholder="User ID" class="form-control" readonly>
+							</div>
+						</div>
+
+						<div class="form-group col-xs-12">
+							<label class="col-xs-3 control-label modalLabel"><span
+								class="essentialKey">*&nbsp;</span>권한필터</label>
+							<div class="col-xs-9 ">
+								<input id="authorFilter" maxlength="256" type="text" placeholder="Author Filter" class="form-control">
+							</div>
+						</div>
+
+						<div class="col-xs-12">
+							<label class="col-xs-3 control-label modalLabel">&ensp;비고</label>
+							<div class="col-xs-9 ">
+								<input id="userFilterRemark" maxlength="512" type="text" placeholder="UserFilter Remark" class="form-control">
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="modal-footer popUpFooter">
+					<button type="button" onclick="updateUserFilter(form_mode);" class="btn btn-primary popUpDefaultBtn">등록</button>
+					<button type="button" class="btn btn-default popUpCancleBtn" data-dismiss="modal">취소</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="modal fade" id="serverMessagePopUp" data-backdrop="static"  tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button id="sessionListCloseBtn" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">세션종료목록</h4>
+				</div>
+				<div class="modal-body">
+					<div ng-controller="serverMessageCtrl">
+						<div ag-grid="gridOptions" class="ag-fresh" style="wdth: 350px; height: 150px;"></div>
+					</div>
+					<div class="frame_inner_search"></div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary modalDefaultBtn" data-dismiss="modal" onclick="clearSessionDisConnectFunc()">닫기</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 유저풀ID 앵귤라 그리드 뷰  -->
+<!-- 	<div class="modal fade" id="userPoolSearchModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">유저풀ID 조회</h4>
+				</div>
+				<div class="modal-body">
+					<div class="searchGrid" ng-controller="searchCtrl">
+						<div ag-grid="gridOptions" class="ag-fresh" style="height: 150px;"></div>
+					</div>
+					<div class="frame_inner_search"></div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary modalDefaultBtn" data-dismiss="modal">선택</button>
+					<button type="button" class="btn btn-default modalCancleBtn" data-dismiss="modal" onclick="userPoolCancleEvent()">취소</button>
+				</div>
+			</div>
+		</div>
+	</div> -->
+
+	<div id="MySplitter" class="contents wrap">
+		<!--  left layer -->
+		<div class="frame">
+			<div ng-controller="userPoolCtrl">		
+				<h2>유저풀 목록 <span class="search"></span></h2>
+				<p class="searchbar">
+					<input class="searchmon" type="search" placeholder="Filter..." id="quickFilterInput" ng-model="gridOptions.quickFilterText"><input class="searchsub" type="image" src="images/api_pages/search2.png">
+				</p>
+				<p class="btn_group">
+					<a href="#" onclick="javascript:showToolPanel(userPoolScope); return false;" title="설정"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a> 
+					<a href="#" onclick="javascript:refreshUserPoolList(); return false;" title="새로고침"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
+				</p>
+				<p class="control1">
+					<a href="#" id="addUserPool" data-toggle="modal" data-target="#popUpAddUserPool" title="등록"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></a>
+					<a href="#" id="editUserPool" data-toggle="modal" data-target="#popUpAddUserPool" title="수정"><span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span></a> 
+					<a href="#" id="delUserPool" title="삭제"><span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span></a>
+				</p>
+				<div class="frame_inner">
+					<div ag-grid="gridOptions" class="ag-fresh" style="width: 100%; height: 750px;"></div>
+					<div class="blankUserUserpool" style="color: RED"></div>
+				</div>
+			</div>
+		</div>
+		<!--  right layer -->
+		<div id="sWrap">
+			<div class="frame">
+				<div ng-controller="userCtrl">
+					<h2>유저 목록 <span class="search"></span></h2>
+					<p class="searchbar">
+						<input class="searchmon" type="search" placeholder="Filter..." id="quickFilterInput" ng-model="gridOptions.quickFilterText"><input class="searchsub" type="image" src="images/api_pages/search2.png">
+					</p>
+					<p class="btn_group">
+						<a href="#" onclick="javascript:showToolPanel(userScope); return false;" title="설정"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a> 
+						<a href="#" onclick="javascript:refreshUserList(); return false;" title="새로고침"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
+					</p>
+					<p class="control1">
+						<a href="#" id="addUser" data-toggle="modal" data-target="#popUpAddUser" title="등록"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></a>
+						<a href="#" id="editUser" data-toggle="modal" data-target="#popUpAddUser" title="수정"><span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span></a> 
+						<a href="#" id="delUser" title="삭제"><span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span></a>
+					</p>
+						<div class="frame_inner">
+						<div ag-grid="gridOptions" class="ag-fresh topGridContents" style="width: 100%; height: 323px;"></div>
+						<div class="blankUserUser" style="color: RED"></div>
+					</div>
+				</div>
+			</div>
+			<div class="frame">
+				<div ng-controller="userFilterCtrl">
+					<h2>필터 목록 <span class="search"></span></h2>
+					<p class="searchbar">
+						<input class="searchmon" type="search" placeholder="Filter..." id="quickFilterInput" ng-model="gridOptions.quickFilterText"><input class="searchsub" type="image" src="images/api_pages/search2.png">
+					</p>
+					<p class="btn_group">
+						<a href="#" onclick="javascript:showToolPanel(userFilterScope); return false;" title="설정"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a> 
+						<a href="#" onclick="javascript:refreshUserFilterList(); return false;" title="새로고침"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
+					</p>
+					<p class="control1">
+						<a href="#" id="addUserFilter" data-toggle="modal" data-target="#popUpAddAuthorFilter" title="등록"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></a>
+						<a href="#" id="editUserFilter" data-toggle="modal" data-target="#popUpAddAuthorFilter" title="수정"><span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span></a> 
+						<a href="#" id="delUserFilter" title="삭제"><span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span></a>
+					</p>
+					<div class="frame_inner">
+						<div ag-grid="gridOptions" class="ag-fresh downGridContents" style="width: 100%; height: 323px;"></div>
+						<div class="blankUserFilter" style="color: RED"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--  end.right layer -->
+	</div>
+
+	<!-- END .contents -->
+</body>
+</html>

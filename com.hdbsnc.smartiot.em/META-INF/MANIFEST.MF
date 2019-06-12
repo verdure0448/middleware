@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Em
+Bundle-SymbolicName: com.hdbsnc.smartiot.em
+Bundle-Version: 1.0.0
+Bundle-Vendor: HDBSNC
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: com.hdbsnc.smartiot.server,
+ com.hdbsnc.smartiot.util.logger,
+ com.hdbsnc.smartiot.util.servicepool,
+ org.osgi.framework;version="1.8.0",
+ org.osgi.util.tracker;version="1.5.1"
+Bundle-Activator: com.hdbsnc.smartiot.em.Bootstrap
+Export-Package: com.hdbsnc.smartiot.em.impl
+Require-Bundle: com.hdbsnc.smartiot

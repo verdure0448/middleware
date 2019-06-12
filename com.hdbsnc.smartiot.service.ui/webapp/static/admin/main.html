@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- TITLE -->
+    <title>현대BS&C SmartIoT</title>
+    
+    <!-- META -->
+	<meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow" /> <!-- remove this on prod --> 
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="author" content="" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+   
+    <!-- FAVICON -->
+    <link rel="shortcut icon" href="images/favicon.ico" /> 
+        
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css" />   
+	<link rel="stylesheet" href="css/bootstrap.css" />   
+    <link rel="stylesheet" href="css/highlight_themes/dark.css" />
+    <link rel="stylesheet" href="css/theme-fresh.css?ignore=notused14">
+	<link rel="stylesheet" href="css/ag-grid.css?ignore=notused14">
+	<link rel="stylesheet" href="fonts/css.css"/>
+	<link rel="stylesheet" href="fonts/nanummyeongjo.css"/>
+	<link rel="stylesheet" href="fonts/nanumgothic.css"/>
+	<!-- <link href="http://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400italic,400,600,600italic,700,700italic,800,800italic" rel="stylesheet" type="text/css"> -->
+
+        
+    <!-- THIRD PARTY JS -->
+    <script src="https://maps.googleapis.com/maps/api/js?v=3&amp;sensor=false"></script>
+    <script src="https://www.google.com/jsapi"></script>
+    <script>google.load("visualization", '1.1', {packages:['corechart']});</script>
+         
+    <!-- JS -->
+    <script src="js/jquery.1.11.1.js"></script> 
+	<script src="js/bootstrap.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+	<script src="js/ag-grid.js?ignore=notused14"></script>
+    <script src="js/jquery.nicescroll.min.js"></script>
+    <script src="js/main.js"></script>
+	<script src="js/bootbox.min.js"></script>
+	
+	<!-- <link rel="stylesheet" href="css/jqx.base.css" type="text/css">
+	<script type="text/javascript" src="js/jqxcore.js"></script>
+	<script type="text/javascript" src="js/jqxsplitter.js"></script>
+	<script type="text/javascript" src="js/jqxbuttons.js"></script>
+	<script type="text/javascript" src="js/jqxscrollbar.js"></script>
+	<script type="text/javascript" src="js/jqxpanel.js"></script>
+	<script src="js/bootbox.min.js"></script>
+	<script type="text/javascript">
+			
+		$(document).ready(function () {
+			$('#MySplitter').jqxSplitter({
+				width:'1200px',					
+				height:'100%',
+				panels: [{size: '40%'}]
+			});
+			$('#sWrap').jqxSplitter({
+				width:'100%',
+				height:'100%',
+				orientation:'horizontal',
+				panels:[{size: 400, collapsible:true}]
+			});
+		});
+		
+	</script> -->
+</head>
+<body class="main" ng-app="example" ng-controller="exampleCtrl">
+
+<header>
+
+	<!-- ********* HEADER ********* -->
+	<div id="header_inner" class="wrap">
+		<div id="logo">
+			<a href="monitoring.html"><img src="images/logo.png" alt="현대BS&C" /></a>
+		</div>
+		<h1 id="addrIP"></h1>
+	</div>
+
+	<!--  ********* MAIN MENU  ********* -->
+
+</header>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+			<span class="sr-only">Toggle navigation</span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			</button>
+			<!--a class="navbar-brand" href="#">Menu</a -->
+		</div>
+		<div id="navbar" class="collapse navbar-collapse main_nav">
+			<ul class="nav navbar-nav">
+				<!-- <li><a href="main.html">메인메뉴</a></li> -->
+				<li><a href="monitoring.html">관제&모니터링</a></li>
+				<li><a href="adapter.html">아답터</a></li>
+				<li><a href="instance.html">인스턴스</a></li>
+				<li><a href="device.html">장치</a></li>
+				<li><a href="user.html">유저</a></li>
+				<li><a href="domain.html">도메인</a></li>
+				<!-- <li><a href="setting.html">서버설정</a></li> -->
+			</ul>
+		</div>
+		<div id="menu_icon">
+			<ul>
+				
+			<!-- <li><a href="debug.html"><span class="glyphicon glyphicon glyphicon-warning-sign" aria-hidden="true"></span></a></li> -->
+			<li><a href="#" onclick="userInfo()" title="유저정보"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></a></li>
+			<!-- <li><a href="#"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></li> -->
+			<li><a href="#" onclick="versionInfo()" title="SmartIoT정보"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a></li>
+			<li><a href="#" title="도움말"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></li>
+			<li><a href="#" onclick="navIconLogout()" title="로그아웃"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></li>
+			</ul>
+		</div>
+		<!--/.nav-collapse -->
+	</div>
+</nav>
+
+<div id="MySplitter" class="contents wrap">
+	<!--  left layer -->
+	<div class="first_contensts">
+		<div class="frame" id="server">
+			<div class="title">
+				<h2><img src="images/icon_server.png" alt="" /><br />
+				서버사용현황
+				</h2>
+				<p class="btn_group">
+				<a href="#" title="설정"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a>
+				<a href="#" title="새로고침"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
+				</p>
+
+				<p class="monitoring_view">
+				<button class="btn btn-lg btn-info btn-block" id="login_submit" type="submit" onclick="location.href='monitoring.html'">관리화면 Go</button>
+				</p>
+			</div>
+
+			<!-- angular-grid table -->
+			<div ag-grid="gridOptions" class="ag-fresh" style="width: 100%; height: 551px;"></div>
+			<!-- angular-grid table -->
+		</div>
+	</div>
+	<!--  end.left layer -->
+
+
+	<!--  right layer -->
+	<div class="second_contensts">
+		<div id="sWrap">
+			<div class="frame">
+				<h2><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span> 현황</h2>
+				<div class="part_1">
+					<ul>
+						<li class="title">아답터 사용현황</li>
+						<li><span class="s_title">등록된 아답터</span><span class="count">13건</span></li>
+						<li><span class="s_title">사용중 아답터</span><span class="count">10건</span></li>
+						<li><span class="s_title">미사용 아답터</span><span class="count">3건</span></li>
+					</ul>
+					<ul>
+						<li class="title">인스턴스 사용현황</li>
+						<li><span class="s_title">등록된 인스턴스</span><span class="count">20건</span></li>
+						<li><span class="s_title">기동중(Start) 인스턴스</span><span class="count">2건</span></li>
+						<li><span class="s_title">정지된(Suspend) 인스턴스</span><span class="count">8건</span></li>
+						<li><span class="s_title">미사용(stop) 인스턴스</span><span class="count">10건</span></li>
+					</ul>
+					<ul>
+						<li class="title">장치 사용현황</li>
+						<li><span class="s_title">등록된 장치</span><span class="count">20건</span></li>
+						<li><span class="s_title">사용중 장치</span><span class="count">2건</span></li>
+						<li><span class="s_title">미사용 장치</span><span class="count">8건</span></li>
+					</ul>
+				</div>
+			</div>
+			<div class="frame">
+				<h2><span class="glyphicon glyphicon-time" aria-hidden="true"></span> 실시간 정보</h2>	
+				<div class="part_2">
+					<p>정보표시1: xxxx   정보표시2: xxxx <span id="b1" class="glyphicon glyphicon-triangle-right"></span></p>		
+					<!-- Chart canvas starts here -->
+					<div id="visualization"></div>
+				</div>
+			</div>
+		<!--  end.right layer -->
+		</div>
+		<!-- end. sWrap -->
+	</div>
+<!-- END .contents -->
+</div>
+
+
+	<script type="text/javascript"
+	src="https://www.google.com/jsapi?autoload={
+	'modules':[{
+	'name':'visualization',
+	'version':'1',
+	'packages':['corechart']
+	}]
+	}"></script>
+
+	<script type="text/javascript">
+	google.setOnLoadCallback(drawChart);
+
+	// Some raw data (not necessarily accurate)
+	var rowData1 = [['Month', 'Bolivia', 'Ecuador', 'Madagascar', 'DRCongo',
+	'Rwanda', 'Average'],
+	['2004/05', 165, 938, 522, 998, 450, 114.6],
+	['2005/06', 135, 1120, 599, 1268, 288, 382],
+	['2006/07', 157, 1167, 587, 807, 397, 623],
+	['2007/08', 139, 1110, 615, 968, 215, 409.4],
+	['2008/09', 136, 691, 629, 1026, 366, 569.6]];
+	var rowData2 = [['Month', 'Bolivia', 'Ecuador', 'Madagascar', 'DRCongo',
+	'Rwanda', 'Average'],
+	['2004/05', 122, 638, 722, 998, 450, 614.6],
+	['2005/06', 100, 1120, 899, 1268, 288, 682],
+	['2006/07', 183, 167, 487, 207, 397, 623],
+	['2007/08', 200, 510, 315, 1068, 215, 609.4],
+	['2008/09', 123, 491, 829, 826, 366, 569.6]];
+
+	// Create and populate the data tables.
+	var data = [];
+	data[0] = google.visualization.arrayToDataTable(rowData1);
+	data[1] = google.visualization.arrayToDataTable(rowData2);
+
+	var options = {
+		width: 600,
+		height: 140,
+		vAxis: {
+			title: "Cups"}
+		,
+		hAxis: {
+			title: "Month"}
+		,
+		seriesType: "bars",
+		series: {
+			5: {
+				type: "line"}
+		}
+		,
+		animation:{
+			duration: 1000,
+			easing: 'out'
+		}
+		,
+	}
+	;
+	var current = 0;
+	// Create and draw the visualization.
+	var chart = new google.visualization.ComboChart(document.getElementById('visualization'));
+	var button = document.getElementById('b1');
+	function drawChart() {
+		// Disabling the button while the chart is drawing.
+		button.disabled = true;
+		google.visualization.events.addListener(chart, 'ready',
+		function() {
+		button.disabled = false;
+		button.value = 'Switch to ' + (current ? 'Tea' : 'Coffee');
+		});
+		options['title'] = 'Monthly ' + (current ? 'Coffee' : 'Tea') + ' Production by Country';
+
+		chart.draw(data[current], options);
+	}
+	drawChart();
+
+	button.onclick = function() {
+		current = 1 - current;
+		drawChart();
+	}
+	</script>
+
+</body>
+</html>

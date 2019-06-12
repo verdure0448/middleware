@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+<!-- TITLE -->
+<title>현대BS&C SmartIoT</title>
+
+<!-- META -->
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow" />
+<!-- remove this on prod -->
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="" />
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+
+<!-- FAVICON -->
+<link rel="shortcut icon" href="images/favicon.ico" />
+
+<!-- CSS -->
+<link rel="stylesheet" href="css/jquery.splitter.css" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/bootstrap.css" />
+<link rel="stylesheet" href="css/highlight_themes/dark.css" />
+<link rel="stylesheet" href="css/theme-fresh.css?ignore=notused14"/>
+<link rel="stylesheet" href="css/ag-grid.css?ignore=notused14"/>
+<link rel="stylesheet" href="fonts/css.css"/>
+<link rel="stylesheet" href="fonts/nanummyeongjo.css"/>
+<link rel="stylesheet" href="fonts/nanumgothic.css"/>
+
+<!-- JS -->
+<script src="js/jquery.1.11.1.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/angular.min.js"></script>
+<script src="js/ag-grid.js?ignore=notused14"></script>
+<script src="js/jquery.nicescroll.min.js"></script>
+<!-- <script src="js/main.js"></script> -->
+
+<script src="js/OtpApi.js"></script>
+<script src="js/angular-route.js"></script>
+<script src="jscore/coreVariables.js"></script>
+<script src="jscore/coreFunctions.js"></script>
+<script src="jscore/monitoringDataGrid.js"></script>
+<script src="js/bootbox.min.js"></script>
+<script src="js/jquery.splitter-0.14.0.js"></script>
+<script src="jscore/monitoring.js"></script>
+
+<script src="jscore/loginApi.js"></script>
+</head>
+<body class="monitor" ng-app="agApps">
+
+	<header>
+		<!-- ********* HEADER ********* -->
+		<div id="header_inner" class="wrap">
+			<div id="logo">
+				<a href="monitoring.html"><img src="images/logo.png" alt="현대BS&C" /></a>
+			</div>
+			<h1 id="addrIP"></h1>
+		</div>
+		<!--  ********* MAIN MENU  ********* -->
+	</header>
+
+	<nav id="navBar">
+		<div id=nav_group>
+			<div id=menu_items>
+				<ul class="horizontalUl">
+					<!-- <li><a href="main.html">메인메뉴</a></li> -->
+					<li><a class="activeItems" href="monitoring.html">관제&모니터링</a></li>
+					<li><a href="adapter.html">아답터</a></li>
+					<li><a href="instance.html">인스턴스</a></li>
+					<li><a href="device.html">장치</a></li>
+					<li><a href="user.html">유저</a></li>
+					<li><a href="domain.html">도메인</a></li>
+				</ul>
+			</div>
+			<div id="menu_icon">
+				<ul class="horizontalUl">
+					<li class ="serverMessageInfo"><a href="#" data-toggle="modal" style="color:red" data-target="#serverMessagePopUp" title="세션종료상세" onclick="serverMessageListFunc()"><span class="glyphicon glyphicon-bell" aria-hidden="true"></span></a></li>
+					<li class ="serverMessageInfo"><span style="color:white">세션종료 알림 </span><label style="color:yellow;margin-bottom: 0px" id="serverMessageCount"></label></li>
+					<li><a href="#" onclick="userInfo()" title="유저정보"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></a></li>
+					<li><a href="#" onclick="versionInfo()" title="SmartIoT정보"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a></li>
+					<li><a href="http://222.96.103.243:9000/manual/smartIotHelper.pdf" target="adapterDocument" title="도움말"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></li>
+					<li><a href="#" onclick="navIconLogout()" title="로그아웃"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></a></li>
+				</ul>
+			</div>
+		</div>
+		<!--/.nav-collapse -->
+	</nav>	
+	
+	<div class="modal fade" id="serverMessagePopUp" data-backdrop="static"  tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button id="sessionListCloseBtn" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">세션종료목록</h4>
+				</div>
+				<div class="modal-body">
+					<div ng-controller="serverMessageCtrl">
+						<div ag-grid="gridOptions" class="ag-fresh" style="wdth: 350px; height: 150px;"></div>
+					</div>
+					<div class="frame_inner_search"></div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary modalDefaultBtn" data-dismiss="modal" onclick="clearSessionDisConnectFunc()">닫기</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="MySplitter" class="contents wrap">
+		<div class="frame">
+			<div ng-controller="adapterCtrl">
+				<h2>아답터 목록 <span class="search"></span></h2>
+				<p class="searchbar">
+					<input class="searchmon" type="search" placeholder="Filter..." id="quickFilterInput" ng-model="gridOptions.quickFilterText"><input class="searchsub" type="image" src="images/api_pages/search2.png">
+				</p>
+				<p class="btn_group">
+					<a href="#" onclick="javascript:showToolPanel(adapterScope); return false;" title="설정"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a> 
+					<a href="#" onclick="javascript:refreshAdapterList(); return false;" title="새로고침"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
+				</p>
+				<div class="frame_inner">
+					<div ag-grid="gridOptions" class="ag-fresh"	style="width: 100%; height: 750px;"></div>
+					<div class="blankAdapter" style="color: RED"></div>
+				</div>
+			</div>
+		</div>
+		<!--  end.left layer -->
+			<!--  right layer -->
+		<div id="sWrap">
+			<div class="frame">
+				<div ng-controller="instanceCtrl">		
+					<h2>인스턴스 목록 <a href="#" onclick="javascript:showInstance(); return false;"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></a><span class="search"></span></h2>
+					<p class="searchbar">
+						<input class="searchmon" type="search" placeholder="Filter..." id="quickFilterInput" ng-model="gridOptions.quickFilterText"><input class="searchsub" type="image" src="images/api_pages/search2.png">
+					</p>
+					<p class="btn_group">
+						<a href="#" onclick="javascript:showToolPanel(instanceScope); return false;" title="설정"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a>
+						<a href="#" onclick="javascript:refreshInstanceList(); return false;" title="새로고침"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
+					</p>
+					<p class="control">
+						<a href="#" id="stopActivityBtn" title="정지" onclick="javascript:checkIid('stop'); return false;"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></a> 
+						<span id="stopNonActivityBtn" class="glyphicon glyphicon-stop" aria-hidden="true"></span> 
+						<a href="#" id="suspendActivityBtn" title="일시정지" onclick="javascript:checkIid('suspend'); return false;"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></a> 
+						<span id="suspendNonActivityBtn" class="glyphicon glyphicon-pause" aria-hidden="true"></span> 
+						<a href="#" id="startActivityBtn" title="시작" onclick="javascript:checkIid('start'); return false;"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a> 
+						<span id="startNonActivityBtn" class="glyphicon glyphicon-play" aria-hidden="true"></span>
+					</p>
+					<div class="frame_inner">
+						<div ag-grid="gridOptions" class="ag-fresh topGridContents" style="width: 100%; height: 323px;"></div>
+						<div class="blankInstance" style="color: RED"></div>
+					</div>
+				</div>
+			</div>
+			<div ng-controller="sessionCtrl" class="frame">
+				<h2>연결된 장치 목록 <a href="#" onclick="javascript:showDevice(); return false;"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></a><span class="search"></span></h2>
+				<p class="searchbar">
+					<input class="searchmon" type="search" placeholder="Filter..." id="quickFilterInput" ng-model="gridOptions.quickFilterText"><input class="searchsub" type="image" src="images/api_pages/search2.png">
+				</p>
+				<p class="btn_group">
+					<a href="#" onclick="javascript:showToolPanel(sessionScope); return false;" title="설정"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a> 
+					<a href="#" onclick="javascript:refreshSessionList(); return false;" title="새로고침"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
+				</p>
+				<p class="control">
+					<a href="#" title="삭제" onclick="javascript:checkSid(); return false;"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+				</p>
+				<div class="frame_inner">
+					<div ag-grid="gridOptions" class="ag-fresh downGridContents" style="width: 100%; height: 323px;"></div>
+					<div class="blankSession" style="color: RED"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

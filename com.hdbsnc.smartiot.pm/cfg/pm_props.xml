@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>PM환경변수 프로퍼티</comment>
+<!-- 캐쉬정리 주기(s) -->
+<entry key="CacheCleanPeriod">30</entry>
+<!-- 캐쉬 유효시간(초단위) -->
+<entry key="CacheVaildTime">500</entry>
+<!-- 아답터 인스턴스 캐쉬사이즈 -->
+<entry key="AdapterInstanceCacheSize">5000</entry>
+<!-- 인스턴스 속성 캐쉬사이즈 -->
+<entry key="InstanceAttributeCacheSize">10000</entry>
+<!-- 인스턴스 기능 캐쉬사이즈 -->
+<entry key="InstanceFunctionCacheSize">10000</entry>
+<!-- 유저풀 캐쉬사이즈 -->
+<entry key="UserPoolCacheSize">500</entry>
+<!-- 유저 캐쉬사이즈 -->
+<entry key="UserCacheSize">1000</entry>
+<!-- 유저필터 캐쉬사이즈 -->
+<entry key="UserFilterCacheSize">5000</entry>
+<!-- 도메인식별자 마스터 캐쉬사이즈 -->
+<entry key="DomainIdMastCacheSize">20000</entry>
+<!-- 장치풀 캐쉬사이즈 -->
+<entry key="DevicePoolCacheSize">1000</entry>
+<!-- 장치 캐쉬사이즈 -->
+<entry key="DeviceCacheSize">5000</entry>
+<!-- 메시지 마스터 캐쉬사이즈 -->
+<entry key="MsgMastCacheSize">5000</entry>
+
+<!-- 스토리지 클래스 -->
+<entry key="StorageClass">com.hdbsnc.smartiot.pm.storage.db.SqliteDBManager</entry>
+
+<!-- DB파일 오버라이트  -->
+<entry key="DbFileOverwrite">false</entry>
+<!-- DB파일 상대경로 -->
+<entry key="DbFilePath">/sqlite</entry>
+<!-- 아답타 인스턴스 DB 파일명 -->
+<entry key="AdapterDbFileName">SMARTIOT_INSTANCE.db</entry>
+<!-- 유저정보(마스터, 프로파일, 속성)DB 파일명 -->
+<entry key="UserDbFileName">SMARTIOT_USER.db</entry>
+<!-- 도메인정보DB 파일 경로 -->
+<entry key="DomainDbFileName">SMARTIOT_DOMAIN.db</entry>
+<!-- 장치정보DB 파일 경로 -->
+<entry key="DeviceDbFileName">SMARTIOT_DEVICE.db</entry>
+<!-- 메세지마스터DB 파일 경로 -->
+<entry key="MsgMastDbFileName">SMARTIOT_MSG.db</entry>
+</properties>
