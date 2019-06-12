@@ -33,8 +33,8 @@ import com.hdbsnc.smartiot.util.servicepool.impl.DefaultServicePool;
  * 7. org.eclipse.osgi.services
  * 
  * @author hjs0317
- *
- */
+ * 
+ */ 
 public class Bootstrap implements BundleActivator {
 
 	private ServicePool servicePool;
