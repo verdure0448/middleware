@@ -1,0 +1,52 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Mitsubishi
+Bundle-SymbolicName: com.hdbsnc.smartiot.adapter.mb.mc.bin
+Bundle-Version: 1.0.0
+Bundle-Vendor: HDBSNC
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: com.hdbsnc.smartiot.common,
+ com.hdbsnc.smartiot.common.aim,
+ com.hdbsnc.smartiot.common.am,
+ com.hdbsnc.smartiot.common.connection,
+ com.hdbsnc.smartiot.common.connection.impl,
+ com.hdbsnc.smartiot.common.context,
+ com.hdbsnc.smartiot.common.context.handler,
+ com.hdbsnc.smartiot.common.context.handler.exception,
+ com.hdbsnc.smartiot.common.context.handler.impl,
+ com.hdbsnc.smartiot.common.context.handler2,
+ com.hdbsnc.smartiot.common.context.handler2.impl,
+ com.hdbsnc.smartiot.common.em,
+ com.hdbsnc.smartiot.common.factory,
+ com.hdbsnc.smartiot.common.ism,
+ com.hdbsnc.smartiot.common.ism.sm,
+ com.hdbsnc.smartiot.common.otp.url.parser,
+ com.hdbsnc.smartiot.common.otp.url.parser.vo,
+ com.hdbsnc.smartiot.common.pm,
+ com.hdbsnc.smartiot.common.pm.vo,
+ com.hdbsnc.smartiot.pdm.ap,
+ com.hdbsnc.smartiot.pdm.ap.instance,
+ com.hdbsnc.smartiot.util.logger,
+ com.hdbsnc.smartiot.util.servicepool,
+ org.osgi.framework;version="1.8.0",
+ org.osgi.util.tracker;version="1.5.1"
+SmartIoT-AdapterProfile: adapter.id=com.hdbsnc.smartiot.adapter.mb.mc.bin_1.0.0,
+ adapter.name=HYNDAEI BS&C Misubishi QSeries MC Protocol Ascii Version,
+ adapter.kind=client,
+ adapter.type=plc,
+ default.device.id=,
+ session.timeout=3000000,
+ init.device.status=start,
+ ip=192.168.0.180,
+ port=80,
+ latitude=0,
+ longitude=0,
+ self.id=api1,
+ self.pw=1234,
+ remark=Mitsubishi QSeries MC Protocol Ascii Version
+SmartIoT-AdapterAttribute: 
+SmartIoT-AdapterFunction: 
+SmartIoT-Adapter-Initialize: 
+Bundle-Activator: com.hdbsnc.smartiot.adapter.zeromq.Bootstrap
+Bundle-ClassPath: lib/json-simple-1.1.1.jar,
+ .
