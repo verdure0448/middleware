@@ -1,7 +1,7 @@
 package com.hdbsnc.smartiot.adapter.zeromq.api;
 
-
 import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 public class ZeromqApi {
@@ -11,6 +11,9 @@ public class ZeromqApi {
 	}
 
 	private ZMQ.Context mContext = null;
+
+	private ZContext mZctx = null;
+
 	private ZMQ.Socket mSocket = null;
 
 	private int mIoThreads;
@@ -38,18 +41,33 @@ public class ZeromqApi {
 	 * 소켓 시작
 	 * 
 	 * @param addr 바이딩 어드레스
+	 * @throws Exception
 	 */
-	public void start() {
+	public void start() throws Exception {
 		// TODO 기동상태 체크 후 기동중일 경우 에러 처리
+		switch (this.mSocketYype) {
+		case REP:
+			this.mContext = ZMQ.context(this.mIoThreads);
+			this.mSocket = mContext.socket(this.mSocketYype);
 
-		this.mContext = ZMQ.context(this.mIoThreads);
-		this.mSocket = mContext.socket(this.mSocketYype);
+			this.mSocket.bind(this.mAddr);
 
-		this.mSocket.bind(this.mAddr);
+			if (mSocketYype == SocketType.REP) {
+				this.mEventThread = new Thread(new EventProcess());
 
-		this.mEventThread = new Thread(new EventProcess());
+				mEventThread.start();
+			}
+			break;
+		case PUB:
+			this.mZctx = new ZContext();
+			this.mSocket = this.mZctx.createSocket(this.mSocketYype);
+			this.mSocket.bind(this.mAddr);
+			break;
+		default:
+			// 상기 이외는 에러처리
+			throw new Exception("Not Support.");
+		}
 
-		mEventThread.start();
 	}
 
 	/**
@@ -59,28 +77,63 @@ public class ZeromqApi {
 	 */
 	public void stop() throws InterruptedException {
 
-		mEventThread.interrupt();
-
-		// TODO 스레드 종료 때까지 대기하도록 처리 변경 필요 임시로 30ms대기
-		Thread.sleep(30);
-
 		if (this.mSocket != null) {
 			this.mSocket.close();
 			this.mSocket = null;
 		}
 
-		if (this.mContext == null) {
-			this.mContext.term();
-			this.mContext = null;
+		switch (this.mSocketYype) {
+		case REP:
+			mEventThread.interrupt();
+			// TODO 스레드 종료 때까지 대기하도록 처리 변경 필요 임시로 30ms대기
+			Thread.sleep(30);
+
+			if (this.mContext == null) {
+				this.mContext.term();
+				this.mContext = null;
+			}
+			break;
+		case PUB:
+			mZctx.close();
+			break;
+		default:
+			break;
 		}
+
 	}
 
-	public void send(byte[] msg) {
-
-		// mSocket.sendMore(data)
-
+	/**
+	 * 
+	 * 
+	 * @param msg
+	 * @throws Exception
+	 */
+	public void send(byte[] msg) throws Exception {
+		if(this.mSocketYype != SocketType.REP) {
+			throw new Exception("Unsupported function.");
+		}
 		mSocket.send(msg);
+	}
 
+	/**
+	 * 
+	 * @param topic
+	 * @param msg
+	 * @throws Exception
+	 */
+	public void publish(byte[] topic, byte[] msg) throws Exception {
+
+		if(this.mSocketYype != SocketType.PUB) {
+			throw new Exception("Unsupported function.");
+		}
+		
+		byte[] sendData = new byte[topic.length + msg.length + 1];
+		System.arraycopy(topic, 0, sendData, 0, topic.length);
+		sendData[topic.length] = 0x20;
+		System.arraycopy(msg, 0, sendData, topic.length + 1, msg.length);
+
+		System.out.println(new String(sendData));
+		mSocket.send(sendData, 0);
 	}
 
 	class EventProcess implements Runnable {
