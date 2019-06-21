@@ -9,7 +9,7 @@ import org.zeromq.SocketType;
 
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.PubHandler;
-import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.RepHandler;
+import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.ResHandler;
 import com.hdbsnc.smartiot.common.ICommonService;
 import com.hdbsnc.smartiot.common.aim.IAdapterContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstance;
@@ -75,6 +75,13 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		RootHandler root = this.processor.getRootHandler();
 		
 		
+		root.putHandler("http/res", new ReqHandler("start", 3000, httpApi1));
+		
+		root.putHandler("http/res", new ResHandler("start", 3000, httpApi1));
+		
+		root.putHandler("http/res", new PubHandler("start", 3000, httpApi1));
+		
+		
 		////////////////////////////////////////////////////////////////////////////////////
 		//[PLC 수집 시작 명령 프로토콜]
 		//[PLC 수집 정지 명령 프로토콜]
@@ -83,21 +90,29 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		//EX) 수집 시작 명령 REQ 동작 중 수집명령 REQ가 날아올 수 있지만 나머지 위 3개 명령은 그런 확률이 거이 없음.
 		////////////////////////////////////////////////////////////////////////////////////
 		
-		ZeromqApi zeromqApi = new ZeromqApi(1, SocketType.REP, "tcp://*:5556");
+		ZeromqApi zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://*:5555");
+		ZeromqApi zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://*:5556");
 		
-		ZeromqApi.IEvent event = new ZeromqApi.IEvent() {
+		ZeromqApi.IEvent repEvent = new ZeromqApi.IEvent() {
 
 			@Override
 			public void onRecv(byte[] msg) {
-				// JSON 파싱 및 멜셀 수집 이벤트 핸들러 등록
+				// JSON 파싱 및 멜셀 수집/정지/조회 처리
 				System.out.println("onRevc : " + new String(msg));
-				// 응답메세지 전송
-				zeromqApi.send(msg);
+				
+				// 응답메세지 전송(이벤트 핸들러 호출 결과에 따른 )
+				// zeromqApi.send(msg);
+				
+				
+				
 			}
 		};
 		
 		// ZMQ REP 서버 기동
-		zeromqApi.start(event);
+		zmqRep.start(repEvent);
+		
+		// ZMQ PUB 서버 기동
+		zmqPub.start(null);
 		
 		////////////////////////////////////////////////////////////////////////////////////
 		//[PLC 수집 조회 프로토콜]
@@ -106,42 +121,7 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		//★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
 		////////////////////////////////////////////////////////////////////////////////////
 		HttpApi httpApi2 = new HttpApi(log);
-		root.putHandler("http/req/collection", new RepHandler("search", 3000, httpApi2));
-		
-		
-		
-
-		////////////////////////////////////////////////////////////////////////////////////
-		//Class : ReqHandler
-		//ZeroMQ의 REQ에 [PLC 수집 시작 프로토콜]이 들어올 경우 
-		//멜섹 PLC 아답터의 "CreateDynamicHandler" 핸들러를 호출한다
-		////////////////////////////////////////////////////////////////////////////////////
-		root.putHandler("http/req", new RepHandler("start", 3000, httpApi1));
-		////////////////////////////////////////////////////////////////////////////////////
-		//Class : ResHandler
-		//ZeroMQ의 REQ에 [PLC 수집 시작 프로토콜]의 결과를 반환한다. 
-		//멜섹 PLC 아답터의 "CreateDynamicHandler" 핸들러를 호출한다
-		////////////////////////////////////////////////////////////////////////////////////
-		root.putHandler("http/res", new RepHandler("start", 3000, httpApi1));
-		
-		////////////////////////////////////////////////////////////////////////////////////
-		//Class : ReqHandler
-		//ZeroMQ의 REQ에 [PLC 수집 중지 프로토콜], [PLC 수집 일괄정지 프로토콜] 이 들어올 경우 
-		//멜섹 PLC 아답터의 "DeleteDynamicHandler" 핸들러를 호출한다
-		////////////////////////////////////////////////////////////////////////////////////
-		root.putHandler("http/req", new RepHandler("stop", 3000, httpApi1));
-		////////////////////////////////////////////////////////////////////////////////////
-		//Class : ResHandler
-		//ZeroMQ의 REQ에 [PLC 수집 중지 프로토콜], [PLC 수집 일괄정지 프로토콜] 의 결과를 반환한다. 
-		//멜섹 PLC 아답터의 "DeleteDynamicHandler" 핸들러를 호출한다
-		////////////////////////////////////////////////////////////////////////////////////
-		root.putHandler("http/res", new RepHandler("stop", 3000, httpApi1));
-		
-
-		////////////////////////////////////////////////////////////////////////////////////
-		//ZeroMQ의 PUB 핸들러를 만들어준다
-		////////////////////////////////////////////////////////////////////////////////////
-		root.putHandler("message/queue", new PubHandler("pub", 3000));
+		root.putHandler("http/req/collection", new ResHandler("search", 3000, httpApi2));
 		
 	}
 	

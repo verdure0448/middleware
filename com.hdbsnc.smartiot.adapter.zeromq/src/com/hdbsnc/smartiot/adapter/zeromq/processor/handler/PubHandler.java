@@ -6,6 +6,10 @@ import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 
 /**
+ *
+ * 정정 핸들러로써
+ * 멜섹 아답터에서 handover로 호출 -> 데이터 가공 -> ZMQ Send(Publish) 처리를 위한 핸들러 
+ * 
  * @author dbkim
  *
  */

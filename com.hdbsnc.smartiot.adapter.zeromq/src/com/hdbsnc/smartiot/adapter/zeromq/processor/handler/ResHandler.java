@@ -7,7 +7,7 @@ import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 
 /**
- * ZMQ의 REP의 Request에 대한 Response처리를 위한 핸들러
+ * 맬섹 핸들러에서 PLC 수집 시작/정지/조회에 대한 결과 전달(handover) -> 데이터 가공 -> ZMQ Send(REP) 처리를 위한 핸들러 
  * 
  * @author admin
  *
