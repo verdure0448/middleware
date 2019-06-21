@@ -24,19 +24,19 @@ public abstract class AbstractTransactionTimeoutFunctionHandler implements IFunc
 	
 	private long timeout = 3000;
 	
-	protected AbstractTransactionTimeoutFunctionHandler(String name){
+	public AbstractTransactionTimeoutFunctionHandler(String name){
 		this(null, name, 3000);
 	}
 	
-	protected AbstractTransactionTimeoutFunctionHandler(IDirectoryHandler parent, String name){
+	public AbstractTransactionTimeoutFunctionHandler(IDirectoryHandler parent, String name){
 		this(parent, name, 3000);
 	}
 	
-	protected AbstractTransactionTimeoutFunctionHandler(String name, long timeout){
+	public AbstractTransactionTimeoutFunctionHandler(String name, long timeout){
 		this(null, name, timeout);
 	}
 	
-	protected AbstractTransactionTimeoutFunctionHandler(IDirectoryHandler parent, String name, long timeout){
+	public AbstractTransactionTimeoutFunctionHandler(IDirectoryHandler parent, String name, long timeout){
 		this.parent = parent;
 		this.name = name;
 		this.timeout = timeout;

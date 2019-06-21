@@ -3,7 +3,11 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.obj;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RequestReadObj {
+/**
+ * @author user
+ * Mc프로토콜 3E 프레임 읽기 프로토콜을 통해 수집할 데이터의 정의
+ */
+public class ReadPlcVo {
 
 	private int index;
 	private String devCode;
@@ -13,7 +17,7 @@ public class RequestReadObj {
 	
 	private List<FormatterObj> formatter;
 
-	public RequestReadObj() {
+	public ReadPlcVo() {
 		formatter=new ArrayList<>();
 	}
 	

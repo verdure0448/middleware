@@ -3,7 +3,7 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 
 /**
- * @author DBeom
+ * @author dbkim
  * 멜섹의 에러코드들이 실제적으로 들어갈 곳
  */
 public class MitsubishiQSeriesMCCompleteException extends Exception{

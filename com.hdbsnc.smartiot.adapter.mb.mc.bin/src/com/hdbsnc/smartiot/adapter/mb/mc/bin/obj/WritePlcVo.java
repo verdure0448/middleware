@@ -1,6 +1,10 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.obj;
 
-public class RequestWriteObj {
+/**
+ * @author user
+ * Mc프로토콜 3E 프레임 쓰기 프로토콜  데이터의 정의
+ */
+public class WritePlcVo {
 
 	private String devCode;
 	private String devNum;

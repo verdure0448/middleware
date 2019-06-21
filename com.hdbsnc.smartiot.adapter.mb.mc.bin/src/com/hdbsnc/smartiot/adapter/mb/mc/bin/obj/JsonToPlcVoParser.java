@@ -8,10 +8,14 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-public class FunctionParamParser {
+/**
+ * @author dbkim
+ *
+ */
+public class JsonToPlcVoParser {
 
-	private List<RequestReadObj> requestReadObjList;
-	private List<RequestWriteObj> requestWriteObjList;
+	private List<ReadPlcVo> requestReadObjList;
+	private List<WritePlcVo> requestWriteObjList;
 
 	private String jsonData;
 	
@@ -23,7 +27,7 @@ public class FunctionParamParser {
 	
 	private JSONObject jsonSchema;
 	
-	public FunctionParamParser(String pJsonData) {
+	public JsonToPlcVoParser(String pJsonData) {
 
 		this.jsonData = pJsonData;
 		requestWriteObjList = new ArrayList<>();
@@ -69,7 +73,7 @@ public class FunctionParamParser {
 		
 		//formatter에 read라는 항목이 있는지 확인한다.
 		if(jsonObject.containsKey("Read")){
-			RequestReadObj requestReadObj;
+			ReadPlcVo requestReadObj;
 			
 			//read가 있다면 Json배열 형태로 가져온다
 			JSONArray readArray = (JSONArray) jsonObject.get("Read");
@@ -83,7 +87,7 @@ public class FunctionParamParser {
 			
 			//formatter read에 관한 파서 부분 구현
 			for (int i = 0; i < readArray.size(); i++) {
-				requestReadObj=new RequestReadObj();
+				requestReadObj=new ReadPlcVo();
 				jsonObject = (JSONObject) readArray.get(i);
 				
 				int seq = Integer.parseInt((String)jsonObject.get("Seq"));
@@ -135,13 +139,13 @@ public class FunctionParamParser {
 		
 		//formatter에 wrtie에 관한 항목이 있는지 확인한다.
 		if(jsonObject.containsKey("Write")){
-			RequestWriteObj requestWriteObj;	
+			WritePlcVo requestWriteObj;	
 			
 			//write가 있다면 Json배열 형태로 가져온다
 			JSONArray writeArray = (JSONArray) jsonObject.get("Write");
 
 			for (int i = 0; i < writeArray.size(); i++) {
-				requestWriteObj = new RequestWriteObj();		
+				requestWriteObj = new WritePlcVo();		
 				jsonObject = (JSONObject) writeArray.get(i);
 				
 				
@@ -317,7 +321,7 @@ public class FunctionParamParser {
 	 * 
 	 * @return
 	 */
-	public List<RequestReadObj> getRequestReadObjList() {
+	public List<ReadPlcVo> getRequestReadObjList() {
 		//
 		return requestReadObjList;
 	}
@@ -327,7 +331,7 @@ public class FunctionParamParser {
 	 * 
 	 * @return
 	 */
-	public List<RequestWriteObj> getRequestWriteObjList() {
+	public List<WritePlcVo> getRequestWriteObjList() {
 
 		return requestWriteObjList;
 	}
