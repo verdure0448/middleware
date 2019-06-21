@@ -1,13 +1,14 @@
 package com.hdbsnc.smartiot.adapter.zeromq.processor.handler;
 
-import com.hdbsnc.smartiot.adapter.zeromq.api.HttpApi;
+
+import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 
 public class CollectionSearchHandler extends AbstractTransactionTimeoutFunctionHandler {
 
-	public CollectionSearchHandler(String name, long timeout, HttpApi httpApi1) {
+	public CollectionSearchHandler(String name, long timeout, ZeromqApi zmqApi) {
 		super(name, timeout);
 	}
 	@Override

@@ -1,12 +1,13 @@
 package com.hdbsnc.smartiot.adapter.zeromq.api.callback;
 
-import com.hdbsnc.smartiot.adapter.zeromq.api.HttpApi;
+
+import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.common.context.IContextCallback;
 import com.hdbsnc.smartiot.common.context.IContextTracer;
 
 public class PlcStartCallback implements IContextCallback{
 	
-	PlcStartCallback (HttpApi api){
+	PlcStartCallback (ZeromqApi zmqApi){
 		
 	}
 	

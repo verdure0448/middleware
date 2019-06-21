@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hdbsnc.smartiot.adapter.zeromq.api.HttpApi;
+import org.zeromq.SocketType;
+
+import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.PubHandler;
-import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.ReqHandler;
+import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.RepHandler;
 import com.hdbsnc.smartiot.common.ICommonService;
 import com.hdbsnc.smartiot.common.aim.IAdapterContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstance;
@@ -30,7 +32,7 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 	private Log log;
 	private ZeroMqAdapterProcessor processor = null;
 	private IEventManager em;
-	private HttpApi api;
+
 	private IProfileManager pm;
 
 	private ISession session = null;
@@ -80,7 +82,22 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		//PLC 수집조회 프로토콜의 경우 위의 3가지 프로토콜 명령과 중첩하여 날아 갈 수 있으므로 따른 포트를 통해 생성
 		//EX) 수집 시작 명령 REQ 동작 중 수집명령 REQ가 날아올 수 있지만 나머지 위 3개 명령은 그런 확률이 거이 없음.
 		////////////////////////////////////////////////////////////////////////////////////
-		HttpApi httpApi1 = new HttpApi(log);
+		
+		ZeromqApi zeromqApi = new ZeromqApi(1, SocketType.REP, "tcp://*:5556");
+		
+		ZeromqApi.IEvent event = new ZeromqApi.IEvent() {
+
+			@Override
+			public void onRecv(byte[] msg) {
+				// JSON 파싱 및 멜셀 수집 이벤트 핸들러 등록
+				System.out.println("onRevc : " + new String(msg));
+				// 응답메세지 전송
+				zeromqApi.send(msg);
+			}
+		};
+		
+		// ZMQ REP 서버 기동
+		zeromqApi.start(event);
 		
 		////////////////////////////////////////////////////////////////////////////////////
 		//[PLC 수집 조회 프로토콜]
@@ -89,7 +106,7 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		//★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
 		////////////////////////////////////////////////////////////////////////////////////
 		HttpApi httpApi2 = new HttpApi(log);
-		root.putHandler("http/req/collection", new ReqHandler("search", 3000, httpApi2));
+		root.putHandler("http/req/collection", new RepHandler("search", 3000, httpApi2));
 		
 		
 		
@@ -99,26 +116,26 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		//ZeroMQ의 REQ에 [PLC 수집 시작 프로토콜]이 들어올 경우 
 		//멜섹 PLC 아답터의 "CreateDynamicHandler" 핸들러를 호출한다
 		////////////////////////////////////////////////////////////////////////////////////
-		root.putHandler("http/req", new ReqHandler("start", 3000, httpApi1));
+		root.putHandler("http/req", new RepHandler("start", 3000, httpApi1));
 		////////////////////////////////////////////////////////////////////////////////////
 		//Class : ResHandler
 		//ZeroMQ의 REQ에 [PLC 수집 시작 프로토콜]의 결과를 반환한다. 
 		//멜섹 PLC 아답터의 "CreateDynamicHandler" 핸들러를 호출한다
 		////////////////////////////////////////////////////////////////////////////////////
-		root.putHandler("http/res", new ReqHandler("start", 3000, httpApi1));
+		root.putHandler("http/res", new RepHandler("start", 3000, httpApi1));
 		
 		////////////////////////////////////////////////////////////////////////////////////
 		//Class : ReqHandler
 		//ZeroMQ의 REQ에 [PLC 수집 중지 프로토콜], [PLC 수집 일괄정지 프로토콜] 이 들어올 경우 
 		//멜섹 PLC 아답터의 "DeleteDynamicHandler" 핸들러를 호출한다
 		////////////////////////////////////////////////////////////////////////////////////
-		root.putHandler("http/req", new ReqHandler("stop", 3000, httpApi1));
+		root.putHandler("http/req", new RepHandler("stop", 3000, httpApi1));
 		////////////////////////////////////////////////////////////////////////////////////
 		//Class : ResHandler
 		//ZeroMQ의 REQ에 [PLC 수집 중지 프로토콜], [PLC 수집 일괄정지 프로토콜] 의 결과를 반환한다. 
 		//멜섹 PLC 아답터의 "DeleteDynamicHandler" 핸들러를 호출한다
 		////////////////////////////////////////////////////////////////////////////////////
-		root.putHandler("http/res", new ReqHandler("stop", 3000, httpApi1));
+		root.putHandler("http/res", new RepHandler("stop", 3000, httpApi1));
 		
 
 		////////////////////////////////////////////////////////////////////////////////////

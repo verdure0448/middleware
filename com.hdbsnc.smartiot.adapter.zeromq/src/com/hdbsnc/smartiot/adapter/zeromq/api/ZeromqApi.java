@@ -30,11 +30,11 @@ public class ZeromqApi {
 	 * @param ioThreads 입출력 스레스수
 	 * @param type      소켓 타입
 	 */
-	public ZeromqApi(int ioThreads, SocketType type, String addr, IEvent event) {
+	public ZeromqApi(int ioThreads, SocketType type, String addr) {
 		this.mIoThreads = ioThreads;
 		this.mSocketYype = type;
 		this.mAddr = addr;
-		this.mEvent = event;
+		
 	}
 
 	/**
@@ -43,8 +43,11 @@ public class ZeromqApi {
 	 * @param addr 바이딩 어드레스
 	 * @throws Exception
 	 */
-	public void start() throws Exception {
+	public void start(IEvent event) throws Exception {
 		// TODO 기동상태 체크 후 기동중일 경우 에러 처리
+		
+		this.mEvent = event;
+		
 		switch (this.mSocketYype) {
 		case REP:
 			this.mContext = ZMQ.context(this.mIoThreads);
