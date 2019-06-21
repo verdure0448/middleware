@@ -23,22 +23,19 @@ import com.hdbsnc.smartiot.util.logger.Log;
 
 public class MitsubishiQSeriesApi {
 
-	private Socket socket;
-	private String ip;
-	private int port;
+	private Socket _socket;
+	private String _ip;
+	private int _port;
 
-	private List<Integer> portArray;
-	private int curtPortIndex;
-
-	private TransMode transMode;
-	private Log log;
+	private TransMode _transMode;
+	private Log _log;
 
 	public MitsubishiQSeriesApi(TransMode pmode,Log log) {
 
-		this.transMode = pmode;
-		this.socket = null;
+		_transMode = pmode;
+		_socket = null;
 		
-		this.log=log;
+		_log=log;
 	}
 
 	/**
@@ -47,84 +44,41 @@ public class MitsubishiQSeriesApi {
 	 * @param ports
 	 * @throws IOException
 	 */
-	public synchronized void connect(String ip, String ports) throws IOException {
+	public synchronized void connect(String ip, int port) throws IOException {
 		//포트를 List에 담을 수있도록 파서 한다.
 		
-		if(portArray == null) {
-			this.portArray = portsParser(ports);
-		}
 		
-		this.ip = ip;		
-		this.socket = new Socket();
-		this.socket.setKeepAlive(false);
-		this.socket.setReuseAddress(false);
-		this.socket.setSoTimeout(5000);
-		//사용할 포트를 가지고 온다.
-		this.port = getPort();
-		log.info("MELSEC CONNECTION IP : " + this.ip + " 포트 : "+ this.port);			
+		_ip = ip;		
+		_socket = new Socket();
+		_socket.setKeepAlive(false);
+		_socket.setReuseAddress(false);
+		_socket.setSoTimeout(5000);
+		this._port = port;	
 		
 		try {
-			this.socket.connect(new InetSocketAddress(ip, port), 2000);
+			this._socket.connect(new InetSocketAddress(ip, port), 2000);
+			_log.info("MELSEC CONNECTION SUCESS, IP : " + this._ip + " 포트 : "+ this._port);		
 		} catch (Exception e) {
 			throw e;
 		}
 	}
 
-	/**
-	 * 포트를 변경한다.
-	 * @return
-	 */
-	private int getPort() {
-		
-		int iResult = portArray.get(curtPortIndex);
-		
-		//포트를 끝까지 다 한번 씩 사용했다면 다시 0번 Index로 초기화한다.
-		if(curtPortIndex == portArray.size()-1) {
-			curtPortIndex = 0;
-		}else{
-			curtPortIndex++;
-		}		
-		
-		return iResult;
-	}
-	
 	/**
 	 * 연결이  해제 될 경우 호출한다.
 	 * @throws IOException
 	 */
 	public synchronized void reConnect() throws IOException {
-		this.socket = new Socket();
-		this.socket.setKeepAlive(false);
-		this.socket.setReuseAddress(false);
-		this.socket.setSoTimeout(5000);
-		this.port = getPort();
+		this._socket = new Socket();
+		this._socket.setKeepAlive(false);
+		this._socket.setReuseAddress(false);
+		this._socket.setSoTimeout(5000);
 
 		try {
-			log.info("MELSEC CONNECTION IP : " + this.ip + " 포트 : "+ this.port);			
-			this.socket.connect(new InetSocketAddress(ip, port), 2000);
+			this._socket.connect(new InetSocketAddress(_ip, _port), 2000);
+			_log.info("MELSEC CONNECTION SUCESS, IP : " + this._ip + " 포트 : "+ this._port);		
 		} catch (Exception e) {
-			//에러 발생시 사용할 포트를 다시 가지고 온다.
 			throw e;
 		}
-	}
-	
-	/**
-	 * SAMPLE 8193,8194,8195,8196,8197
-	 * 포트를 Parser하여 리스트 형태로 반환한다.
-	 * @param ports
-	 * @return
-	 */
-	private List<Integer> portsParser(String ports) {
-		
-		List<Integer> iResult = new ArrayList<Integer>();
-	
-		String[] tempPortArray = ports.split(","); 
-		
-		for(int i=0; i<tempPortArray.length; i++) {
-			iResult.add(Integer.parseInt(tempPortArray[i]));
-		}
-		
-		return iResult;
 	}
 	
 	/**
@@ -132,9 +86,9 @@ public class MitsubishiQSeriesApi {
 	 * @throws IOException
 	 */
 	public synchronized void disconnect() throws IOException {
-		if (this.socket != null) {
-			this.socket.close();
-			this.socket=null;
+		if (this._socket != null) {
+			this._socket.close();
+			this._socket=null;
 		}
 	}
 
@@ -143,8 +97,8 @@ public class MitsubishiQSeriesApi {
 	 * @return
 	 */
 	public synchronized boolean isConnected() {
-		if (this.socket != null) {
-			if (this.socket.isConnected() && !this.socket.isClosed())
+		if (this._socket != null) {
+			if (this._socket.isConnected() && !this._socket.isClosed())
 				return true;
 		}
 		return false;
@@ -164,14 +118,12 @@ public class MitsubishiQSeriesApi {
 
 		try {
 			out = new ByteArrayOutputStream();
-			in = new BufferedInputStream(this.socket.getInputStream());
+			in = new BufferedInputStream(this._socket.getInputStream());
 
 			byte[] buffer = new byte[4096];
 
-			this.socket.getOutputStream().write(reqData);
+			this._socket.getOutputStream().write(reqData);
 			
-			
-			//TODO 이쪽 부분 PLC오면 테스트 해보기
 			out.reset();
 			
 			int cnt = 0;
@@ -190,7 +142,7 @@ public class MitsubishiQSeriesApi {
 
 	public void multipleWrite(List<WritePlcVo> writeObjList) throws Exception {
 
-		AbstractBlocksFrame frame = new MultipleBlockBatchReadWriteProtocol(transMode, Command.MULTIPLE_BLCOK_WRITE, SubCommand.WORD);
+		AbstractBlocksFrame frame = new MultipleBlockBatchReadWriteProtocol(_transMode, Command.MULTIPLE_BLCOK_WRITE, SubCommand.WORD);
 
 		// TODO DATATYPE에 대해 아직 처리하지 않았음
 		String devCode, devNum, devScore, dataType, data;
@@ -206,12 +158,12 @@ public class MitsubishiQSeriesApi {
 
 
 		ByteBuffer reqData = frame.getRequestPacket();
-		log.trace("[WRITE REQ 프로토콜] : "+EditUtil.bytesToHexStr(reqData.array()));
+		_log.trace("[WRITE REQ 프로토콜] : "+EditUtil.bytesToHexStr(reqData.array()));
 		
 		// plc 요청 프로토콜 전송
 		byte[] resData = sendData(reqData.array());
 		frame.setResponsePacket(resData);
-		log.trace("[WRITE RES 프로토콜] : "+EditUtil.bytesToHexStr(resData));
+		_log.trace("[WRITE RES 프로토콜] : "+EditUtil.bytesToHexStr(resData));
 
 		// 만약 에러코드가 날아오면 Exception 처리
 		if (!(frame.getResponseCode().equals("0000"))) {
@@ -230,11 +182,9 @@ public class MitsubishiQSeriesApi {
 	 * @throws Exception
 	 */
 	public String multipleRead(List<ReadPlcVo> readObjList) throws Exception {
-		//f1 RowData
-//		return "0000010000000000000029FC06F5FC050000E600544D3132303646343030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000303646343030000000000000000000000000000000000000000000000000000000000000E002E302E002E002E302E3020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000A0C00000A040000000000035AF470041AF470001A4470010A447000034C20080A3470086A3470080A347008CA347808CA347009100000000000000000000000000000000000000000000000000000000000000000000000000000000E3FFFFFFE7FFFFFFE6FFFFFFE4FF0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009F0202048F407A545555C5091B2020020B02AA02290000052800000525000005260000052600000526000005C941A41485959555452905940155045599C5E91588A51E51A6B5AD48157D15050000000000000000000000000000000000000000000000008121A215C515FF5502A00000000000009000060801026722011F011F011F011F011F011F011F011F0837080400000000000555C600060006000605C0000A80000A550600060006000605000005000005151500006209100500000000000000000000000000000000000000000000000000000040000000400000004041A000000000000841A000000000000841A000000000000841A0000000000008009D000000000008009D00000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006020000000000000000000000000008832408004F01C01519C001C0000000903333331500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200020202001200800200000200000A0208100000082000000000000000000000000000000000003000110306001000010401040104010401040104010401040280000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000008A809080108090801080A0802080A080200200020000000000000000000000000080800200000000008080030000000000808001000000000080800100000000000716000000000000031600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001020000000000000000000000000000
 				
 		 //프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
-		AbstractBlocksFrame frame = new MultipleBlockBatchReadWriteProtocol(transMode, Command.MULTIPLE_BLCOK_READ, SubCommand.WORD);
+		AbstractBlocksFrame frame = new MultipleBlockBatchReadWriteProtocol(_transMode, Command.MULTIPLE_BLCOK_READ, SubCommand.WORD);
 
 		// 블럭의 데이터를 frame에 추가함
 		String devCode, devNum, devScore;
@@ -247,11 +197,11 @@ public class MitsubishiQSeriesApi {
 		}
 
 		ByteBuffer reqData = frame.getRequestPacket();
-		log.trace("[REQ] : "+EditUtil.bytesToHexStr(reqData.array()));
+		_log.trace("[REQ] : "+EditUtil.bytesToHexStr(reqData.array()));
 		
 		// plc 요청 프로토콜 전송
 		byte[] resData = sendData(reqData.array());
-		log.trace("[RES] : "+ EditUtil.bytesToHexStr(resData));
+		_log.trace("[RES] : "+ EditUtil.bytesToHexStr(resData));
 		frame.setResponsePacket(resData);
 
 		// 만약 에러코드가 날아오면 Exception 처리
@@ -265,7 +215,7 @@ public class MitsubishiQSeriesApi {
 
 	public void write(WritePlcVo writeObj) throws Exception {
 
-		AbstractBlocksFrame frame = new BatchReadWriteProtocol(transMode, Command.BATCH_WRITE, SubCommand.WORD);
+		AbstractBlocksFrame frame = new BatchReadWriteProtocol(_transMode, Command.BATCH_WRITE, SubCommand.WORD);
 
 		// TODO DATATYPE에 대해 아직 처리하지 않았음
 		String devCode = writeObj.getDevCode();
@@ -278,12 +228,12 @@ public class MitsubishiQSeriesApi {
 
 
 		ByteBuffer reqData = frame.getRequestPacket();
-		log.trace("[WRITE REQ 프로토콜] : "+EditUtil.bytesToHexStr(reqData.array()));
+		_log.trace("[WRITE REQ 프로토콜] : "+EditUtil.bytesToHexStr(reqData.array()));
 		
 		// plc 요청 프로토콜 전송
 		byte[] resData = sendData(reqData.array());
 		frame.setResponsePacket(resData);
-		log.trace("[WRITE RES 프로토콜] : "+EditUtil.bytesToHexStr(resData));
+		_log.trace("[WRITE RES 프로토콜] : "+EditUtil.bytesToHexStr(resData));
 		
 		// 만약 에러코드가 날아오면 Exception 처리
 		if (!(frame.getResponseCode().equals("0000"))) {
@@ -302,11 +252,9 @@ public class MitsubishiQSeriesApi {
 	 * @throws Exception
 	 */
 	public String read(ReadPlcVo readObj) throws Exception {
-		//f1 RowData
-//		return "0000010000000000000029FC06F5FC050000E600544D3132303646343030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000303646343030000000000000000000000000000000000000000000000000000000000000E002E302E002E002E302E3020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000A0C00000A040000000000035AF470041AF470001A4470010A447000034C20080A3470086A3470080A347008CA347808CA347009100000000000000000000000000000000000000000000000000000000000000000000000000000000E3FFFFFFE7FFFFFFE6FFFFFFE4FF0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009F0202048F407A545555C5091B2020020B02AA02290000052800000525000005260000052600000526000005C941A41485959555452905940155045599C5E91588A51E51A6B5AD48157D15050000000000000000000000000000000000000000000000008121A215C515FF5502A00000000000009000060801026722011F011F011F011F011F011F011F011F0837080400000000000555C600060006000605C0000A80000A550600060006000605000005000005151500006209100500000000000000000000000000000000000000000000000000000040000000400000004041A000000000000841A000000000000841A000000000000841A0000000000008009D000000000008009D00000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006020000000000000000000000000008832408004F01C01519C001C0000000903333331500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200020202001200800200000200000A0208100000082000000000000000000000000000000000003000110306001000010401040104010401040104010401040280000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000008A809080108090801080A0802080A080200200020000000000000000000000000080800200000000008080030000000000808001000000000080800100000000000716000000000000031600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001020000000000000000000000000000
-				
-		 //프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
-		AbstractBlocksFrame frame = new BatchReadWriteProtocol(transMode, Command.BATCH_READ, SubCommand.WORD);
+		 
+		//프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
+		AbstractBlocksFrame frame = new BatchReadWriteProtocol(_transMode, Command.BATCH_READ, SubCommand.WORD);
 
 		// 블럭의 데이터를 frame에 추가함
 		String devCode = readObj.getDevCode();
@@ -316,11 +264,11 @@ public class MitsubishiQSeriesApi {
 		frame.addReadRequest(devCode, devNum, devScore);
 
 		ByteBuffer reqData = frame.getRequestPacket();
-		log.trace("[REQ] : "+EditUtil.bytesToHexStr(reqData.array()));
+		_log.trace("[REQ] : "+EditUtil.bytesToHexStr(reqData.array()));
 		
 		// plc 요청 프로토콜 전송
 		byte[] resData = sendData(reqData.array());
-		log.trace("[RES] : "+ EditUtil.bytesToHexStr(resData));
+		_log.trace("[RES] : "+ EditUtil.bytesToHexStr(resData));
 		frame.setResponsePacket(resData);
 
 		// 만약 에러코드가 날아오면 Exception 처리
@@ -331,4 +279,13 @@ public class MitsubishiQSeriesApi {
 			return frame.getResponseData();
 		}
 	}
+
+	public String getIp() {
+		return _ip;
+	}
+
+	public int getPort() {
+		return _port;
+	}
+	
 }

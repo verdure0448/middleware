@@ -52,12 +52,12 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 
 		String userId = instanceInfo.getSelfId();
 		String upass = instanceInfo.getSelfPw();
-		String defaultDid = instanceInfo.getDefaultDevId();
+		String did = instanceInfo.getDefaultDevId();
 
-		ISession session = ctx.getSessionManager().certificate(defaultDid, userId, upass);
+		ISession session = ctx.getSessionManager().certificate(did, userId, upass);
 
 		RootHandler root = this.processor.getRootHandler();
-		manager = new DynamicHandlerManager(root, em, log);
+		manager = new DynamicHandlerManager(root, em, did, session.getSessionKey(),log);
 		
 		//멜섹 프로토콜 핸들러를 동적으로 생성한다
 		root.putHandler("create/mb/melsec", new CreateDynamicHandler("handler", 3000, manager));

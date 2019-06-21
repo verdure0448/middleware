@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.CreateHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DynamicHandlerManager;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
@@ -24,7 +25,7 @@ public class CreateDynamicHandler extends AbstractTransactionTimeoutFunctionHand
 	//아이피와 포트를 관리하며 만들어야함.!
 	private MitsubishiQSeriesApi api;
 
-	public CreateDynamicHandler(String name, long timeout, DynamicHandlerManager manager) {
+	public CreateDynamicHandler(String name, long timeout, CreateHandler manager) {
 		super(name, timeout);
 	}
 	@Override

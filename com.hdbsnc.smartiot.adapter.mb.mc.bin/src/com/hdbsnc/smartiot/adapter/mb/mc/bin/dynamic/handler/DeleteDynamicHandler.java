@@ -3,9 +3,7 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler;
 
 import java.util.List;
 
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DynamicHandlerManager;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DeleteHandler;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
@@ -21,7 +19,7 @@ public class DeleteDynamicHandler extends AbstractTransactionTimeoutFunctionHand
 	private List<AbstractTransactionTimeoutFunctionHandler> plcProcessHandlerList;
 	private List<String> emKeyList;
 	
-	public DeleteDynamicHandler(String name, long timeout, DynamicHandlerManager manager) {
+	public DeleteDynamicHandler(String name, long timeout, DeleteHandler manager) {
 		super(name, timeout);
 	}
 	@Override

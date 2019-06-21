@@ -20,7 +20,7 @@ public class JsonToPlcVoParser {
 	private String jsonData;
 	
 	private String operation;
-	private String interval;
+	private int interval;
 	private String handlerType;
 	
 	private String protocolType;
@@ -50,7 +50,7 @@ public class JsonToPlcVoParser {
 		//고유한 이름
 		operation = (String) jsonObject.get("Operation");
 		//PLC로 부터의 수집간격
-		interval = (String)jsonObject.get("Interval");
+		interval = Integer.parseInt((String)jsonObject.get("Interval"));
 		//프로토콜 Type
 		protocolType = (String)jsonObject.get("ProtocolType");
 		//프로토콜 Type
@@ -374,7 +374,17 @@ public class JsonToPlcVoParser {
 		return operation;
 	}
 
-	public String getInterval() {
+	public int getInterval() {
 		return interval;
+	}
+
+	public String getIP() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public int getPort() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
