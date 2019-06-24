@@ -3,23 +3,19 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj;
 import com.google.gson.annotations.SerializedName;
 
 public class StartResponse {
-	
+
 	@SerializedName("jsonrpc")
 	private String jsonrpc;
-	
+
 	@SerializedName("id")
 	private String id;
-	
-	@SerializedName("param")
-	private StartParam param;
 
 	@SerializedName("result")
-	private StartResult result;
-	
-	@SerializedName("erroe")
-	private ResponseError error;
+	private Result result;
 
-	
+	@SerializedName("erroe")
+	private Error error;
+
 	public String getJsonrpc() {
 		return jsonrpc;
 	}
@@ -36,28 +32,56 @@ public class StartResponse {
 		this.id = id;
 	}
 
-	public StartParam getParam() {
-		return param;
-	}
-
-	public void setParam(StartParam param) {
-		this.param = param;
-	}
-
-	public StartResult getResult() {
+	public Result getResult() {
 		return result;
 	}
 
-	public void setResult(StartResult result) {
+	public void setResult(Result result) {
 		this.result = result;
 	}
 
-	public ResponseError getError() {
+	public Error getError() {
 		return error;
 	}
 
-	public void setError(ResponseError error) {
+	public void setError(Error error) {
 		this.error = error;
 	}
-	
+
+	public class Result {
+
+		@SerializedName("protocol.version")
+		private String version;
+
+		@SerializedName("event.id")
+		private String eventID;
+
+		@SerializedName("proc.data")
+		private String procData;
+
+		public String getVersion() {
+			return version;
+		}
+
+		public void setVersion(String version) {
+			this.version = version;
+		}
+
+		public String getEventID() {
+			return eventID;
+		}
+
+		public void setEventID(String eventID) {
+			this.eventID = eventID;
+		}
+
+		public String getProcData() {
+			return procData;
+		}
+
+		public void setProcData(String procData) {
+			this.procData = procData;
+		}
+	}
+
 }

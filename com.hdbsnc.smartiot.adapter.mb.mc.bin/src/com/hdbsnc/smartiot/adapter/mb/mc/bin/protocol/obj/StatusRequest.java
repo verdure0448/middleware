@@ -14,7 +14,7 @@ public class StatusRequest {
 	private String id;
 	
 	@SerializedName("param")
-	private StatusParam param;
+	private Param param;
 
 	public String getJsonrpc() {
 		return jsonrpc;
@@ -40,13 +40,31 @@ public class StatusRequest {
 		this.id = id;
 	}
 
-	public StatusParam getParam() {
+	public Param getParam() {
 		return param;
 	}
 
-	public void setParam(StatusParam param) {
+	public void setParam(Param param) {
 		this.param = param;
 	}	
+	
+	
+	public class Param {
+		
+		@SerializedName("protocol.version")
+		private String version;	
+		
+		public String getVersion() {
+			return version;
+		}
+
+		public void setVersion(String version) {
+			this.version = version;
+		}
+
+
+	}
+	
 	
 	
 }

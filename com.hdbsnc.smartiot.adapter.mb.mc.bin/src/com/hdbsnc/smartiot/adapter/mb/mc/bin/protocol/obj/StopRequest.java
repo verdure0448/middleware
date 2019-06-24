@@ -14,7 +14,7 @@ public class StopRequest {
 	private String id;
 	
 	@SerializedName("param")
-	private StopParam param;
+	private Param param;
 
 	public String getJsonrpc() {
 		return jsonrpc;
@@ -40,13 +40,36 @@ public class StopRequest {
 		this.id = id;
 	}
 
-	public StopParam getParam() {
+	public Param getParam() {
 		return param;
 	}
 
-	public void setParam(StopParam param) {
+	public void setParam(Param param) {
 		this.param = param;
 	}	
 	
-	
+	public class Param {
+		
+		@SerializedName("protocol.version")
+		private String version;	
+		
+		@SerializedName("event.id")
+		private String eventID;
+		
+		public String getVersion() {
+			return version;
+		}
+
+		public void setVersion(String version) {
+			this.version = version;
+		}
+
+		public String getEventID() {
+			return eventID;
+		}
+
+		public void setEventID(String eventID) {
+			this.eventID = eventID;
+		}
+	}
 }
