@@ -46,14 +46,12 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 		Gson gson = new Gson();
 		
 		
-		
-		
 		switch(method) {
 		case "start":
 			// [json string] -> [vo]
 			StartRequest req = gson.fromJson(content, StartRequest.class);
 			
-			// [vo] -> [json string]
+			// TODO 삭제 예정 [vo] -> [json string]
 			String sReq = gson.toJson(req);
 			
 			ICtx.sid = inboundCtx.getSID(); // Device ID
@@ -69,12 +67,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			ICtx.paths = Arrays.asList("xxxxxx", "xxxxxxx");
 			break;
 		case "stop.all":
-			// 포멧 체크
-			gson.fromJson(content, StopAllRequest.class);
-			
-			ICtx.sid = inboundCtx.getSID(); // Device ID
-			ICtx.tid = "xxxxxx"; // Target ID
-			ICtx.paths = Arrays.asList("xxxxxx", "xxxxxxx");
+			// TODO
 			break;
 		case "status":
 			// 포멧 체크
