@@ -28,11 +28,14 @@ public class PubHandler extends AbstractTransactionTimeoutFunctionHandler {
 		ByteBuffer content = inboundCtx.getContent();
 		
 		
+		
+		
 		content.toString();
+		
 		////////////////////////////////////////////////////////////////////////////////////
-		// 정해진 포트 및 기본정보를 통하여 PUB으로 데이터 전송
+		// PUB으로 데이터 브로드캐스팅
 		////////////////////////////////////////////////////////////////////////////////////
-		this.zmqApi.publish("topic".getBytes(), null);
+		this.zmqApi.publish("topic".getBytes(), content.array());
 		
 	}
 
