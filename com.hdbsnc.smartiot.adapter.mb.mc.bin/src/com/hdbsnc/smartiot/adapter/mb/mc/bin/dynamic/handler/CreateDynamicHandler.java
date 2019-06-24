@@ -3,10 +3,11 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler;
 
 import java.util.Arrays;
 
+import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.CreateHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.CreateHandler.HandlerType;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DynamicHandlerManager;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.obj.CreateParserVo;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.InnerContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
@@ -39,7 +40,7 @@ public class CreateDynamicHandler extends AbstractTransactionTimeoutFunctionHand
 	}
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
-//		{"jsonrpc":"2.0","method":"start","id":"1","param":{"version":"1.0","id":"event1","ip":"127.0.0.1","port":"8192","period":"3","items":[{"key":"lot","code":"D*","num":"10000","score":"4"},{"key":"quality","code":"D*","num":"10004","score":"1"}]}}
+//		{"jsonrpc":"2.0","method":"start","id":"1","param":{"protocol.version":"1.0","event.id":"event1","plc.ip":"127.0.0.1","plc.port":"8192","polling.period":"3","items":[{"key":"lot","device.code":"D*","device.num":"10000","device.score":"4"},{"key":"quality","device.code":"D*","device.num":"10004","device.score":"1"}]}}
 
 		//호출한 상대의 tid 및 path를 가지고 옴 
 		//호출자의 tid 및 path인지 확인필요
@@ -47,27 +48,26 @@ public class CreateDynamicHandler extends AbstractTransactionTimeoutFunctionHand
 		String reqTid = inboundCtx.getTID();
 		String reqPath = inboundCtx.getFullPath();
 		String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
-		
+		Gson gson = new Gson();
 		try {
-			CreateParserVo vo = new CreateParserVo(jsonContents);
+			StartRequest req = gson.fromJson(jsonContents, StartRequest.class);
 	
 			//경로를 만들어 준다.
 			//read/polling/프로토콜id/프로토콜event.id
 			StringBuffer sbPath = new StringBuffer();
 			sbPath.append("read/");
 			sbPath.append("polling/");
-			sbPath.append(vo.getId());
+			sbPath.append(req.getId());
 			sbPath.append("/");
-			sbPath.append(vo.getParam().getEventId());
+			sbPath.append(req.getParam().getEventID());
 			
 			String path = sbPath.toString();
 	
-			int iIntervalSec = Integer.parseInt(vo.getParam().getPeriod());
-			String sIP = vo.getParam().getIp();
-			int iPort = Integer.parseInt(vo.getParam().getPort());
+			int iIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod());
+			String sIP = req.getParam().getPlcIp();
+			int iPort = Integer.parseInt(req.getParam().getPlcPort());
 			
 			_manager.start(HandlerType.READ_BATCH_PROCESS_HANDLER, path, sIP, iPort, iIntervalSec);
-
 			
 			//정상 Start 후 응답
 			InnerContext request = new InnerContext();
