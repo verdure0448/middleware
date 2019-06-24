@@ -16,7 +16,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.Trans
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.BatchReadWriteProtocol;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.MultipleBlockBatchReadWriteProtocol;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MitsubishiQSeriesMCCompleteException;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.obj.ReadPlcVo;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.obj.DeleteJsonVo;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.obj.WritePlcVo;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 import com.hdbsnc.smartiot.util.logger.Log;
@@ -181,7 +181,7 @@ public class MitsubishiQSeriesApi {
 	 * @return
 	 * @throws Exception
 	 */
-	public String multipleRead(List<ReadPlcVo> readObjList) throws Exception {
+	public String multipleRead(List<DeleteJsonVo> readObjList) throws Exception {
 				
 		 //프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
 		AbstractBlocksFrame frame = new MultipleBlockBatchReadWriteProtocol(_transMode, Command.MULTIPLE_BLCOK_READ, SubCommand.WORD);
@@ -251,7 +251,7 @@ public class MitsubishiQSeriesApi {
 	 * @return
 	 * @throws Exception
 	 */
-	public String read(ReadPlcVo readObj) throws Exception {
+	public String read(DeleteJsonVo readObj) throws Exception {
 		 
 		//프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
 		AbstractBlocksFrame frame = new BatchReadWriteProtocol(_transMode, Command.BATCH_READ, SubCommand.WORD);
