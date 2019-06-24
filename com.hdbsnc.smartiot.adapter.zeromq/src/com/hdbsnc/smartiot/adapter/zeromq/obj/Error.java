@@ -2,7 +2,7 @@ package com.hdbsnc.smartiot.adapter.zeromq.obj;
 
 import com.google.gson.annotations.SerializedName;
 
-public class ResponseError {
+public class Error {
 
 	@SerializedName("code")
 	private String code;

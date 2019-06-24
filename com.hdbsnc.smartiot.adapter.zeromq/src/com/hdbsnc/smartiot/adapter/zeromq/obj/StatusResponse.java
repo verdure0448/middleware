@@ -2,20 +2,21 @@ package com.hdbsnc.smartiot.adapter.zeromq.obj;
 
 import com.google.gson.annotations.SerializedName;
 
-public class StartResponse {
-
+public class StatusResponse {
+	
 	@SerializedName("jsonrpc")
 	private String jsonrpc;
-
+	
 	@SerializedName("id")
 	private String id;
 
 	@SerializedName("result")
 	private Result result;
-
+	
 	@SerializedName("erroe")
 	private Error error;
 
+	
 	public String getJsonrpc() {
 		return jsonrpc;
 	}
@@ -47,17 +48,16 @@ public class StartResponse {
 	public void setError(Error error) {
 		this.error = error;
 	}
-
+	
+	
 	public class Result {
 
 		@SerializedName("protocol.version")
-		private String version;
+		private String version;	
+		
+		@SerializedName("status")
+		private Status[] status;
 
-		@SerializedName("event.id")
-		private String eventID;
-
-		@SerializedName("proc.data")
-		private String procData;
 
 		public String getVersion() {
 			return version;
@@ -67,6 +67,32 @@ public class StartResponse {
 			this.version = version;
 		}
 
+
+		public Status[] getStatus() {
+			return status;
+		}
+
+
+		public void setStatus(Status[] status) {
+			this.status = status;
+		}
+		
+	}
+	
+	public class Status {
+
+		@SerializedName("event.id")
+		private String eventID;
+		
+		@SerializedName("plc.ip")
+		private String plcIp;
+		
+		@SerializedName("plc.port")
+		private String plcPort;
+		
+		@SerializedName("polling.period")
+		private String pollingPeriod;
+
 		public String getEventID() {
 			return eventID;
 		}
@@ -75,13 +101,30 @@ public class StartResponse {
 			this.eventID = eventID;
 		}
 
-		public String getProcData() {
-			return procData;
+		public String getPlcIp() {
+			return plcIp;
 		}
 
-		public void setProcData(String procData) {
-			this.procData = procData;
+		public void setPlcIp(String plcIp) {
+			this.plcIp = plcIp;
 		}
+
+		public String getPlcPort() {
+			return plcPort;
+		}
+
+		public void setPlcPort(String plcPort) {
+			this.plcPort = plcPort;
+		}
+
+		public String getPollingPeriod() {
+			return pollingPeriod;
+		}
+
+		public void setPollingPeriod(String pollingPeriod) {
+			this.pollingPeriod = pollingPeriod;
+		}
+		
+		
 	}
-
 }

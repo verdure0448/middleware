@@ -2,20 +2,21 @@ package com.hdbsnc.smartiot.adapter.zeromq.obj;
 
 import com.google.gson.annotations.SerializedName;
 
-public class StartResponse {
-
+public class StopResponse {
+	
 	@SerializedName("jsonrpc")
 	private String jsonrpc;
-
+	
 	@SerializedName("id")
 	private String id;
 
 	@SerializedName("result")
 	private Result result;
-
+	
 	@SerializedName("erroe")
 	private Error error;
 
+	
 	public String getJsonrpc() {
 		return jsonrpc;
 	}
@@ -47,15 +48,15 @@ public class StartResponse {
 	public void setError(Error error) {
 		this.error = error;
 	}
-
+	
 	public class Result {
 
 		@SerializedName("protocol.version")
-		private String version;
-
+		private String version;	
+		
 		@SerializedName("event.id")
 		private String eventID;
-
+		
 		@SerializedName("proc.data")
 		private String procData;
 
@@ -82,6 +83,6 @@ public class StartResponse {
 		public void setProcData(String procData) {
 			this.procData = procData;
 		}
+		
 	}
-
 }
