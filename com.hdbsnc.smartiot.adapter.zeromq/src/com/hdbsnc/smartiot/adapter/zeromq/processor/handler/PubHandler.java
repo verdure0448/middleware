@@ -15,8 +15,10 @@ import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeo
  */
 public class PubHandler extends AbstractTransactionTimeoutFunctionHandler {
 
-	public PubHandler(String name, long timeout, ZeromqApi zmqApi) {
+	private ZeromqApi zmqApi = null;
+	public PubHandler(String name, long timeout, ZeromqApi pZmqApi) {
 		super(name, timeout);
+		this.zmqApi = pZmqApi;
 	}
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
@@ -24,6 +26,7 @@ public class PubHandler extends AbstractTransactionTimeoutFunctionHandler {
 		////////////////////////////////////////////////////////////////////////////////////
 		// 정해진 포트 및 기본정보를 통하여 PUB으로 데이터 전송
 		////////////////////////////////////////////////////////////////////////////////////
+		this.zmqApi.publish("topic".getBytes(), null);
 		
 	}
 

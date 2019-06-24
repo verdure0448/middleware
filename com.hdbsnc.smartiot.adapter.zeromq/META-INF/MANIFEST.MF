@@ -5,7 +5,8 @@ Bundle-SymbolicName: com.hdbsnc.smartiot.adapter.mb.mc.bin
 Bundle-Version: 1.0.0
 Bundle-Vendor: HDBSNC
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: com.hdbsnc.smartiot.common,
+Import-Package: com.hdbsnc.smartiot.adapter.websocketapi.processor.handler,
+ com.hdbsnc.smartiot.common,
  com.hdbsnc.smartiot.common.aim,
  com.hdbsnc.smartiot.common.am,
  com.hdbsnc.smartiot.common.connection,
@@ -51,3 +52,4 @@ Bundle-Activator: com.hdbsnc.smartiot.adapter.zeromq.Bootstrap
 Bundle-ClassPath: lib/json-simple-1.1.1.jar,
  .,
  lib/jeromq-0.5.1.jar
+Require-Bundle: com.hdbsnc.smartiot

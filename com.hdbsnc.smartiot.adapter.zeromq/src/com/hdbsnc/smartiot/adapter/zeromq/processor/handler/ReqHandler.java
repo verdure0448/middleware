@@ -1,7 +1,6 @@
 package com.hdbsnc.smartiot.adapter.zeromq.processor.handler;
 
 
-import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
@@ -14,7 +13,7 @@ import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeo
  */
 public class ReqHandler extends AbstractTransactionTimeoutFunctionHandler {
 
-	public ReqHandler(String name, long timeout, ZeromqApi zmqApi) {
+	public ReqHandler(String name, long timeout) {
 		super(name, timeout);
 	}
 	@Override

@@ -3,16 +3,21 @@ package com.hdbsnc.smartiot.adapter.zeromq;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.zeromq.SocketType;
-
+import com.hdbsnc.smartiot.adapter.websocketapi.processor.handler.InnerContext;
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.PubHandler;
+import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.ReqHandler;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.ResHandler;
 import com.hdbsnc.smartiot.common.ICommonService;
+import com.hdbsnc.smartiot.common.aim.AimException;
 import com.hdbsnc.smartiot.common.aim.IAdapterContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstance;
+import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.aim.IAdapterProcessor;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.impl.RootHandler;
@@ -39,7 +44,10 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 	private List<AbstractTransactionTimeoutFunctionHandler> plcProcessHandlerList;
 	private List<String> emKeyList;
-	
+
+	private ZeromqApi zmqRep = null;
+	private ZeromqApi zmqPub = null;
+
 	public ZeroMqAdapterInstance(ICommonService service, IEventManager em, IProfileManager pm) {
 
 		this.service = service;
@@ -62,9 +70,11 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 	public void start(IAdapterContext ctx) throws Exception {
 		log.info("start");
 
+		IAdapterInstanceManager aim = ctx.getAdapterInstanceManager();
+		
 		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
 		String ip = instanceInfo.getIp();
-		int port =  Integer.parseInt(instanceInfo.getPort());
+		int port = Integer.parseInt(instanceInfo.getPort());
 
 		String userId = instanceInfo.getSelfId();
 		String upass = instanceInfo.getSelfPw();
@@ -73,69 +83,67 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		session = ctx.getSessionManager().certificate(defaultDid, userId, upass);
 
 		RootHandler root = this.processor.getRootHandler();
-		
-		
-		root.putHandler("http/res", new ReqHandler("start", 3000, httpApi1));
-		
-		root.putHandler("http/res", new ResHandler("start", 3000, httpApi1));
-		
-		root.putHandler("http/res", new PubHandler("start", 3000, httpApi1));
-		
-		
+
+		ReqHandler reqHandle = new ReqHandler("req", 1000);
+		root.putHandler("zmq", reqHandle);
+		root.putHandler("zmq", new ResHandler("res", 1000, zmqRep));
+		root.putHandler("zmq", new PubHandler("pub", 1000, zmqPub));
 		////////////////////////////////////////////////////////////////////////////////////
-		//[PLC 수집 시작 명령 프로토콜]
-		//[PLC 수집 정지 명령 프로토콜]
-		//[PLC 수집 일괄 정지 명령 프로토콜]
-		//PLC 수집조회 프로토콜의 경우 위의 3가지 프로토콜 명령과 중첩하여 날아 갈 수 있으므로 따른 포트를 통해 생성
-		//EX) 수집 시작 명령 REQ 동작 중 수집명령 REQ가 날아올 수 있지만 나머지 위 3개 명령은 그런 확률이 거이 없음.
+		// [PLC 수집 시작 명령 프로토콜]
+		// [PLC 수집 정지 명령 프로토콜]
+		// [PLC 수집 일괄 정지 명령 프로토콜]
+		// PLC 수집조회 프로토콜의 경우 위의 3가지 프로토콜 명령과 중첩하여 날아 갈 수 있으므로 따른 포트를 통해 생성
+		// EX) 수집 시작 명령 REQ 동작 중 수집명령 REQ가 날아올 수 있지만 나머지 위 3개 명령은 그런 확률이 거이 없음.
 		////////////////////////////////////////////////////////////////////////////////////
-		
-		ZeromqApi zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://*:5555");
-		ZeromqApi zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://*:5556");
-		
+
+		zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://*:5555");
+		zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://*:5556");
+
 		ZeromqApi.IEvent repEvent = new ZeromqApi.IEvent() {
 
 			@Override
 			public void onRecv(byte[] msg) {
 				// JSON 파싱 및 멜셀 수집/정지/조회 처리
 				System.out.println("onRevc : " + new String(msg));
-				
+
 				// 응답메세지 전송(이벤트 핸들러 호출 결과에 따른 )
 				// zeromqApi.send(msg);
 				
+				// TODO zmq/req 핸들러 호출
+				// 자기 자신의 핸들로를 호출하는 처리로 hdadover 방식이 아니라 직접 핸들러를 호출하는 방법도 ?
 				
+				String did = session.getDeviceId();
 				
+				InnerContext ICtx = new InnerContext();
+				ICtx.sid = did; // Device ID
+				ICtx.tid = did; // Target ID
+				ICtx.paths = Arrays.asList("zmq", "req");
+				
+				ICtx.params = new HashMap<String, String>();
+				ICtx.params.put("request", new String(msg));
+				
+				try {
+					aim.handOverContext(ICtx, null);
+				} catch (Exception e) {
+					// TODO 에러 발생 로그 처리 및 응답 전송
+					e.printStackTrace();
+				}
 			}
 		};
-		
+
 		// ZMQ REP 서버 기동
 		zmqRep.start(repEvent);
-		
+
 		// ZMQ PUB 서버 기동
 		zmqPub.start(null);
-		
-		////////////////////////////////////////////////////////////////////////////////////
-		//[PLC 수집 조회 프로토콜]
-		//★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-		//★★★★★★ECM을 쓰면 간단하지만 안쓰고 할 수 있도록 방안 모색 중
-		//★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-		////////////////////////////////////////////////////////////////////////////////////
-		HttpApi httpApi2 = new HttpApi(log);
-		root.putHandler("http/req/collection", new ResHandler("search", 3000, httpApi2));
-		
+
 	}
-	
+
 	@Override
 	public void stop(IAdapterContext ctx) throws Exception {
-		log.info("stop");
-		if (this.api != null) {
-			try {
-				api.disconnect();
-			} catch (IOException e) {
-				log.err(e);
-			}
-		}
 
+		log.info("stop");
+		
 		// 컨슈머 해제
 		for (String emKey : emKeyList) {
 			if (em.containPollingAdapterProcessor(emKey)) {
@@ -153,16 +161,35 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		emKeyList.clear();
 		plcProcessHandlerList.clear();
+
+		
+		// ZMQ 중지
+		if (this.zmqRep != null) {
+			try {
+				zmqRep.stop();
+			} catch (Exception e) {
+				log.err(e);
+			}
+		}
+
+		if (this.zmqPub != null) {
+			try {
+				zmqPub.stop();
+			} catch (Exception e) {
+				log.err(e);
+			}
+		}
+
 	}
 
 	@Override
 	public void suspend(IAdapterContext ctx) throws Exception {
-
+		// 해당함수는 기능 구현 없음
 	}
 
 	@Override
 	public void dispose(IAdapterContext ctx) throws Exception {
-
+		// 해당함수는 기능 구현 없음
 	}
 
 	@Override
