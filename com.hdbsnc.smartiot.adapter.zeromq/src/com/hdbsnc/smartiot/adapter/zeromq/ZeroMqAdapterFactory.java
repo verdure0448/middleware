@@ -20,7 +20,7 @@ public class ZeroMqAdapterFactory implements IAdapterFactory{
 	
 	@Override
 	public IAdapterInstance createInstance() {
-		return new ZeroMqAdapterInstance(service,em,pm);
+		return new ZeroMqAdapterInstance(service);
 	}
 
 }

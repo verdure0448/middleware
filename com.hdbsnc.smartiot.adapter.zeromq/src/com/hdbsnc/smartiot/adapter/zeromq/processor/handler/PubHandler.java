@@ -1,5 +1,7 @@
 package com.hdbsnc.smartiot.adapter.zeromq.processor.handler;
 
+import java.nio.ByteBuffer;
+
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
@@ -23,6 +25,10 @@ public class PubHandler extends AbstractTransactionTimeoutFunctionHandler {
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 		
+		ByteBuffer content = inboundCtx.getContent();
+		
+		
+		content.toString();
 		////////////////////////////////////////////////////////////////////////////////////
 		// 정해진 포트 및 기본정보를 통하여 PUB으로 데이터 전송
 		////////////////////////////////////////////////////////////////////////////////////

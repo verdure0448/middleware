@@ -1,29 +1,27 @@
 
 package com.hdbsnc.smartiot.adapter.zeromq;
 
-import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import org.zeromq.SocketType;
+
 import com.hdbsnc.smartiot.adapter.websocketapi.processor.handler.InnerContext;
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.PubHandler;
-import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.ReqHandler;
-import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.ResHandler;
+import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.RepHandler;
+
 import com.hdbsnc.smartiot.common.ICommonService;
-import com.hdbsnc.smartiot.common.aim.AimException;
 import com.hdbsnc.smartiot.common.aim.IAdapterContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstance;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.aim.IAdapterProcessor;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.impl.RootHandler;
-import com.hdbsnc.smartiot.common.em.IEventManager;
 import com.hdbsnc.smartiot.common.ism.sm.ISession;
-import com.hdbsnc.smartiot.common.pm.IProfileManager;
 import com.hdbsnc.smartiot.common.pm.vo.IInstanceObj;
 import com.hdbsnc.smartiot.util.logger.Log;
 
@@ -36,9 +34,9 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 	private ICommonService service;
 	private Log log;
 	private ZeroMqAdapterProcessor processor = null;
-	private IEventManager em;
-
-	private IProfileManager pm;
+	
+	// private IEventManager em;
+	// private IProfileManager pm;
 
 	private ISession session = null;
 
@@ -48,11 +46,11 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 	private ZeromqApi zmqRep = null;
 	private ZeromqApi zmqPub = null;
 
-	public ZeroMqAdapterInstance(ICommonService service, IEventManager em, IProfileManager pm) {
+	public ZeroMqAdapterInstance(ICommonService service) {
 
 		this.service = service;
-		this.em = em;
-		this.pm = pm;
+		// this.em = em;
+		// this.pm = pm;
 
 		plcProcessHandlerList = new ArrayList<AbstractTransactionTimeoutFunctionHandler>();
 		emKeyList = new ArrayList<>();
@@ -73,8 +71,8 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		IAdapterInstanceManager aim = ctx.getAdapterInstanceManager();
 		
 		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
-		String ip = instanceInfo.getIp();
-		int port = Integer.parseInt(instanceInfo.getPort());
+//		String ip = instanceInfo.getIp();
+//		int port = Integer.parseInt(instanceInfo.getPort());
 
 		String userId = instanceInfo.getSelfId();
 		String upass = instanceInfo.getSelfPw();
@@ -84,10 +82,9 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		RootHandler root = this.processor.getRootHandler();
 
-		ReqHandler reqHandle = new ReqHandler("req", 1000);
-		root.putHandler("zmq", reqHandle);
-		root.putHandler("zmq", new ResHandler("res", 1000, zmqRep));
+		root.putHandler("zmq", new RepHandler("req", aim, 1000, zmqRep));
 		root.putHandler("zmq", new PubHandler("pub", 1000, zmqPub));
+		
 		////////////////////////////////////////////////////////////////////////////////////
 		// [PLC 수집 시작 명령 프로토콜]
 		// [PLC 수집 정지 명령 프로토콜]
@@ -119,8 +116,14 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 				ICtx.tid = did; // Target ID
 				ICtx.paths = Arrays.asList("zmq", "req");
 				
-				ICtx.params = new HashMap<String, String>();
-				ICtx.params.put("request", new String(msg));
+				
+				ByteBuffer buf = ByteBuffer.allocate(msg.length);
+				buf.put(msg);
+				
+				// 버퍼 포지션 초기화
+				buf.rewind();
+				ICtx.content = buf;
+				ICtx.contentType = "json";
 				
 				try {
 					aim.handOverContext(ICtx, null);
@@ -145,13 +148,13 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		log.info("stop");
 		
 		// 컨슈머 해제
-		for (String emKey : emKeyList) {
-			if (em.containPollingAdapterProcessor(emKey)) {
-				em.removePollingAdapterProcessorEvent(emKey);
-
-				log.info("[EventManager] : " + emKey + " 해제");
-			}
-		}
+//		for (String emKey : emKeyList) {
+//			if (em.containPollingAdapterProcessor(emKey)) {
+//				em.removePollingAdapterProcessorEvent(emKey);
+//
+//				log.info("[EventManager] : " + emKey + " 해제");
+//			}
+//		}
 
 		// 핸들러 해제
 		for (AbstractTransactionTimeoutFunctionHandler handler : plcProcessHandlerList) {
