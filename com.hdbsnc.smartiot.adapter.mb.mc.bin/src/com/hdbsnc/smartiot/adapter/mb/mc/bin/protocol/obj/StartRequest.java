@@ -48,7 +48,7 @@ public class StartRequest {
 		this.param = param;
 	}	
 	
-	class Items {
+	public class Items {
 		
 		@SerializedName("key")
 		private String key;	

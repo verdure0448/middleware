@@ -2,20 +2,21 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj;
 
 import com.google.gson.annotations.SerializedName;
 
-public class GatheringPublish {
-
+public class StopResponse {
+	
 	@SerializedName("jsonrpc")
 	private String jsonrpc;
-
+	
 	@SerializedName("id")
 	private String id;
 
 	@SerializedName("result")
-	private GatheringResult result;
-
+	private Result result;
+	
 	@SerializedName("erroe")
 	private Error error;
 
+	
 	public String getJsonrpc() {
 		return jsonrpc;
 	}
@@ -32,11 +33,11 @@ public class GatheringPublish {
 		this.id = id;
 	}
 
-	public GatheringResult getResult() {
+	public Result getResult() {
 		return result;
 	}
 
-	public void setResult(GatheringResult result) {
+	public void setResult(Result result) {
 		this.result = result;
 	}
 
@@ -47,20 +48,17 @@ public class GatheringPublish {
 	public void setError(Error error) {
 		this.error = error;
 	}
-
-	public class GatheringResult {
+	
+	public class Result {
 
 		@SerializedName("protocol.version")
-		private String version;
-
+		private String version;	
+		
 		@SerializedName("event.id")
 		private String eventID;
-
+		
 		@SerializedName("proc.data")
 		private String procData;
-
-		@SerializedName("items")
-		private GatheringItems[] items;
 
 		public String getVersion() {
 			return version;
@@ -85,40 +83,6 @@ public class GatheringPublish {
 		public void setProcData(String procData) {
 			this.procData = procData;
 		}
-
-		public GatheringItems[] getItems() {
-			return items;
-		}
-
-		public void setItems(GatheringItems[] items) {
-			this.items = items;
-		}
-
-	}
-
-	public class GatheringItems {
-
-		@SerializedName("key")
-		private String key;
-
-		@SerializedName("value")
-		private String value;
-
-		public String getKey() {
-			return key;
-		}
-
-		public void setKey(String key) {
-			this.key = key;
-		}
-
-		public String getValue() {
-			return value;
-		}
-
-		public void setValue(String value) {
-			this.value = value;
-		}
-
+		
 	}
 }

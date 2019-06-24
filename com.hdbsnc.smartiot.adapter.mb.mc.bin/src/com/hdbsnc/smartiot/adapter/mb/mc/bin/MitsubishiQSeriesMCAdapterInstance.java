@@ -43,7 +43,8 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 	@Override
 	public void start(IAdapterContext ctx) throws Exception {
 		_log.info("start");
-
+		IAdapterInstanceManager aim = ctx.getAdapterInstanceManager();
+		
 		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
 
 		String userId = instanceInfo.getSelfId();
@@ -53,10 +54,10 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 		ISession session = ctx.getSessionManager().certificate(did, userId, upass);
 
 		RootHandler root = this._processor.getRootHandler();
-		manager = new DynamicHandlerManager(root, _em, did, session.getSessionKey(),_log);
-		
-		IAdapterInstanceManager aim = ctx.getAdapterInstanceManager();
 		String sid = session.getSessionKey();
+
+		manager = new DynamicHandlerManager(root, aim, _em, did, sid, _log);
+		
 		
 		//멜섹 프로토콜 핸들러를 동적으로 생성한다
 		root.putHandler("create/mb/melsec", new CreateDynamicHandler("handler", 3000, sid, manager, aim, _log));
