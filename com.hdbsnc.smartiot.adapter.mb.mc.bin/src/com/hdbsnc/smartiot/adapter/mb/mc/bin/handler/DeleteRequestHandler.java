@@ -1,7 +1,7 @@
 
-package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler;
+package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DeleteHandler;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IDeletePolling;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
@@ -14,13 +14,13 @@ import com.hdbsnc.smartiot.util.logger.Log;
  * 생성정보는 [PLC 수집시작 프로토콜] 명세서를 따른다.
  * 생성이 정상적으로 되었을 경우 RES 한다.
  */
-public class DeleteDynamicHandler extends AbstractTransactionTimeoutFunctionHandler {
+public class DeleteRequestHandler extends AbstractTransactionTimeoutFunctionHandler {
 
-	private DeleteHandler _manager;
+	private IDeletePolling _manager;
 	private IAdapterInstanceManager _aim;
 	private Log _log;
 	
-	public DeleteDynamicHandler(String name, long timeout, DeleteHandler manager, IAdapterInstanceManager aim, Log log) {
+	public DeleteRequestHandler(String name, long timeout, IDeletePolling manager, IAdapterInstanceManager aim, Log log) {
 		super(name, timeout);
 		
 		_manager = manager;

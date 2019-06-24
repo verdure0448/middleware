@@ -1,7 +1,7 @@
-package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler;
+package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DeleteHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.StatusHandler;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IDeletePolling;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IRunningStatus;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
@@ -12,13 +12,13 @@ import com.hdbsnc.smartiot.util.logger.Log;
  * @author user
  * 동적생성된 핸들러의 상태를 반환한다.
  */
-public class StatusDynamicHandler extends AbstractTransactionTimeoutFunctionHandler {
+public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctionHandler {
 
-	private StatusHandler _manager;
+	private IRunningStatus _manager;
 	private IAdapterInstanceManager _aim;
 	private Log _log;
 	
-	public StatusDynamicHandler(String name, long timeout, StatusHandler manager, IAdapterInstanceManager aim, Log log) {
+	public RunningStatusCheckHandler(String name, long timeout, IRunningStatus manager, IAdapterInstanceManager aim, Log log) {
 		super(name, timeout);
 		
 		_manager = manager;

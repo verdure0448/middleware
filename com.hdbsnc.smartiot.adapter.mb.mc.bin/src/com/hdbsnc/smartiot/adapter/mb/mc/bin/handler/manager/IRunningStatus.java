@@ -1,10 +1,10 @@
-package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager;
+package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager;
 
 /**
  * @author dbkim
  * 핸들러의 상태를 확인한다.
  */
-public interface StatusHandler {
+public interface IRunningStatus {
 	
 	
 	/**

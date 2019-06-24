@@ -1,10 +1,10 @@
 
-package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler;
+package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 
 import com.google.gson.Gson;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.CreateHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.CreateHandler.HandlerType;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DynamicHandlerManager;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.DynamicHandlerManager;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling.HandlerType;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest.Items;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
@@ -20,15 +20,15 @@ import com.hdbsnc.smartiot.util.logger.Log;
  * 생성정보는 [PLC 수집시작 프로토콜] 명세서를 따른다.
  * 생성이 정상적으로 되었을 경우 RES 한다.
  */
-public class CreateDynamicHandler extends AbstractTransactionTimeoutFunctionHandler {
+public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHandler {
 	
-	private CreateHandler _manager;
+	private ICreatePolling _manager;
 	private IAdapterInstanceManager _aim;
 	private Log _log;
 	private String _sid;
 	private Gson _gson;
 	
-	public CreateDynamicHandler(String name, long timeout, String sid, DynamicHandlerManager manager, IAdapterInstanceManager aim, Log log) {
+	public CreateRequestHandler(String name, long timeout, String sid, DynamicHandlerManager manager, IAdapterInstanceManager aim, Log log) {
 		super(name, timeout);
 		
 		_manager = manager;

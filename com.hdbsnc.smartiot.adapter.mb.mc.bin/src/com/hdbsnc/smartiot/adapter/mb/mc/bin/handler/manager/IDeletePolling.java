@@ -1,4 +1,4 @@
-package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager;
+package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager;
 
 import java.io.IOException;
 
@@ -6,7 +6,7 @@ import java.io.IOException;
  * @author dbkim
  * 생성된 핸들러를 삭제한다.
  */
-public interface DeleteHandler {
+public interface IDeletePolling {
 
 	/**
 	 * 등록된 핸들러의 PATH를 삭제 한다.

@@ -1,11 +1,11 @@
-package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager;
+package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 
 /**
  * @author dbkim 핸들러를 동적 생성 한다.
  */
-public interface CreateHandler {
+public interface ICreatePolling {
 
 	public enum HandlerType {
 		// MC Protocol 3E프레임 일괄읽기 핸들러
