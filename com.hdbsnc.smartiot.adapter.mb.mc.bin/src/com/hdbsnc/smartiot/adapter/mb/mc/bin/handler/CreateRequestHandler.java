@@ -21,8 +21,8 @@ import com.hdbsnc.smartiot.util.logger.Log;
  */
 public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHandler {
 	
-	private static final String ADAPTER_HANDLER_TARGET_ID = "test";
-	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "test";
+	private static final String ADAPTER_HANDLER_TARGET_ID = "zeromq.1";
+	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "zmq/res";
 	
 	private ICreatePolling _manager;
 	private IAdapterInstanceManager _aim;
@@ -39,6 +39,7 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		_sid = sid;
 		 _gson = new Gson();
 	}
+	
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 //		{"jsonrpc":"2.0","method":"start","id":"1","param":{"protocol.version":"1.0","event.id":"event1","plc.ip":"127.0.0.1","plc.port":"8192","polling.period":"3","items":[{"key":"lot","device.code":"D*","device.num":"10000","device.score":"4"},{"key":"quality","device.code":"D*","device.num":"10004","device.score":"1"}]}}
@@ -54,7 +55,7 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 			sId = req.getId();
 						
 			String protocolVerion = req.getParam().getVersion();
-			if(Util.PROTOCOL_VERSION.equals(protocolVerion)) {
+			if(!Util.PROTOCOL_VERSION.equals(protocolVerion)) {
 				throw new Exception("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
 			}
 			
@@ -76,9 +77,8 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 
 		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sResContents);
 		outboundCtx.dispose();
-
 	}
-	
+	 
 	@Override
 	public void rejectionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 		outboundCtx.getPaths().add("nack");

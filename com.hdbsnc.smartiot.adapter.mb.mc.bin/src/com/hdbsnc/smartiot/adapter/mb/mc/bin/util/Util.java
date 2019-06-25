@@ -1,5 +1,6 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.util;
 
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -21,7 +22,7 @@ import com.hdbsnc.smartiot.common.context.impl.InnerContext;
 public class Util {
 
 	//성공 시 
-	public final static String PROTOCOL_VERSION = "1.0";
+	public final static String PROTOCOL_VERSION = "0.1.3";
 	public final static String JSON_RPC_VERSION= "2.0";
 	
 	public final static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS");
@@ -36,6 +37,7 @@ public class Util {
 		request.setSid(sid);
 		request.setTid(tid);
 		request.setPaths(Arrays.asList(path.split("/")));
+		request.setContent(ByteBuffer.wrap(contents.getBytes()));
 		aim.handOverContext(request, null);	
 	}
 	
@@ -61,7 +63,7 @@ public class Util {
 		GatheringPublish.Items[] itemArray = new GatheringPublish.Items[plcData.size()];
 		
 		int idx = 0;
-		Iterator it = (Iterator) plcData.keySet();
+		Iterator it = (Iterator) plcData.keySet().iterator();
 		String sKey, sValue;
 		while(it.hasNext()) {
 			sKey = (String) it.next();
@@ -283,7 +285,7 @@ public class Util {
 
 		StatusResponse.Status[] statusArray = new StatusResponse.Status[statusMap.size()]; 
 		
-		Iterator it = (Iterator) statusMap.keySet();
+		Iterator it = (Iterator) statusMap.keySet().iterator();
 		String key;
 		int idx = 0;
 		StartRequest.Param param;

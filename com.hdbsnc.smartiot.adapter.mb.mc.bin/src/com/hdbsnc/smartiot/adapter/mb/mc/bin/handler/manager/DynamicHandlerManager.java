@@ -92,6 +92,10 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 
 	private boolean isConnection(String sIP, int iPort) {
 
+		if(_apiMap.size()==0) {
+			return false;
+		}
+		
 		Iterator it = (Iterator) _apiMap.keySet();
 		String key;
 		MitsubishiQSeriesApi api;
@@ -208,7 +212,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	private String getHandlerName(String path) {
 
 		int length = path.split("/").length;
-		String result = path.split("/")[length];
+		String result = path.split("/")[length-1];
 
 		return result;
 	}
@@ -218,7 +222,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 
 		for (int i = 0; i < path.split("/").length - 1; i++) {
 			if (i != 0) {
-				result = "/";
+				result += "/";
 			}
 			result += path.split("/")[i];
 		}

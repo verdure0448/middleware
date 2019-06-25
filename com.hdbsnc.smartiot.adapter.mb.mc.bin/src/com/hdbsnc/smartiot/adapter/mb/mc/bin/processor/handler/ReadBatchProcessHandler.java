@@ -1,17 +1,18 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.GatheringPublish.Items;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
+import com.hdbsnc.smartiot.common.otp.url.parser.UrlParser;
 import com.hdbsnc.smartiot.util.logger.Log;
 
 /**
@@ -21,7 +22,7 @@ import com.hdbsnc.smartiot.util.logger.Log;
 public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionHandler{
 
 	private static final String ADAPTER_HANDLER_TARGET_ID = "test";
-	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "test";
+	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "zeromq.1";
 	
 	private MitsubishiQSeriesApi _api;
 	private StartRequest _startRequest;
@@ -87,7 +88,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 			sContents = Util.makeFailPublishJson(sId, "-1", e.getMessage());			
 		}
 		
-		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
+//		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
 		outboundCtx.dispose();
 	}
 
@@ -120,7 +121,17 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 	
 	@Override
 	public void rejectionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
-		// TODO Auto-generated method stub
-		
+
+		outboundCtx.getPaths().add("nack");
+		outboundCtx.setSID(inboundCtx.getSID());
+		outboundCtx.setSPort(inboundCtx.getSPort());
+		outboundCtx.setTID(inboundCtx.getTID());
+		outboundCtx.setTPort(inboundCtx.getTPort());
+		outboundCtx.getParams().put("code", "W9001");
+		outboundCtx.getParams().put("type", "warn");
+		outboundCtx.getParams().put("msg", "트랜젝션이 잠겨 있습니다.(다른 request가 선행 호출되어 있을 수 있습니다.)");
+		outboundCtx.setTransmission("res");		
+
+		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));		
 	}
 }

@@ -40,6 +40,7 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 		
 		System.out.println("DELETE DYNAMIC HANDLER");
 	}
+	
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 //		StopALL JSON		
@@ -52,7 +53,7 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 			sId = req.getId();
 			
 			String protocolVerion = req.getParam().getVersion();
-			if(Util.PROTOCOL_VERSION.equals(protocolVerion)) {
+			if(!Util.PROTOCOL_VERSION.equals(protocolVerion)) {
 				throw new Exception("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
 			}
 			
