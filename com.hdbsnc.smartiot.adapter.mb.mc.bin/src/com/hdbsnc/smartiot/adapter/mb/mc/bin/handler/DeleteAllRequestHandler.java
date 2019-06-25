@@ -50,6 +50,12 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 			String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 			StopAllRequest req = _gson.fromJson(jsonContents, StopAllRequest.class);
 			sId = req.getId();
+			
+			String protocolVerion = req.getParam().getVersion();
+			if(Util.PROTOCOL_VERSION.equals(protocolVerion)) {
+				throw new Exception("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
+			}
+			
 			String[] eventIdArray = _manager.deleteAll();
 
 			//정상 Start 후 응답

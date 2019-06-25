@@ -37,8 +37,6 @@ public class DeleteRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		_log = log.logger(this.getClass());
 		_sid = sid;
 		 _gson = new Gson();
-		
-		System.out.println("DELETE DYNAMIC HANDLER");
 	}
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
@@ -49,9 +47,15 @@ public class DeleteRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		try {
 			String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 			StopRequest req = _gson.fromJson(jsonContents, StopRequest.class);
+			sId = req.getId();
+			
+			String protocolVerion = req.getParam().getVersion();
+			if(Util.PROTOCOL_VERSION.equals(protocolVerion)) {
+				throw new Exception("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
+			}
+			
 			String sPath = makePath(req);
 			String sEventId = req.getParam().getEventID();
-			sId = req.getId();
 	
 			_manager.delete(sPath);
 

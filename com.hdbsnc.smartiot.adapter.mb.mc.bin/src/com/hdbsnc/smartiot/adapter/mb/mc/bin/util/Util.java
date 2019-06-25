@@ -10,7 +10,9 @@ import java.util.TimeZone;
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.GatheringPublish;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.ResError;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartResponse;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StatusResponse;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopAllResponse;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopResponse;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
@@ -56,7 +58,7 @@ public class Util {
 		pubResult.setEventID(eventId);
 		pubResult.setProcData(sdf.format(new Date(System.currentTimeMillis())));
 
-		GatheringPublish.Items[] items = new GatheringPublish.Items[plcData.size()];
+		GatheringPublish.Items[] itemArray = new GatheringPublish.Items[plcData.size()];
 		
 		int idx = 0;
 		Iterator it = (Iterator) plcData.keySet();
@@ -65,14 +67,14 @@ public class Util {
 			sKey = (String) it.next();
 			sValue = plcData.get(sKey);
 			
-			items[idx] = pub.new Items();
-			items[idx].setKey(sKey);
-			items[idx].setValue(sValue);
+			itemArray[idx] = pub.new Items();
+			itemArray[idx].setKey(sKey);
+			itemArray[idx].setValue(sValue);
 			
 			idx ++;
 		}
 
-		pubResult.setItems(items);
+		pubResult.setItems(itemArray);
 		pub.setResult(pubResult);
 		
 		result = (new Gson()).toJson(pub)+"\r\n";
@@ -221,16 +223,16 @@ public class Util {
 		StopAllResponse.Result stopAllResult = stopAllRes.new Result();
 		stopAllResult.setVersion(PROTOCOL_VERSION);
 		
-		StopAllResponse.StopAll[] stopList = new StopAllResponse.StopAll[eventIdArray.length];
+		StopAllResponse.StopAll[] stopArray = new StopAllResponse.StopAll[eventIdArray.length];
 		
 		for(int i=0; i<eventIdArray.length; i++){
-			stopList[i] = stopAllRes.new StopAll();
-			stopList[i].setEventId(eventIdArray[i]);
-			stopList[i].setProcDate(sdf.format(new Date(System.currentTimeMillis())));
+			stopArray[i] = stopAllRes.new StopAll();
+			stopArray[i].setEventId(eventIdArray[i]);
+			stopArray[i].setProcDate(sdf.format(new Date(System.currentTimeMillis())));
 		}
 		
 		
-		stopAllResult.setStopAll(stopList);
+		stopAllResult.setStopAll(stopArray);
 		stopAllRes.setResult(stopAllResult);
 
 		result = (new Gson()).toJson(stopAllRes)+"\r\n";
@@ -261,4 +263,74 @@ public class Util {
 		result = (new Gson()).toJson(stopAllRes)+"\r\n";
 		return result;
 	}
-}
+
+	/**
+	 * [PLC 수집 조회 프로토콜] 성공시 JSON PROTOCOL을 만들어준다.
+	 * @param id
+	 * @param statusMap
+	 * @return
+	 */
+	public static String makeSuccessStatusResponseJson(String id, Map statusMap) {
+		
+		String result;
+		
+		StatusResponse statusRes = new StatusResponse();
+		statusRes.setJsonrpc(JSON_RPC_VERSION);
+		statusRes.setId(id);
+		
+		StatusResponse.Result statusResult = statusRes.new Result();
+		statusResult.setVersion(PROTOCOL_VERSION);
+
+		StatusResponse.Status[] statusArray = new StatusResponse.Status[statusMap.size()]; 
+		
+		Iterator it = (Iterator) statusMap.keySet();
+		String key;
+		int idx = 0;
+		StartRequest.Param param;
+		while(it.hasNext()) {
+			key = (String) it.next();
+
+			param = (StartRequest.Param) statusMap.get(key);
+			
+			statusArray[idx] = statusRes.new Status();
+			statusArray[idx].setEventID(param.getEventID());
+			statusArray[idx].setPlcIp(param.getPlcIp());
+			statusArray[idx].setPlcPort(param.getPlcPort());
+			statusArray[idx].setPollingPeriod(param.getPollingPeriod());
+			
+			idx++;
+		}
+		
+		statusResult.setStatus(statusArray);
+		statusRes.setResult(statusResult);
+
+		result = (new Gson()).toJson(statusRes)+"\r\n";
+		return result;
+	}
+	
+	/**
+	 * [PLC 수집 조회 프로토콜] 실패시 JSON PROTOCOL을 만들어 준다.
+	 * @param id
+	 * @param errorCode
+	 * @param errorMsg
+	 * @return
+	 */
+	public static String makeFailStatusResponseJson(String id, String errorCode, String errorMsg) {
+		
+		String result;
+		
+		StatusResponse statusRes = new StatusResponse();
+		statusRes.setJsonrpc(JSON_RPC_VERSION);
+		statusRes.setId(id);
+		
+		ResError stopAllerror = new ResError();
+		stopAllerror.setCode(errorCode);
+		stopAllerror.setMessage(errorMsg);
+		
+		statusRes.setError(stopAllerror);
+
+		result = (new Gson()).toJson(statusRes)+"\r\n";
+		return result;
+
+	}
+}	

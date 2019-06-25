@@ -27,6 +27,8 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	// 이벤트 매니저의 키를 저장
 	private List<String> _emKeyList;
 	private Map<String, MitsubishiQSeriesApi> _apiMap;
+	
+	private Map<String, StartRequest.Param> _status;
 
 	private IEventManager _em;
 	private RootHandler _root;
@@ -45,6 +47,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		_handlerMap = new Hashtable<String, AbstractTransactionTimeoutFunctionHandler>();
 		_apiMap = new Hashtable<String, MitsubishiQSeriesApi>();
 		_emKeyList = new ArrayList<>();
+		_status = new Hashtable<String, StartRequest.Param>();
 
 		_em = em;
 		_aim = aim;
@@ -82,6 +85,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		}
 
 		startPolling(sEemKey, pollingIntervalSec);
+		_status.put(sEemKey, startRequest.getParam());
 
 		_root.printString();
 	}
@@ -104,8 +108,8 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public void statusAll() {
-
+	public Map statusAll() {
+		return _status;
 	}
 
 	@Override
@@ -134,7 +138,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	@Override
 	public String[] deleteAll() throws IOException {
 		
-		List eventIdList = new ArrayList();
+		List<String> eventIdList = new ArrayList<String>();
 		String eventId;
 		
 		// 키가 존재
@@ -174,9 +178,11 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			eventId = _emKeyList.get(i).split("/")[3];
 			eventIdList.add(eventId);
 		}
+		
 		_emKeyList.clear();
 		_handlerMap.clear();
 		_apiMap.clear();
+		_status.clear();
 		
 		return (String[]) eventIdList.toArray();
 	}
@@ -193,6 +199,9 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			_em.removePollingAdapterProcessorEvent(emKey);
 
 			_log.info("[EventManager] : " + emKey + " 해제");
+			
+			//[PLC 수집 조회 프로토콜]에서 제외 되므로 삭제
+			_status.remove(emKey);
 		}
 	}
 
