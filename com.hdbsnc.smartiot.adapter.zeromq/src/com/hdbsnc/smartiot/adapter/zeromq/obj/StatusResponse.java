@@ -14,7 +14,7 @@ public class StatusResponse {
 	private Result result;
 	
 	@SerializedName("erroe")
-	private Error error;
+	private ResError error;
 
 	
 	public String getJsonrpc() {
@@ -41,11 +41,11 @@ public class StatusResponse {
 		this.result = result;
 	}
 
-	public Error getError() {
+	public ResError getError() {
 		return error;
 	}
 
-	public void setError(Error error) {
+	public void setError(ResError error) {
 		this.error = error;
 	}
 	

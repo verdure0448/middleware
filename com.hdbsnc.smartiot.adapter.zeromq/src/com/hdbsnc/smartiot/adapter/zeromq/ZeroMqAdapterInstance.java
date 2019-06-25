@@ -34,7 +34,7 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 	private ICommonService service;
 	private Log log;
 	private ZeroMqAdapterProcessor processor = null;
-	
+
 	// private IEventManager em;
 	// private IProfileManager pm;
 
@@ -71,9 +71,17 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		IAdapterInstanceManager aim = ctx.getAdapterInstanceManager();
 		
 		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
-//		String ip = instanceInfo.getIp();
-//		int port = Integer.parseInt(instanceInfo.getPort());
-
+		String ip = instanceInfo.getIp();
+		//int port = Integer.parseInt(instanceInfo.getPort());
+		
+		// ","구분자로 Rep 포트와 Pub포트 정의
+		String sPort = instanceInfo.getPort();
+		String[] ports = sPort.split(",");
+		if(ports.length != 2) {
+			log.err("ZQM 포트 설정 오류.");
+			throw service.getExceptionfactory().createAppException(this.getClass().getName() + ":001", new String[] {sPort});
+		}
+		
 		String userId = instanceInfo.getSelfId();
 		String upass = instanceInfo.getSelfPw();
 		String defaultDid = instanceInfo.getDefaultDevId();
@@ -82,8 +90,8 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		RootHandler root = this.processor.getRootHandler();
 
-		root.putHandler("zmq", new RepHandler("req", aim, 1000, zmqRep));
-		root.putHandler("zmq", new PubHandler("pub", 1000, zmqPub));
+		root.putHandler("zmq", new RepHandler("req", aim, 1000, zmqRep, log));
+		root.putHandler("zmq", new PubHandler("pub", 1000, zmqPub, log));
 		
 		////////////////////////////////////////////////////////////////////////////////////
 		// [PLC 수집 시작 명령 프로토콜]
@@ -93,8 +101,8 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		// EX) 수집 시작 명령 REQ 동작 중 수집명령 REQ가 날아올 수 있지만 나머지 위 3개 명령은 그런 확률이 거이 없음.
 		////////////////////////////////////////////////////////////////////////////////////
 
-		zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://*:5555");
-		zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://*:5556");
+		zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://" + ip + ":" + ports[0]);
+		zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://" + ip + ":" + ports[1]);
 
 		ZeromqApi.IEvent repEvent = new ZeromqApi.IEvent() {
 
@@ -146,7 +154,7 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 	public void stop(IAdapterContext ctx) throws Exception {
 
 		log.info("stop");
-		
+
 		// 컨슈머 해제
 //		for (String emKey : emKeyList) {
 //			if (em.containPollingAdapterProcessor(emKey)) {
@@ -165,7 +173,6 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		emKeyList.clear();
 		plcProcessHandlerList.clear();
 
-		
 		// ZMQ 중지
 		if (this.zmqRep != null) {
 			try {
