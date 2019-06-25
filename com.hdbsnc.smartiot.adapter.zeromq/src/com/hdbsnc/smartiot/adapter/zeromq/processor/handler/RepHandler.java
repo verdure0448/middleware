@@ -43,7 +43,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 		
 		JsonParser parser = new JsonParser();
 		JsonObject jsonObj = parser.parse(content).getAsJsonObject();
-		String method = jsonObj.get("").getAsString();
+		String method = jsonObj.get("method").getAsString();
 				
 		Gson gson = new Gson();
 		
@@ -93,7 +93,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 	
 
 		try {
-			aim.handOverContext(ICtx, new RepCallback(zmqApi));
+			aim.handOverContext(ICtx, new RepCallback(zmqApi, log));
 		} catch (Exception e) {
 			// 로그 출력
 			log.err(e);
