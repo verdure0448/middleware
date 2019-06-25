@@ -47,6 +47,8 @@ public class PubHandler extends AbstractTransactionTimeoutFunctionHandler {
 		// PUB으로 데이터 브로드캐스팅
 		////////////////////////////////////////////////////////////////////////////////////
 		this.zmqApi.publish(publish.getResult().getEventID().getBytes("UTF-8"), content.getBytes("UTF-8"));
+		
+		outboundCtx.dispose();
 	}
 
 	@Override

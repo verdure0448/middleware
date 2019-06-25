@@ -21,8 +21,8 @@ import com.hdbsnc.smartiot.util.logger.Log;
  */
 public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionHandler{
 
-	private static final String ADAPTER_HANDLER_TARGET_ID = "test";
-	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "zeromq.1";
+	private static final String ADAPTER_HANDLER_TARGET_ID = "zeromq.1";
+	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "zmq/pub";
 	
 	private MitsubishiQSeriesApi _api;
 	private StartRequest _startRequest;
@@ -88,7 +88,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 			sContents = Util.makeFailPublishJson(sId, "-1", e.getMessage());			
 		}
 		
-//		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
+		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
 		outboundCtx.dispose();
 	}
 

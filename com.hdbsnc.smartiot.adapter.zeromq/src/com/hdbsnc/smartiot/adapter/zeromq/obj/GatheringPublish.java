@@ -50,8 +50,6 @@ public class GatheringPublish {
 		this.error = error;
 	}
 
-
-
 	public class Result {
 
 		@SerializedName("protocol.version")
@@ -64,7 +62,7 @@ public class GatheringPublish {
 		private String procData;
 
 		@SerializedName("items")
-		private Items items;
+		private Items[] items;
 
 		public String getVersion() {
 			return version;
@@ -90,11 +88,11 @@ public class GatheringPublish {
 			this.procData = procData;
 		}
 
-		public Items getItems() {
+		public Items[] getItems() {
 			return items;
 		}
 
-		public void setItems(Items items) {
+		public void setItems(Items[] items) {
 			this.items = items;
 		}
 
