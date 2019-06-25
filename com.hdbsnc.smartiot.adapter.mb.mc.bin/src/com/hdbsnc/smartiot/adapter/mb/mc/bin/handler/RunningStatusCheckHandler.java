@@ -1,6 +1,5 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IDeletePolling;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IRunningStatus;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;

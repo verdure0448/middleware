@@ -4,7 +4,6 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IDeletePolling;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopAllRequest;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;

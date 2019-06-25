@@ -8,7 +8,6 @@ import com.hdbsnc.smartiot.common.context.handler.IElementHandler;
 import com.hdbsnc.smartiot.common.context.handler.exception.ContextHandlerUnimplementedFunctionException;
 import com.hdbsnc.smartiot.common.context.handler2.IFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
-import com.hdbsnc.smartiot.common.ism.IIntegratedSessionManager;
 import com.hdbsnc.smartiot.common.otp.url.parser.UrlParser;
 import com.hdbsnc.smartiot.pdm.ap.instance.AbstractAdapterInstanceProcessor;
 

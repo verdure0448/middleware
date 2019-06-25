@@ -104,7 +104,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public void status() {
+	public void statusAll() {
 
 	}
 

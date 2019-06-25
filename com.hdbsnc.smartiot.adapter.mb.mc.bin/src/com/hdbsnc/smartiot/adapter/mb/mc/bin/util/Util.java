@@ -14,6 +14,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartResponse;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopAllResponse;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopResponse;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
+import com.hdbsnc.smartiot.common.context.impl.InnerContext;
 
 public class Util {
 
@@ -30,9 +31,9 @@ public class Util {
 	public synchronized static void callHandler(IAdapterInstanceManager aim, String path, String sid, String tid, String contents) throws Exception {
 
 		InnerContext request = new InnerContext();
-		request.sid = sid;
-		request.tid = tid;
-		request.paths = Arrays.asList(path.split("/"));
+		request.setSid(sid);
+		request.setTid(tid);
+		request.setPaths(Arrays.asList(path.split("/")));
 		aim.handOverContext(request, null);	
 	}
 	

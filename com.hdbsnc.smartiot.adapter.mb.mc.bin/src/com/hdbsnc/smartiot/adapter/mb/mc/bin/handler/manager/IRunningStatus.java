@@ -6,10 +6,9 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager;
  */
 public interface IRunningStatus {
 	
-	
 	/**
-	 * 지정된 핸들러의 상태를 불러온다 
+	 * 핸들러의 모든 상태를 불러온다.
 	 */
-	public void status();
+	public void statusAll();
 
 }
