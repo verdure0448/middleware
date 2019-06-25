@@ -2,7 +2,7 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Error {
+public class ResError {
 
 	@SerializedName("code")
 	private String code;

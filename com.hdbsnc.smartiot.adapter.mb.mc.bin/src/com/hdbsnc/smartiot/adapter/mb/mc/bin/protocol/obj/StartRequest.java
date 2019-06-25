@@ -2,43 +2,10 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj;
 
 import com.google.gson.annotations.SerializedName;
 
-public class StartRequest {
-	
-	@SerializedName("jsonrpc")
-	private String jsonrpc;
-	
-	@SerializedName("method")
-	private String method;
-	
-	@SerializedName("id")
-	private String id;
-	
+public class StartRequest extends CommonRequest {
+
 	@SerializedName("param")
 	private Param param;
-
-	public String getJsonrpc() {
-		return jsonrpc;
-	}
-
-	public void setJsonrpc(String jsonrpc) {
-		this.jsonrpc = jsonrpc;
-	}
-
-	public String getMethod() {
-		return method;
-	}
-
-	public void setMethod(String method) {
-		this.method = method;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public Param getParam() {
 		return param;
@@ -46,19 +13,19 @@ public class StartRequest {
 
 	public void setParam(Param param) {
 		this.param = param;
-	}	
-	
+	}
+
 	public class Items {
-		
+
 		@SerializedName("key")
-		private String key;	
-		
+		private String key;
+
 		@SerializedName("device.code")
 		private String deviceCode;
-		
+
 		@SerializedName("device.num")
 		private String deviceNum;
-		
+
 		@SerializedName("device.score")
 		private String deviceScore;
 
@@ -77,7 +44,7 @@ public class StartRequest {
 		public void setDeviceCode(String deviceCode) {
 			this.deviceCode = deviceCode;
 		}
-	 
+
 		public String getDeviceNum() {
 			return deviceNum;
 		}
@@ -94,24 +61,24 @@ public class StartRequest {
 			this.deviceScore = deviceScore;
 		}
 	}
-	
+
 	public class Param {
-		
+
 		@SerializedName("protocol.version")
-		private String version;	
-		
+		private String version;
+
 		@SerializedName("event.id")
 		private String eventID;
-		
+
 		@SerializedName("plc.ip")
 		private String plcIp;
-		
+
 		@SerializedName("plc.port")
 		private String plcPort;
-		
+
 		@SerializedName("polling.period")
 		private String pollingPeriod;
-		
+
 		@SerializedName("items")
 		private Items[] items;
 
@@ -162,6 +129,6 @@ public class StartRequest {
 		public void setItems(Items[] items) {
 			this.items = items;
 		}
-		
+
 	}
 }

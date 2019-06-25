@@ -2,35 +2,12 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj;
 
 import com.google.gson.annotations.SerializedName;
 
-public class StartResponse {
+public class StartResponse extends CommonResponse {
 
-	@SerializedName("jsonrpc")
-	private String jsonrpc;
-
-	@SerializedName("id")
-	private String id;
 
 	@SerializedName("result")
 	private Result result;
 
-	@SerializedName("erroe")
-	private Error error;
-
-	public String getJsonrpc() {
-		return jsonrpc;
-	}
-
-	public void setJsonrpc(String jsonrpc) {
-		this.jsonrpc = jsonrpc;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public Result getResult() {
 		return result;
@@ -40,13 +17,6 @@ public class StartResponse {
 		this.result = result;
 	}
 
-	public Error getError() {
-		return error;
-	}
-
-	public void setError(Error error) {
-		this.error = error;
-	}
 
 	public class Result {
 

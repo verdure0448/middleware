@@ -15,6 +15,8 @@ public interface IDeletePolling {
 	public void delete(String path) throws IOException;
 	/**
 	 * 등록된 핸들러를 전부 삭제 한다.
+	 * @return
+	 * @throws IOException
 	 */
-	public void deleteAll() throws IOException;
+	public String[] deleteAll() throws IOException;
 }

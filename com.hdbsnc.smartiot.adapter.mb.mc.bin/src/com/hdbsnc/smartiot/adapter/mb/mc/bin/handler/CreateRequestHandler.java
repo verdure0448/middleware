@@ -3,24 +3,26 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.DynamicHandlerManager;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling.HandlerType;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest.Items;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
+import com.hdbsnc.smartiot.common.otp.url.parser.UrlParser;
 import com.hdbsnc.smartiot.util.logger.Log;
 
 /**
  * @author dbkim
- * 핸들러를 동적으로 생성 및 종료 한다.
+ * 핸들러를 생성 한다.
  * 생성정보는 [PLC 수집시작 프로토콜] 명세서를 따른다.
- * 생성이 정상적으로 되었을 경우 RES 한다.
+ * 생성 후 결과에 대한 RES를 전달한다.
  */
 public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHandler {
+	
+	private static final String ADAPTER_HANDLER_TARGET_ID = "test";
+	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "test";
 	
 	private ICreatePolling _manager;
 	private IAdapterInstanceManager _aim;
@@ -28,7 +30,7 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 	private String _sid;
 	private Gson _gson;
 	
-	public CreateRequestHandler(String name, long timeout, String sid, DynamicHandlerManager manager, IAdapterInstanceManager aim, Log log) {
+	public CreateRequestHandler(String name, long timeout, String sid, ICreatePolling manager, IAdapterInstanceManager aim, Log log) {
 		super(name, timeout);
 		
 		_manager = manager;
@@ -46,49 +48,63 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		//호출한 상대의 tid 및 path를 가지고 옴 
 		//호출자의 tid 및 path인지 확인필요
 		//호출자의 tid 및 path가 아니라면 아래 주석 과정 수행
-		String sReqTid = inboundCtx.getTID();
-		String sReqPath = inboundCtx.getFullPath();
 		String sId = null;
-		String sEventId = null;
 		String sResContents = null;
 		try {
 			String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 			StartRequest req = _gson.fromJson(jsonContents, StartRequest.class);
+			String sPath = makePath(req);
+			String sEventId = req.getParam().getEventID();
 			sId = req.getId();
-			sEventId = req.getParam().getEventID();
-			//경로를 만들어 준다.
-			//read/polling/프로토콜id/프로토콜event.id
-			StringBuffer sbPath = new StringBuffer();
-			sbPath.append("read/");
-			sbPath.append("polling/");
-			sbPath.append(req.getId());
-			sbPath.append("/");
-			sbPath.append(req.getParam().getEventID());
-			
-			String path = sbPath.toString();
 	
 			int iPollingIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod());
 			String sIP = req.getParam().getPlcIp();
 			int iPort = Integer.parseInt(req.getParam().getPlcPort());
 			
-			_manager.start(HandlerType.READ_BATCH_PROCESS_HANDLER, path, sIP, iPort, iPollingIntervalSec, req);
+			_manager.start(HandlerType.READ_BATCH_PROCESS_HANDLER, sPath, sIP, iPort, iPollingIntervalSec, req);
 
 			//정상 Start 후 응답
-			sResContents = Util.makeSucessStartResponseJson(sId, sEventId);
+			sResContents = Util.makeSuccessStartResponseJson(sId, sEventId);
 		}catch(Exception e) {
 			//비정상 Start 후 응답
-			sResContents = Util.makeFailStartResponseJson(sId, sEventId, "-1", e.getMessage());
-		
+			sResContents = Util.makeFailStartResponseJson(sId, "-1", e.getMessage());
 		}
-		
-		Util.callHandler(_aim, sReqPath, _sid, sReqTid, sResContents);
+
+		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sResContents);
 		outboundCtx.dispose();
 
 	}
-
+	
 	@Override
 	public void rejectionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
-		// TODO Auto-generated method stub
+		outboundCtx.getPaths().add("nack");
+		outboundCtx.setSID(inboundCtx.getSID());
+		outboundCtx.setSPort(inboundCtx.getSPort());
+		outboundCtx.setTID(inboundCtx.getTID());
+		outboundCtx.setTPort(inboundCtx.getTPort());
+		outboundCtx.getParams().put("code", "W9001");
+		outboundCtx.getParams().put("type", "warn");
+		outboundCtx.getParams().put("msg", "트랜젝션이 잠겨 있습니다.(다른 request가 선행 호출되어 있을 수 있습니다.)");
+		outboundCtx.setTransmission("res");		
+
+		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));		
+	}
+
+	/**
+	 * 생성할 핸들러의 경로를 만들어 준다.
+	 * 경로 : read/polling/프로토콜id/프로토콜event.id
+	 * @param req
+	 * @return
+	 */
+	private String makePath(StartRequest req) {
+
+		StringBuffer sbPath = new StringBuffer();
+		sbPath.append("read/");
+		sbPath.append("polling/");
+		sbPath.append(req.getId());
+		sbPath.append("/");
+		sbPath.append(req.getParam().getEventID());
 		
+		return sbPath.toString();
 	}
 }

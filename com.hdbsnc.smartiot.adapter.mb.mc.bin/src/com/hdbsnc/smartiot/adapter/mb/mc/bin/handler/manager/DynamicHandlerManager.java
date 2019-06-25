@@ -132,8 +132,11 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public void deleteAll() throws IOException {
-
+	public String[] deleteAll() throws IOException {
+		
+		List eventIdList = new ArrayList();
+		String eventId;
+		
 		// 키가 존재
 		Iterator it = (Iterator) _apiMap.keySet();
 		String path;
@@ -166,9 +169,16 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			_log.info("[Handler] : " + path + " 해제");
 		}
 
+		for(int i=0; i<_emKeyList.size(); i++) {
+			//read/polling/프로토콜id/프로토콜event.id
+			eventId = _emKeyList.get(i).split("/")[3];
+			eventIdList.add(eventId);
+		}
 		_emKeyList.clear();
 		_handlerMap.clear();
 		_apiMap.clear();
+		
+		return (String[]) eventIdList.toArray();
 	}
 
 	private void startPolling(String emKey, int intervalSec) {

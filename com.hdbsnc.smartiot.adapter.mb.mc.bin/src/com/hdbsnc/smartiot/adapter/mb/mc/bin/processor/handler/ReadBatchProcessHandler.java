@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.GatheringPublish.Items;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest.Items;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
@@ -84,7 +84,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 			}
 		} catch (Exception e) {
 			_log.err(e);
-			sContents = Util.makeFailPublishJson(sId, sEventId, "-1", e.getMessage());			
+			sContents = Util.makeFailPublishJson(sId, "-1", e.getMessage());			
 		}
 		
 		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
@@ -101,8 +101,8 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 		Map<String, String> result = new HashMap<String, String>();
 		String sRawData;
 		String sDevCode, sDevNum, sDevScore;
-		Items[] items = _startRequest.getParam().getItems();
-		Items item;
+		StartRequest.Items[] items = _startRequest.getParam().getItems();
+		StartRequest.Items item;
 
 		for (int i = 0; i < items.length; i++) {
 			item = items[i];

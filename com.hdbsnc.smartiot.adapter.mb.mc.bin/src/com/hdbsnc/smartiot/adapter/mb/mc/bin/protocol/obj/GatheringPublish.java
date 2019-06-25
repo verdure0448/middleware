@@ -11,11 +11,11 @@ public class GatheringPublish {
 	private String id;
 
 	@SerializedName("result")
-	private GatheringResult result;
+	private Result result;
 
-	@SerializedName("erroe")
-	private Error error;
-
+	@SerializedName("error")
+	private ResError error;
+	
 	public String getJsonrpc() {
 		return jsonrpc;
 	}
@@ -32,23 +32,25 @@ public class GatheringPublish {
 		this.id = id;
 	}
 
-	public GatheringResult getResult() {
+	public Result getResult() {
 		return result;
 	}
 
-	public void setResult(GatheringResult result) {
+	public void setResult(Result result) {
 		this.result = result;
 	}
+	
+	
 
-	public Error getError() {
+	public ResError getError() {
 		return error;
 	}
 
-	public void setError(Error error) {
+	public void setError(ResError error) {
 		this.error = error;
 	}
 
-	public class GatheringResult {
+	public class Result {
 
 		@SerializedName("protocol.version")
 		private String version;
@@ -60,7 +62,7 @@ public class GatheringPublish {
 		private String procData;
 
 		@SerializedName("items")
-		private GatheringItems[] items;
+		private Items[] items;
 
 		public String getVersion() {
 			return version;
@@ -86,17 +88,17 @@ public class GatheringPublish {
 			this.procData = procData;
 		}
 
-		public GatheringItems[] getItems() {
+		public Items[] getItems() {
 			return items;
 		}
 
-		public void setItems(GatheringItems[] items) {
+		public void setItems(Items[] items) {
 			this.items = items;
 		}
 
 	}
 
-	public class GatheringItems {
+	public class Items {
 
 		@SerializedName("key")
 		private String key;

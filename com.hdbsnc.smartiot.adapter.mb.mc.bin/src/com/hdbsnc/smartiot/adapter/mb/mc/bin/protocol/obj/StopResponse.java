@@ -2,36 +2,10 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj;
 
 import com.google.gson.annotations.SerializedName;
 
-public class StopResponse {
-	
-	@SerializedName("jsonrpc")
-	private String jsonrpc;
-	
-	@SerializedName("id")
-	private String id;
+public class StopResponse extends CommonResponse {
 
 	@SerializedName("result")
 	private Result result;
-	
-	@SerializedName("erroe")
-	private Error error;
-
-	
-	public String getJsonrpc() {
-		return jsonrpc;
-	}
-
-	public void setJsonrpc(String jsonrpc) {
-		this.jsonrpc = jsonrpc;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public Result getResult() {
 		return result;
@@ -41,22 +15,14 @@ public class StopResponse {
 		this.result = result;
 	}
 
-	public Error getError() {
-		return error;
-	}
-
-	public void setError(Error error) {
-		this.error = error;
-	}
-	
 	public class Result {
 
 		@SerializedName("protocol.version")
-		private String version;	
-		
+		private String version;
+
 		@SerializedName("event.id")
 		private String eventID;
-		
+
 		@SerializedName("proc.data")
 		private String procData;
 
@@ -83,6 +49,6 @@ public class StopResponse {
 		public void setProcData(String procData) {
 			this.procData = procData;
 		}
-		
+
 	}
 }
