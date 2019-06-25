@@ -130,13 +130,13 @@ public class ServerInstance implements Runnable, IServerInstance, IServiceManage
 			emSr = context.registerService(IEventManager.class.getName(), em, null);
 			rootLogger.info("05 module("+IEventManager.class.getName()+"): "+em.toString());
 			
-			tracker = new ServiceTracker(context, IEventContextManagerFactory.class.getName(), null);
-			tracker.open();
-			IEventContextManagerFactory ecmFactory = (IEventContextManagerFactory) tracker.waitForService(0);
-			tracker.close();
-			ecm = ecmFactory.createECM(commonService, this);
-			ecmSr = context.registerService(IEventContextManager.class.getName(), ecm, null);
-			rootLogger.info("06 module("+IEventContextManager.class.getName()+"): "+ecm.toString());
+//			tracker = new ServiceTracker(context, IEventContextManagerFactory.class.getName(), null);
+//			tracker.open();
+//			IEventContextManagerFactory ecmFactory = (IEventContextManagerFactory) tracker.waitForService(0);
+//			tracker.close();
+//			ecm = ecmFactory.createECM(commonService, this);
+//			ecmSr = context.registerService(IEventContextManager.class.getName(), ecm, null);
+//			rootLogger.info("06 module("+IEventContextManager.class.getName()+"): "+ecm.toString());
 			
 			//tracker = new ServiceTracker(context, ICommonExceptionFactory.class.getName(), null);
 			//tracker.open();
