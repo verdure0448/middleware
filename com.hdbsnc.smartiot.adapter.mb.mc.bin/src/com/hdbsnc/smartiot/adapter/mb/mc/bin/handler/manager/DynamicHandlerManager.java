@@ -2,17 +2,18 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.ReadBatchProcessHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
-import com.hdbsnc.smartiot.common.context.handler.IElementHandler;
 import com.hdbsnc.smartiot.common.context.handler.exception.ElementNotFoundException;
 import com.hdbsnc.smartiot.common.context.handler.exception.ElementNullOrEmptyPathException;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
@@ -28,9 +29,8 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	// 핸들러를 저장하기 위한 핸들러
 	private Map<String, AbstractTransactionTimeoutFunctionHandler> _handlerMap;
 	// 이벤트 매니저의 키를 저장
-	private List<String> _emKeyList;
+	private Set<String> _emKeySet;
 	private Map<String, MitsubishiQSeriesApi> _apiMap;
-	
 	private Map<String, StartRequest.Param> _status;
 
 	private IEventManager _em;
@@ -47,7 +47,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 
 		_handlerMap = new Hashtable<String, AbstractTransactionTimeoutFunctionHandler>();
 		_apiMap = new Hashtable<String, MitsubishiQSeriesApi>();
-		_emKeyList = new ArrayList<>();
+		_emKeySet = new HashSet<String>();
 		_status = new Hashtable<String, StartRequest.Param>();
 
 		_em = em;
@@ -123,7 +123,10 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	public void delete(String path) throws IOException, ElementNullOrEmptyPathException, ElementNotFoundException {
 		
 		if (_handlerMap.containsKey(path)) {
+			
 			_root.removeHandler(_handlerMap.get(path));
+			_root.unRegHandler(_handlerMap.get(path));
+			
 			_handlerMap.remove(path);
 			_log.info("[Handler] : " + path + " 해제");
 		}
@@ -165,8 +168,12 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		}
 
 		// 컨슈머 해제
-		for (String emKey : _emKeyList) {
+		for (String emKey : _emKeySet) {
 			stopPolling(emKey);
+			
+			//read/polling/프로토콜id/프로토콜event.id
+			eventId = emKey.split("/")[3];
+			eventIdList.add(eventId);
 		}
 
 		// 핸들러 해제
@@ -178,13 +185,8 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			_log.info("[Handler] : " + path + " 해제");
 		}
 
-		for(int i=0; i<_emKeyList.size(); i++) {
-			//read/polling/프로토콜id/프로토콜event.id
-			eventId = _emKeyList.get(i).split("/")[3];
-			eventIdList.add(eventId);
-		}
 		
-		_emKeyList.clear();
+		_emKeySet.clear();
 		_handlerMap.clear();
 		_apiMap.clear();
 		_status.clear();
@@ -193,7 +195,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	private void startPolling(String emKey, int intervalSec) {
-
+		_emKeySet.add(emKey);
 		_em.addPollingAdapterProcessorEvent(emKey, _sid, _did, emKey, null, intervalSec);
 		_log.info("[EventManager] : " + emKey + " 등록");
 	}
@@ -204,6 +206,8 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			_em.removePollingAdapterProcessorEvent(emKey);
 
 			_log.info("[EventManager] : " + emKey + " 해제");
+			
+			_emKeySet.remove(emKey);
 			
 			//[PLC 수집 조회 프로토콜]에서 제외 되므로 삭제
 			_status.remove(emKey);
