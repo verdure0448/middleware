@@ -1,14 +1,13 @@
 
-package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler;
-
-import java.util.Arrays;
+package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 
 import com.google.gson.Gson;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.CreateHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.CreateHandler.HandlerType;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.DynamicHandlerManager;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling.HandlerType;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DynamicHandlerManager;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.InnerContext;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest.Items;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
@@ -21,20 +20,22 @@ import com.hdbsnc.smartiot.util.logger.Log;
  * 생성정보는 [PLC 수집시작 프로토콜] 명세서를 따른다.
  * 생성이 정상적으로 되었을 경우 RES 한다.
  */
-public class CreateDynamicHandler extends AbstractTransactionTimeoutFunctionHandler {
+public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHandler {
 	
-	private CreateHandler _manager;
+	private ICreatePolling _manager;
 	private IAdapterInstanceManager _aim;
 	private Log _log;
 	private String _sid;
+	private Gson _gson;
 	
-	public CreateDynamicHandler(String name, long timeout, String sid, DynamicHandlerManager manager, IAdapterInstanceManager aim, Log log) {
+	public CreateRequestHandler(String name, long timeout, String sid, DynamicHandlerManager manager, IAdapterInstanceManager aim, Log log) {
 		super(name, timeout);
 		
 		_manager = manager;
 		_aim = aim;
 		_log = log.logger(this.getClass());
 		_sid = sid;
+		 _gson = new Gson();
 		
 		System.out.println("CREATE DYNAMIC HANDLER");
 	}
@@ -45,13 +46,16 @@ public class CreateDynamicHandler extends AbstractTransactionTimeoutFunctionHand
 		//호출한 상대의 tid 및 path를 가지고 옴 
 		//호출자의 tid 및 path인지 확인필요
 		//호출자의 tid 및 path가 아니라면 아래 주석 과정 수행
-		String reqTid = inboundCtx.getTID();
-		String reqPath = inboundCtx.getFullPath();
-		String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
-		Gson gson = new Gson();
+		String sReqTid = inboundCtx.getTID();
+		String sReqPath = inboundCtx.getFullPath();
+		String sId = null;
+		String sEventId = null;
+		String sResContents = null;
 		try {
-			StartRequest req = gson.fromJson(jsonContents, StartRequest.class);
-	
+			String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
+			StartRequest req = _gson.fromJson(jsonContents, StartRequest.class);
+			sId = req.getId();
+			sEventId = req.getParam().getEventID();
 			//경로를 만들어 준다.
 			//read/polling/프로토콜id/프로토콜event.id
 			StringBuffer sbPath = new StringBuffer();
@@ -63,32 +67,23 @@ public class CreateDynamicHandler extends AbstractTransactionTimeoutFunctionHand
 			
 			String path = sbPath.toString();
 	
-			int iIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod());
+			int iPollingIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod());
 			String sIP = req.getParam().getPlcIp();
 			int iPort = Integer.parseInt(req.getParam().getPlcPort());
 			
-			_manager.start(HandlerType.READ_BATCH_PROCESS_HANDLER, path, sIP, iPort, iIntervalSec);
-			
+			_manager.start(HandlerType.READ_BATCH_PROCESS_HANDLER, path, sIP, iPort, iPollingIntervalSec, req);
+
 			//정상 Start 후 응답
-			InnerContext request = new InnerContext();
-			request.sid = _sid;
-			request.tid = reqTid;
-			request.paths = Arrays.asList(reqPath.split("/"));
-			_aim.handOverContext(request, null);	
-			
-			_log.debug("handover : " + reqTid + " path : " + reqPath);
-			
+			sResContents = Util.makeSucessStartResponseJson(sId, sEventId);
 		}catch(Exception e) {
 			//비정상 Start 후 응답
-			InnerContext request = new InnerContext();
-			request.sid = _sid;
-			request.tid = reqTid;
-			request.paths = Arrays.asList(reqPath.split("/"));
-			_aim.handOverContext(request, null);	
-			
-			_log.debug("handover : " + reqTid + " path : " + reqPath);
+			sResContents = Util.makeFailStartResponseJson(sId, sEventId, "-1", e.getMessage());
 		
 		}
+		
+		Util.callHandler(_aim, sReqPath, _sid, sReqTid, sResContents);
+		outboundCtx.dispose();
+
 	}
 
 	@Override

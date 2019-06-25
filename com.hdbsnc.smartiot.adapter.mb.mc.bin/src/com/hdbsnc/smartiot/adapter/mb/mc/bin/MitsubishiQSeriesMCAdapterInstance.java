@@ -1,10 +1,10 @@
 
 package com.hdbsnc.smartiot.adapter.mb.mc.bin;
 
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.CreateDynamicHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.DeleteDynamicHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.StatusDynamicHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DynamicHandlerManager;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.CreateRequestHandler;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.DeleteRequestHandler;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.RunningStatusCheckHandler;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.DynamicHandlerManager;
 import com.hdbsnc.smartiot.common.ICommonService;
 import com.hdbsnc.smartiot.common.aim.IAdapterContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstance;
@@ -43,7 +43,8 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 	@Override
 	public void start(IAdapterContext ctx) throws Exception {
 		_log.info("start");
-
+		IAdapterInstanceManager aim = ctx.getAdapterInstanceManager();
+		
 		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
 
 		String userId = instanceInfo.getSelfId();
@@ -53,17 +54,17 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 		ISession session = ctx.getSessionManager().certificate(did, userId, upass);
 
 		RootHandler root = this._processor.getRootHandler();
-		manager = new DynamicHandlerManager(root, _em, did, session.getSessionKey(),_log);
-		
-		IAdapterInstanceManager aim = ctx.getAdapterInstanceManager();
 		String sid = session.getSessionKey();
+
+		manager = new DynamicHandlerManager(root, aim, _em, did, sid, _log);
+		
 		
 		//멜섹 프로토콜 핸들러를 동적으로 생성한다
-		root.putHandler("create/mb/melsec", new CreateDynamicHandler("handler", 3000, sid, manager, aim, _log));
+		root.putHandler("create/mb/melsec", new CreateRequestHandler("handler", 3000, sid, manager, aim, _log));
 		//멜섹 프로토콜 핸들러를 삭제한다.
-		root.putHandler("delete/mb/melsec", new DeleteDynamicHandler("handler", 3000, manager, aim, _log));
+		root.putHandler("delete/mb/melsec", new DeleteRequestHandler("handler", 3000, manager, aim, _log));
 		//멜섹 핸들러의 상태를 확인한다.
-		root.putHandler("status/mb/melsec", new StatusDynamicHandler("handler", 3000, manager, aim, _log));
+		root.putHandler("status/mb/melsec", new RunningStatusCheckHandler("handler", 3000, manager, aim, _log));
 	}
 
 	@Override

@@ -50,6 +50,7 @@ SmartIoT-AdapterFunction:
 SmartIoT-Adapter-Initialize: 
 Bundle-Activator: com.hdbsnc.smartiot.adapter.zeromq.Bootstrap
 Bundle-ClassPath: lib/json-simple-1.1.1.jar,
- .,
- lib/jeromq-0.5.1.jar
+ lib/jeromq-0.5.1.jar,
+ lib/gson-2.8.5.jar,
+ .
 Require-Bundle: com.hdbsnc.smartiot

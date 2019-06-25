@@ -1,4 +1,4 @@
-package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager;
+package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,13 +9,9 @@ import java.util.Map;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.BatchProcessHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.BlockBatchProcessHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.ReadBatchProcessHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.ReadBlockBatchProcessHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.WriteBatchProcessHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.WriteBlockBatchProcessHandler;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.CreateParserVo;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
+import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.impl.RootHandler;
 import com.hdbsnc.smartiot.common.em.IEventManager;
@@ -24,7 +20,7 @@ import com.hdbsnc.smartiot.util.logger.Log;
 /**
  * @author dbkim 핸들러를 동적으로 생성, 제거, 폴링한다.
  */
-public class DynamicHandlerManager implements CreateHandler, DeleteHandler, StatusHandler, StartPolling {
+public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IRunningStatus {
 
 	// 핸들러를 저장하기 위한 핸들러
 	private Map<String, AbstractTransactionTimeoutFunctionHandler> _handlerMap;
@@ -36,19 +32,22 @@ public class DynamicHandlerManager implements CreateHandler, DeleteHandler, Stat
 	private RootHandler _root;
 
 	private Log _log;
+	
+	private IAdapterInstanceManager _aim;
 
 	private MitsubishiQSeriesApi api;
 
 	private String _did;
 	private String _sid;
 
-	public DynamicHandlerManager(RootHandler root, IEventManager em, String did, String sid, Log log) {
+	public DynamicHandlerManager(RootHandler root, IAdapterInstanceManager aim, IEventManager em, String did, String sid, Log log) {
 
 		_handlerMap = new Hashtable<String, AbstractTransactionTimeoutFunctionHandler>();
 		_apiMap = new Hashtable<String, MitsubishiQSeriesApi>();
 		_emKeyList = new ArrayList<>();
 
 		_em = em;
+		_aim = aim;
 		_root = root;
 		_log = log;
 
@@ -57,7 +56,7 @@ public class DynamicHandlerManager implements CreateHandler, DeleteHandler, Stat
 	}
 
 	@Override
-	public void start(HandlerType kind, String path, String ip, int port, int intervalSec) throws Exception{
+	public void start(HandlerType kind, String path, String ip, int port, int pollingIntervalSec, StartRequest startRequest) throws Exception{
 
 		String sHandlerPath = getHandlerPath(path);
 		String sHandlerName = getHandlerName(path);
@@ -76,33 +75,13 @@ public class DynamicHandlerManager implements CreateHandler, DeleteHandler, Stat
 		switch (kind) {
 		case READ_BATCH_PROCESS_HANDLER:
 			_root.putHandler(sHandlerPath,
-					new ReadBatchProcessHandler(sHandlerName, 3000, api, parser.getRequestReadObjList(), _log));
-			break;
-		case READ_BLOCK_BATCH_PROCESS_HANDLER:
-			_root.putHandler(sHandlerPath,
-					new ReadBlockBatchProcessHandler(sHandlerName, 3000, api, parser.getRequestReadObjList(), _log));
-			break;
-		case WRITE_BATCH_PROCESS_HANDLER:
-			_root.putHandler(sHandlerPath,
-					new WriteBatchProcessHandler(sHandlerName, 3000, api, parser.getRequestWriteObjList(), _log));
-			break;
-		case WRITE_BLOCK_BATCH_PROCESS_HANDLER:
-			_root.putHandler(sHandlerPath,
-					new WriteBlockBatchProcessHandler(sHandlerName, 3000, api, parser.getRequestWriteObjList(), _log));
-			break;
-		case READ_WRITE_BATCH_PROCESS_HANDLER:
-			_root.putHandler(sHandlerPath, new BatchProcessHandler(sHandlerName, 3000, api,
-					parser.getRequestReadObjList(), parser.getRequestWriteObjList(), _log));
-			break;
-		case READ_WRITE_BLOCK_BATCH_PROCESS_HANDLER:
-			_root.putHandler(sHandlerPath, new BlockBatchProcessHandler(sHandlerName, 3000, api,
-					parser.getRequestReadObjList(), parser.getRequestWriteObjList(), _log));
+					new ReadBatchProcessHandler(sHandlerName, 3000,_aim, _sid, api, startRequest, _log));
 			break;
 		default:
 			throw new Exception("지원하지 않는 핸들러입니다.");
 		}
 
-		startPolling(sEemKey, iIntervalSec);
+		startPolling(sEemKey, pollingIntervalSec);
 
 		_root.printString();
 	}
@@ -192,15 +171,13 @@ public class DynamicHandlerManager implements CreateHandler, DeleteHandler, Stat
 		_apiMap.clear();
 	}
 
-	@Override
-	public void startPolling(String emKey, int intervalSec) {
+	private void startPolling(String emKey, int intervalSec) {
 
 		_em.addPollingAdapterProcessorEvent(emKey, _sid, _did, emKey, null, intervalSec);
 		_log.info("[EventManager] : " + emKey + " 등록");
 	}
 
-	@Override
-	public void stopPolling(String emKey) {
+	private void stopPolling(String emKey) {
 
 		if (_em.containPollingAdapterProcessor(emKey)) {
 			_em.removePollingAdapterProcessorEvent(emKey);

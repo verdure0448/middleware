@@ -1,12 +1,12 @@
 
-package com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler;
+package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 
-import java.util.List;
-
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.dynamic.handler.manager.DeleteHandler;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IDeletePolling;
+import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
+import com.hdbsnc.smartiot.util.logger.Log;
 
 /**
  * @author dbkim
@@ -14,13 +14,20 @@ import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeo
  * 생성정보는 [PLC 수집시작 프로토콜] 명세서를 따른다.
  * 생성이 정상적으로 되었을 경우 RES 한다.
  */
-public class DeleteDynamicHandler extends AbstractTransactionTimeoutFunctionHandler {
+public class DeleteRequestHandler extends AbstractTransactionTimeoutFunctionHandler {
+
+	private IDeletePolling _manager;
+	private IAdapterInstanceManager _aim;
+	private Log _log;
 	
-	private List<AbstractTransactionTimeoutFunctionHandler> plcProcessHandlerList;
-	private List<String> emKeyList;
-	
-	public DeleteDynamicHandler(String name, long timeout, DeleteHandler manager) {
+	public DeleteRequestHandler(String name, long timeout, IDeletePolling manager, IAdapterInstanceManager aim, Log log) {
 		super(name, timeout);
+		
+		_manager = manager;
+		_aim = aim;
+		_log = log.logger(this.getClass());
+		
+		System.out.println("DELETE DYNAMIC HANDLER");
 	}
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
@@ -52,10 +59,10 @@ public class DeleteDynamicHandler extends AbstractTransactionTimeoutFunctionHand
 		// rootHandler에 동적등록된 핸들러를 찾아 제거 한다
 		// PATH : read/polling/프로토콜id/프로토콜event.id
 		////////////////////////////////////////////////////////////////////////////////////
-		try {
-			em.removeEventProcess();
-			root.removeHandler();
-			JsonObject sucessJsonResult = "{result :ok.....}";
+//		try {
+//			em.removeEventProcess();
+//			root.removeHandler();
+//			JsonObject sucessJsonResult = "{result :ok.....}";
 	
 			
 //			{
@@ -95,14 +102,14 @@ public class DeleteDynamicHandler extends AbstractTransactionTimeoutFunctionHand
 
 			
 			//resHandler 호출
-			Aim.handovers(sucessJsonResult));
-		}catch(Exception e) {
-			JsonObject failJsonResult = "{result :ng.....}";
-			//resHandler 호출
-			Aim.handover(.........);
-		}
-		outboundCtx.dispose();
-		
+//			Aim.handovers(sucessJsonResult));
+//		}catch(Exception e) {
+//			JsonObject failJsonResult = "{result :ng.....}";
+//			//resHandler 호출
+//			Aim.handover(.........);
+//		}
+//		outboundCtx.dispose();
+//		
 		
 	}
 
