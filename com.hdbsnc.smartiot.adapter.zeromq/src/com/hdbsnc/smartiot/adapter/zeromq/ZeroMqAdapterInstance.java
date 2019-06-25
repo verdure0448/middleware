@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.zeromq.SocketType;
 
-import com.hdbsnc.smartiot.adapter.websocketapi.processor.handler.InnerContext;
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.PubHandler;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.RepHandler;
@@ -21,6 +20,7 @@ import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.aim.IAdapterProcessor;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.impl.RootHandler;
+import com.hdbsnc.smartiot.common.context.impl.InnerContext;
 import com.hdbsnc.smartiot.common.ism.sm.ISession;
 import com.hdbsnc.smartiot.common.pm.vo.IInstanceObj;
 import com.hdbsnc.smartiot.util.logger.Log;
@@ -120,9 +120,9 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 				String did = session.getDeviceId();
 				
 				InnerContext ICtx = new InnerContext();
-				ICtx.sid = did; // Device ID
-				ICtx.tid = did; // Target ID
-				ICtx.paths = Arrays.asList("zmq", "req");
+				ICtx.setSid(did); // Device ID
+				ICtx.setTid(did); // Target ID
+				ICtx.setPaths(Arrays.asList("zmq", "req"));
 				
 				
 				ByteBuffer buf = ByteBuffer.allocate(msg.length);
@@ -130,8 +130,8 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 				
 				// 버퍼 포지션 초기화
 				buf.rewind();
-				ICtx.content = buf;
-				ICtx.contentType = "json";
+				ICtx.setContent(buf);
+				ICtx.setContentType("json");
 				
 				try {
 					aim.handOverContext(ICtx, null);
