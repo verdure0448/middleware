@@ -103,7 +103,8 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 		ICtx.setContent(inboundCtx.getContent());
 
 		try {
-			aim.handOverContext(ICtx, new RepCallback(zmqApi, log));
+//			aim.handOverContext(ICtx, new RepCallback(zmqApi, log));
+			aim.handOverContext(ICtx, null);
 		} catch (Exception e) {
 			// 로그 출력
 			log.err(e);
