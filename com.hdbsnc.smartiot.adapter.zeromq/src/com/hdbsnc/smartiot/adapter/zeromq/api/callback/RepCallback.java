@@ -18,7 +18,7 @@ public class RepCallback implements IContextCallback {
 
 	public RepCallback(ZeromqApi pZmqApi, Log log) {
 		this.zmqApi = pZmqApi;
-		this.log = log;
+		this.log = log.logger(this.getClass());
 	}
 
 	@Override
@@ -33,6 +33,7 @@ public class RepCallback implements IContextCallback {
 			return;
 		}
 
+		System.out.println("******************************"+content);
 		try {
 			zmqApi.send(content.getBytes("UTF-8"));
 		} catch (Exception e) {

@@ -4,7 +4,6 @@ package com.hdbsnc.smartiot.adapter.zeromq;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import org.zeromq.SocketType;
@@ -12,7 +11,7 @@ import org.zeromq.SocketType;
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.PubHandler;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.RepHandler;
-
+import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.ResHandler;
 import com.hdbsnc.smartiot.common.ICommonService;
 import com.hdbsnc.smartiot.common.aim.IAdapterContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstance;
@@ -88,10 +87,8 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		session = ctx.getSessionManager().certificate(defaultDid, userId, upass);
 
-		RootHandler root = this.processor.getRootHandler();
-
-		root.putHandler("zmq", new RepHandler("req", aim, 1000, zmqRep, log));
-		root.putHandler("zmq", new PubHandler("pub", 1000, zmqPub, log));
+		zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://" + ip + ":" + ports[0]);
+		zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://" + ip + ":" + ports[1]);
 		
 		////////////////////////////////////////////////////////////////////////////////////
 		// [PLC 수집 시작 명령 프로토콜]
@@ -100,9 +97,6 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		// PLC 수집조회 프로토콜의 경우 위의 3가지 프로토콜 명령과 중첩하여 날아 갈 수 있으므로 따른 포트를 통해 생성
 		// EX) 수집 시작 명령 REQ 동작 중 수집명령 REQ가 날아올 수 있지만 나머지 위 3개 명령은 그런 확률이 거이 없음.
 		////////////////////////////////////////////////////////////////////////////////////
-
-		zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://" + ip + ":" + ports[0]);
-		zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://" + ip + ":" + ports[1]);
 
 		ZeromqApi.IEvent repEvent = new ZeromqApi.IEvent() {
 
@@ -147,7 +141,12 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		// ZMQ PUB 서버 기동
 		zmqPub.start(null);
+		
+		RootHandler root = this.processor.getRootHandler();
 
+		root.putHandler("zmq", new RepHandler("req", aim, 1000, zmqRep, log));
+		root.putHandler("zmq", new PubHandler("pub", 1000, zmqPub, log));
+		root.putHandler("zmq", new ResHandler("res", 1000, zmqRep, log));
 	}
 
 	@Override

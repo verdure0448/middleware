@@ -30,6 +30,12 @@ import com.hdbsnc.smartiot.util.logger.Log;
  */
 public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 
+	public static final String ADAPTER_TARGET_ID = "mc.1";
+	public static final String ADAPTER_TARGET_CREATE_HANDLER_PATH = "create/mb/melsec/handler";
+	public static final String ADAPTER_TARGET_DELETE_HANDLER_PATH = "delete/mb/melsec/handler";
+	public static final String ADAPTER_TARGET_DELETE_ALL_HANDLER_PATH = "delete/all/mb/melsec/handler";
+	public static final String ADAPTER_TARGET_STATUS_HANDLER_PATH = "status/mb/melsec/handler";
+	
 	private IAdapterInstanceManager aim = null;
 	private ZeromqApi zmqApi = null;
 	private Log log = null;
@@ -37,6 +43,8 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 	public RepHandler(String name, IAdapterInstanceManager aim, long timeout, ZeromqApi pZmqApi, Log log) {
 		super(name, timeout);
 		zmqApi = pZmqApi;
+		this.aim = aim;
+		this.log = log.logger(this.getClass());
 	}
 
 	@Override
@@ -61,16 +69,16 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			String sReq = gson.toJson(req);
 
 			ICtx.setSid(inboundCtx.getSID()); // Device ID
-			ICtx.setTid("xxxxxx"); // Target ID
-			ICtx.setPaths(Arrays.asList("xxxxxx", "xxxxxxx"));
+			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
+			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_CREATE_HANDLER_PATH.split("/")));
 			break;
 		case "stop":
 			// 포멧 체크
 			gson.fromJson(content, StopRequest.class);
 
 			ICtx.setSid(inboundCtx.getSID()); // Device ID
-			ICtx.setTid("xxxxxx"); // Target ID
-			ICtx.setPaths(Arrays.asList("xxxxxx", "xxxxxxx"));
+			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
+			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_DELETE_HANDLER_PATH.split("/")));
 			break;
 		case "stop.all":
 			// TODO
@@ -80,8 +88,8 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			gson.fromJson(content, StatusRequest.class);
 
 			ICtx.setSid(inboundCtx.getSID()); // Device ID
-			ICtx.setTid("xxxxxx"); // Target ID
-			ICtx.setPaths(Arrays.asList("xxxxxx", "xxxxxxx"));
+			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
+			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_STATUS_HANDLER_PATH.split("/")));
 			break;
 		default:
 			// 로그처리
