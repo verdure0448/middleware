@@ -1,5 +1,7 @@
 package com.hdbsnc.smartiot.adapter.zeromq.api;
 
+import javax.activation.UnsupportedDataTypeException;
+
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
@@ -43,8 +45,9 @@ public class ZeromqApi {
 	 * @param addr 바이딩 어드레스
 	 * @throws Exception
 	 */
-	public void start(IEvent event) throws Exception {
+	public void start(IEvent event) throws UnsupportedDataTypeException {
 		// TODO 기동상태 체크 후 기동중일 경우 에러 처리
+		
 		
 		this.mEvent = event;
 		
@@ -67,8 +70,7 @@ public class ZeromqApi {
 			this.mSocket.bind(this.mAddr);
 			break;
 		default:
-			// 상기 이외는 에러처리
-			throw new Exception("Not Support.");
+			throw new UnsupportedDataTypeException("Unsupported function.");
 		}
 
 	}
@@ -113,7 +115,7 @@ public class ZeromqApi {
 	 */
 	public void send(byte[] msg) throws Exception {
 		if(this.mSocketYype != SocketType.REP) {
-			throw new Exception("Unsupported function.");
+			throw new UnsupportedDataTypeException("Unsupported function.");
 		}
 		mSocket.send(msg);
 	}
@@ -122,12 +124,12 @@ public class ZeromqApi {
 	 * 
 	 * @param topic
 	 * @param msg
-	 * @throws Exception
+	 * @throws UnsupportedDataTypeException 
 	 */
-	public void publish(byte[] topic, byte[] msg) throws Exception {
+	public void publish(byte[] topic, byte[] msg) throws UnsupportedDataTypeException {
 
 		if(this.mSocketYype != SocketType.PUB) {
-			throw new Exception("Unsupported function.");
+			throw new UnsupportedDataTypeException("Unsupported function.");
 		}
 		
 		byte[] sendData = new byte[topic.length + msg.length + 1];
@@ -153,7 +155,7 @@ public class ZeromqApi {
 					mEvent.onRecv(req);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				// 예외 무시
 			}
 
 		}
