@@ -1,15 +1,11 @@
 package com.hdbsnc.smartiot.adapter.zeromq.processor.handler;
 
-import java.nio.ByteBuffer;
-
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.GatheringPublish;
-import com.hdbsnc.smartiot.adapter.zeromq.obj.ResError;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
-import com.hdbsnc.smartiot.common.pm.vo.IMsgMastObj;
 import com.hdbsnc.smartiot.util.logger.Log;
 
 /**
@@ -33,13 +29,14 @@ public class PubHandler extends AbstractTransactionTimeoutFunctionHandler {
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 
-		ByteBuffer content = inboundCtx.getContent();
 
+		String content = new String(inboundCtx.getContent().array(), "UTF-8");
+		
 		Gson gson = new Gson();
 
 		GatheringPublish publish = null;
 		try {
-			publish = gson.fromJson(content.toString(), GatheringPublish.class);
+			publish = gson.fromJson(content, GatheringPublish.class);
 		} catch (Exception e) {
 			// topic을 알수 없어 통신이 불가한상태이므로 내부 에러로그 출력 처리만
 			// 로그출력
@@ -49,7 +46,7 @@ public class PubHandler extends AbstractTransactionTimeoutFunctionHandler {
 		////////////////////////////////////////////////////////////////////////////////////
 		// PUB으로 데이터 브로드캐스팅
 		////////////////////////////////////////////////////////////////////////////////////
-		this.zmqApi.publish(publish.getResult().getEventID().getBytes("UTF-8"), content.array());
+		this.zmqApi.publish(publish.getResult().getEventID().getBytes("UTF-8"), content.getBytes("UTF-8"));
 	}
 
 	@Override

@@ -8,6 +8,9 @@ import com.google.gson.JsonParser;
 import com.hdbsnc.smartiot.adapter.websocketapi.processor.handler.InnerContext;
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.api.callback.RepCallback;
+import com.hdbsnc.smartiot.adapter.zeromq.obj.CommonRequest;
+import com.hdbsnc.smartiot.adapter.zeromq.obj.CommonResponse;
+import com.hdbsnc.smartiot.adapter.zeromq.obj.ResError;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.StatusRequest;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.StopRequest;
@@ -29,7 +32,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 	private IAdapterInstanceManager aim = null;
 	private ZeromqApi zmqApi = null;
 	private Log log = null;
-	
+
 	public RepHandler(String name, IAdapterInstanceManager aim, long timeout, ZeromqApi pZmqApi, Log log) {
 		super(name, timeout);
 		zmqApi = pZmqApi;
@@ -37,25 +40,25 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
-		
-		String content = inboundCtx.getContent().toString();
+
+		String content = new String(inboundCtx.getContent().array(), "UTF-8");
+
 		InnerContext ICtx = new InnerContext();
-		
+
 		JsonParser parser = new JsonParser();
 		JsonObject jsonObj = parser.parse(content).getAsJsonObject();
 		String method = jsonObj.get("method").getAsString();
-				
+
 		Gson gson = new Gson();
-		
-		
-		switch(method) {
+
+		switch (method) {
 		case "start":
 			// [json string] -> [vo]
 			StartRequest req = gson.fromJson(content, StartRequest.class);
-			
+
 			// TODO 삭제 예정 [vo] -> [json string]
 			String sReq = gson.toJson(req);
-			
+
 			ICtx.sid = inboundCtx.getSID(); // Device ID
 			ICtx.tid = "xxxxxx"; // Target ID
 			ICtx.paths = Arrays.asList("xxxxxx", "xxxxxxx");
@@ -63,7 +66,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 		case "stop":
 			// 포멧 체크
 			gson.fromJson(content, StopRequest.class);
-			
+
 			ICtx.sid = inboundCtx.getSID(); // Device ID
 			ICtx.tid = "xxxxxx"; // Target ID
 			ICtx.paths = Arrays.asList("xxxxxx", "xxxxxxx");
@@ -74,7 +77,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 		case "status":
 			// 포멧 체크
 			gson.fromJson(content, StatusRequest.class);
-			
+
 			ICtx.sid = inboundCtx.getSID(); // Device ID
 			ICtx.tid = "xxxxxx"; // Target ID
 			ICtx.paths = Arrays.asList("xxxxxx", "xxxxxxx");
@@ -86,11 +89,9 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			return;
 		}
 
-		
-		//버프 포지션 초기화
+		// 버프 포지션 초기화
 		inboundCtx.getContent().rewind();
 		ICtx.content = inboundCtx.getContent();
-	
 
 		try {
 			aim.handOverContext(ICtx, new RepCallback(zmqApi, log));
@@ -98,13 +99,41 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			// 로그 출력
 			log.err(e);
 			// TODO 이상 응답 처리
-			
+
 		}
 	}
 
 	@Override
 	public void rejectionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
-		// 미들웨어 내부 장에로 에러 로그 처리만
+		// 에러로그
 		log.err("Rejection Process 발생.");
+
+		
+		String reqContent = new String(inboundCtx.getContent().array(), "UTF-8");
+
+		// 요청 컨텐츠
+		Gson gson = new Gson();
+		CommonRequest req = gson.fromJson(reqContent, CommonRequest.class);
+
+		CommonResponse res = new CommonResponse();
+		ResError error = new ResError();
+
+		res.setJsonrpc("2.0");
+		res.setId(req.getId());
+
+		error.setCode("RepHandler:002");
+		error.setMessage("Rep 요청 처리 실패.");
+		res.setError(error);
+
+		String sRes = gson.toJson(res);
+
+		// 통신 전송
+		try {
+			zmqApi.send(sRes.getBytes("UTF-8"));
+		} catch (Exception e) {
+			// 통신 장애이므로 에러로그 처리만
+			log.err(e);
+			return;
+		}
 	}
 }
