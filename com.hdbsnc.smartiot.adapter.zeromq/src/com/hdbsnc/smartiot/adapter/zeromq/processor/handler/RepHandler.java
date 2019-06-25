@@ -72,7 +72,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
 			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_CREATE_HANDLER_PATH.split("/")));
 			break;
-		case "stop":
+		case "stop.part":
 			// 포멧 체크
 			gson.fromJson(content, StopRequest.class);
 

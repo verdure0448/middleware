@@ -20,8 +20,9 @@ import com.hdbsnc.smartiot.util.logger.Log;
  */
 public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionHandler {
 
-	private static final String ADAPTER_HANDLER_TARGET_ID = "test";
-	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "test";
+	private static final String ADAPTER_HANDLER_TARGET_ID = "zeromq.1";
+	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "zmq/res";
+	private static final String ADAPTER_HANDLER_PROTOCOL_METHOD_NAME = "stop.all";
 	
 	private IDeletePolling _manager;
 	private IAdapterInstanceManager _aim;
@@ -53,8 +54,11 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 			sId = req.getId();
 			
 			String protocolVerion = req.getParam().getVersion();
+			String protocolMethod = req.getMethod();
 			if(!Util.PROTOCOL_VERSION.equals(protocolVerion)) {
 				throw new Exception("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
+			}else if(!ADAPTER_HANDLER_PROTOCOL_METHOD_NAME.equals(protocolMethod)) {
+				throw new Exception("프로토콜 기능명이 일치 하지 않습니다. 기능명을 확인해주세요");
 			}
 			
 			String[] eventIdArray = _manager.deleteAll();

@@ -20,9 +20,10 @@ import com.hdbsnc.smartiot.util.logger.Log;
  * 동적생성된 핸들러의 상태를 반환한다.
  */
 public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctionHandler {
-	
-	private static final String ADAPTER_HANDLER_TARGET_ID = "test";
-	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "test";
+
+	private static final String ADAPTER_HANDLER_TARGET_ID = "zeromq.1";
+	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "zmq/res";
+	private static final String ADAPTER_HANDLER_PROTOCOL_METHOD_NAME = "status";
 
 	private IRunningStatus _manager;
 	private IAdapterInstanceManager _aim;
@@ -51,8 +52,11 @@ public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctio
 			sId = req.getId();
 			
 			String protocolVerion = req.getParam().getVersion();
+			String protocolMethod = req.getMethod();
 			if(!Util.PROTOCOL_VERSION.equals(protocolVerion)) {
 				throw new Exception("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
+			}else if(!ADAPTER_HANDLER_PROTOCOL_METHOD_NAME.equals(protocolMethod)) {
+				throw new Exception("프로토콜 기능명이 일치 하지 않습니다. 기능명을 확인해주세요");
 			}
 			
 			Map statusMap = _manager.statusAll();

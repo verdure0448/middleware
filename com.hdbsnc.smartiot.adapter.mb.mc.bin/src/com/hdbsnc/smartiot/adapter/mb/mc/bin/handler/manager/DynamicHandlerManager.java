@@ -12,6 +12,9 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.Trans
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.ReadBatchProcessHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
+import com.hdbsnc.smartiot.common.context.handler.IElementHandler;
+import com.hdbsnc.smartiot.common.context.handler.exception.ElementNotFoundException;
+import com.hdbsnc.smartiot.common.context.handler.exception.ElementNullOrEmptyPathException;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.impl.RootHandler;
 import com.hdbsnc.smartiot.common.em.IEventManager;
@@ -37,8 +40,6 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	
 	private IAdapterInstanceManager _aim;
 
-	private MitsubishiQSeriesApi api;
-
 	private String _did;
 	private String _sid;
 
@@ -63,7 +64,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 
 		String sHandlerPath = getHandlerPath(path);
 		String sHandlerName = getHandlerName(path);
-		String sEemKey = path;
+		String sEmKey = path;
 	
 		// 이미 만들어진 IP 및 PORT가 있는지 확인
 		if (isConnection(ip, port)) {
@@ -77,15 +78,17 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 
 		switch (kind) {
 		case READ_BATCH_PROCESS_HANDLER:
-			_root.putHandler(sHandlerPath,
-					new ReadBatchProcessHandler(sHandlerName, 3000,_aim, _sid, api, startRequest, _log));
+			AbstractTransactionTimeoutFunctionHandler handler = new ReadBatchProcessHandler(sHandlerName, 3000,_aim, _sid, api, startRequest, _log); 
+			_root.putHandler(sHandlerPath, handler);
+			_handlerMap.put(path, handler);
 			break;
 		default:
 			throw new Exception("지원하지 않는 핸들러입니다.");
 		}
 
-		startPolling(sEemKey, pollingIntervalSec);
-		_status.put(sEemKey, startRequest.getParam());
+		startPolling(sEmKey, pollingIntervalSec);
+		_status.put(sEmKey, startRequest.getParam());
+		_apiMap.put(sEmKey, api);
 
 		_root.printString();
 	}
@@ -96,7 +99,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			return false;
 		}
 		
-		Iterator it = (Iterator) _apiMap.keySet();
+		Iterator it = _apiMap.keySet().iterator();
 		String key;
 		MitsubishiQSeriesApi api;
 		while (it.hasNext()) {
@@ -117,10 +120,11 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public void delete(String path) throws IOException {
-
-		if (_root.contains(path)) {
+	public void delete(String path) throws IOException, ElementNullOrEmptyPathException, ElementNotFoundException {
+		
+		if (_handlerMap.containsKey(path)) {
 			_root.removeHandler(_handlerMap.get(path));
+			_handlerMap.remove(path);
 			_log.info("[Handler] : " + path + " 해제");
 		}
 
@@ -146,7 +150,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		String eventId;
 		
 		// 키가 존재
-		Iterator it = (Iterator) _apiMap.keySet();
+		Iterator it = _apiMap.keySet().iterator();
 		String path;
 		MitsubishiQSeriesApi api;
 
@@ -166,14 +170,11 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		}
 
 		// 핸들러 해제
-		it = (Iterator) _handlerMap.keySet();
+		it = _handlerMap.keySet().iterator();
 		while (it.hasNext()) {
 			path = (String) it.next();
-			_handlerMap.get(path);
-
-			if (_root.contains(path)) {
-				_root.removeHandler(_handlerMap.get(path));
-			}
+			_root.removeHandler(_handlerMap.get(path));
+			_handlerMap.remove(path);
 			_log.info("[Handler] : " + path + " 해제");
 		}
 
