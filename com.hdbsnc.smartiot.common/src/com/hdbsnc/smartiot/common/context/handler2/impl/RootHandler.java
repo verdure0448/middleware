@@ -86,6 +86,13 @@ public class RootHandler implements IDirectoryHandler{
 		}
 	}
 	
+	public IElementHandler deleteHandler(String[] pathArray) throws ElementNotFoundException{
+	    IElementHandler currentEle = findHandler(pathArray);
+	    IDirectoryHandler parentEle = currentEle.getParent();
+	    parentEle.removeHandler(currentEle);
+	    return currentEle;
+	}
+	
 	@Override
 	public IDirectoryHandler getParent() { return null; }
 
