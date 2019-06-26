@@ -38,6 +38,7 @@ public class ResHandler extends AbstractTransactionTimeoutFunctionHandler {
 		}
 
 		try {
+			System.out.println(new String(content.getBytes("UTF-8")));
 			zmqApi.send(content.getBytes("UTF-8"));
 		} catch (Exception e) {
 			// 통신 장애이므로 에러로그 처리만

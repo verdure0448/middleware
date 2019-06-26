@@ -9,7 +9,7 @@ public class CommonResponse {
 	@SerializedName("id")
 	private String id;
 	
-	@SerializedName("erroe")
+	@SerializedName("error")
 	private ResError error;
 
 	public String getJsonrpc() {

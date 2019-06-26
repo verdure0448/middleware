@@ -58,9 +58,9 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 			String protocolVerion = req.getParam().getVersion();
 			String protocolMethod = req.getMethod();
 			if(!Util.PROTOCOL_VERSION.equals(protocolVerion)) {
-				throw new Exception("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
+				throw new Exception("프로토콜 버전 불일치 .");
 			}else if(!ADAPTER_HANDLER_PROTOCOL_METHOD_NAME.equals(protocolMethod)) {
-				throw new Exception("프로토콜 기능명이 일치 하지 않습니다. 기능명을 확인해주세요");
+				throw new Exception("지원하지 않는 Method 요청.");
 			}
 			
 			String sPath = makePath(req);
