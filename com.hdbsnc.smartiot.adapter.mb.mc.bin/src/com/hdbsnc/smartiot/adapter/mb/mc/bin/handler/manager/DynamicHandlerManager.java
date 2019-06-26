@@ -124,9 +124,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		
 		if (_handlerMap.containsKey(path)) {
 			
-			_root.removeHandler(_handlerMap.get(path));
-			_root.unRegHandler(_handlerMap.get(path));
-			
+			_root.deleteHandler(path.split("/"));
 			_handlerMap.remove(path);
 			_log.info("[Handler] : " + path + " 해제");
 		}
