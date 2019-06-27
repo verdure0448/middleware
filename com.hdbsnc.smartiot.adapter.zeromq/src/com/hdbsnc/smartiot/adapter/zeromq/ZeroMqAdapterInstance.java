@@ -144,9 +144,8 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		
 		RootHandler root = this.processor.getRootHandler();
 
-		root.putHandler("zmq", new RepHandler("req", aim, 1000, zmqRep, log));
-		root.putHandler("zmq", new PubHandler("pub", 1000, zmqPub, log));
-		root.putHandler("zmq", new ResHandler("res", 1000, zmqRep, log));
+		root.putHandler("zmq", new RepHandler("req", aim, 3000, zmqRep, log));
+		root.putHandler("zmq", new PubHandler("pub", 3000, zmqPub, log));
 	}
 
 	@Override
