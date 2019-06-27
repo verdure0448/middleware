@@ -1,11 +1,12 @@
 package com.hdbsnc.smartiot.adapter.zeromq.processor.handler;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
+import com.google.gson.JsonSyntaxException;
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.api.callback.RepCallback;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.CommonRequest;
@@ -19,6 +20,7 @@ import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.impl.InnerContext;
+import com.hdbsnc.smartiot.common.otp.url.parser.UrlParser;
 import com.hdbsnc.smartiot.util.logger.Log;
 
 /**
@@ -35,7 +37,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 	public static final String ADAPTER_TARGET_DELETE_HANDLER_PATH = "delete/mb/melsec/handler";
 	public static final String ADAPTER_TARGET_DELETE_ALL_HANDLER_PATH = "delete/all/mb/melsec/handler";
 	public static final String ADAPTER_TARGET_STATUS_HANDLER_PATH = "status/mb/melsec/handler";
-	
+
 	private IAdapterInstanceManager aim = null;
 	private ZeromqApi zmqApi = null;
 	private Log log = null;
@@ -50,13 +52,33 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 	@Override
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 
-		String content = new String(inboundCtx.getContent().array(), "UTF-8");
+		String content = null;
+		try {
+			content = new String(inboundCtx.getContent().array(), "UTF-8");
+		} catch (Exception ex) {
+			// TODO 에러 응답
+			outboundCtx.dispose();
+			//RPC요청 ID를 알수 없으므로 null 설정
+			sendErrorResponse(null, "-32000", "[UTF-8]코드 변환에 실패했습니다.");
+			return;
+		}
 
 		InnerContext ICtx = new InnerContext();
 
 		JsonParser parser = new JsonParser();
-		JsonObject jsonObj = parser.parse(content).getAsJsonObject();
+		JsonObject jsonObj = null;
+
+		try {
+			jsonObj = parser.parse(content).getAsJsonObject();
+		} catch (JsonSyntaxException ex) {
+			// TODO 에러 응답
+			//RPC요청 ID를 알수 없으므로 null 설정
+			sendErrorResponse(null, "-32001", "Json 파싱에 실패했습니다.");
+			return;
+		}
+
 		String method = jsonObj.get("method").getAsString();
+		String id = jsonObj.get("id").getAsString();
 
 		Gson gson = new Gson();
 
@@ -95,6 +117,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			// 로그처리
 			log.err(String.format("지원하는 않는 Method 요청(%s) ", method));
 			// TODO 이상 응답 처리
+			sendErrorResponse(id, "-32002", String.format("지원하는 않는 Method 입니다(%s) ", method));
 			return;
 		}
 
@@ -103,14 +126,16 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 		ICtx.setContent(inboundCtx.getContent());
 
 		try {
-//			aim.handOverContext(ICtx, new RepCallback(zmqApi, log));
-			aim.handOverContext(ICtx, null);
+			aim.handOverContext(ICtx, new RepCallback(zmqApi, log));
+			// aim.handOverContext(ICtx, null);
 		} catch (Exception e) {
 			// 로그 출력
 			log.err(e);
-			// TODO 이상 응답 처리
-
+			// 이상 응답 처리
+			sendErrorResponse(id, "-32003", "핸들러 호출에 장애가 발생했습니다.");
+			return;
 		}
+
 	}
 
 	@Override
@@ -118,32 +143,48 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 		// 에러로그
 		log.err("Rejection Process 발생.");
 
-		
-		String reqContent = new String(inboundCtx.getContent().array(), "UTF-8");
+		String reqContent = null;
+
+		try {
+			reqContent = new String(inboundCtx.getContent().array(), "UTF-8");
+		} catch (UnsupportedEncodingException ex) {
+
+		}
 
 		// 요청 컨텐츠
 		Gson gson = new Gson();
 		CommonRequest req = gson.fromJson(reqContent, CommonRequest.class);
 
+		sendErrorResponse(req.getId(), "-32004", "트랜젝션이 잠겨 있습니다.");
+
+	}
+
+	/**
+	 * 에러 응답 전송
+	 * 
+	 * @param id      RPC통신 ID
+	 * @param code    에러코드
+	 * @param message 에러메세지
+	 */
+	private void sendErrorResponse(String id, String code, String message) {
+		Gson gson = new Gson();
 		CommonResponse res = new CommonResponse();
 		ResError error = new ResError();
 
 		res.setJsonrpc("2.0");
-		res.setId(req.getId());
-
-		error.setCode("RepHandler:002");
-		error.setMessage("Rep 요청 처리 실패.");
+		res.setId(id);
+		error.setCode(code);
+		error.setMessage(message);
 		res.setError(error);
-
-		String sRes = gson.toJson(res);
 
 		// 통신 전송
 		try {
-			zmqApi.send(sRes.getBytes("UTF-8"));
+			zmqApi.send(gson.toJson(res).getBytes("UTF-8"));
 		} catch (Exception e) {
 			// 통신 장애이므로 에러로그 처리만
 			log.err(e);
 			return;
 		}
+
 	}
 }

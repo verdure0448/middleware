@@ -26,7 +26,7 @@ public class RepCallback implements IContextCallback {
 
 		String content;
 		try {
-			content = new String(ctxTracer.getRequestContext().getContent().array(), "UTF-8");
+			content = new String(ctxTracer.getResponseContext().getContent().array(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			// 후속처리 불가이므로 로그처리만
 			log.err(e);
@@ -50,7 +50,7 @@ public class RepCallback implements IContextCallback {
 
 		String reqContent;
 		try {
-			reqContent = new String(ctxTracer.getRequestContext().getContent().array(), "UTF-8");
+			reqContent = new String(ctxTracer.getResponseContext().getContent().array(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			// 후속처리 불가이므로 로그처리만
 			log.err(e);
