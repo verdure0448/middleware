@@ -11,7 +11,6 @@ import org.zeromq.SocketType;
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.PubHandler;
 import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.RepHandler;
-import com.hdbsnc.smartiot.adapter.zeromq.processor.handler.ResHandler;
 import com.hdbsnc.smartiot.common.ICommonService;
 import com.hdbsnc.smartiot.common.aim.IAdapterContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstance;
