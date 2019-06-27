@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
 
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 
 public class MultipleBlockBatchReadWriteProtocol extends AbstractBlocksFrame {
@@ -112,20 +113,20 @@ public class MultipleBlockBatchReadWriteProtocol extends AbstractBlocksFrame {
 	@Override
 	public void addReadRequest(String code, String num, String score) throws Exception {
 		if (getCommand() != Command.MULTIPLE_BLCOK_READ)
-			throw new Exception("읽기 요구를 할수 없는 명령어 입니다.");
+			throw new MCProtocolException("읽기 요구를 할수 없는 명령어 입니다.");
 		if (num.length() > 6)
-			throw new Exception("잘못된 형식의 디바이스 번호입니다.");
+			throw new MCProtocolException("잘못된 형식의 디바이스 번호입니다.");
 		if (score.length() > 4)
-			throw new Exception("잘못된 형식의 스코어 입니다.");
+			throw new MCProtocolException("잘못된 형식의 스코어 입니다.");
 
 		totalScore += Integer.parseInt(score);
 		totalBlock++;
 
 		if (totalBlock >= MAX_BLOCK_NUM) {
-			throw new Exception("최대블록수를 초과 하였습니다.");
+			throw new MCProtocolException("최대블록수를 초과 하였습니다.");
 		}
 		if (totalScore >= MAX_SCORE) {
-			throw new Exception("최대스코어를 초과 하였습니다.");
+			throw new MCProtocolException("최대스코어를 초과 하였습니다.");
 		}
 
 		this.requestReadData.add(new RequestReadDataObj(code, num, score));
@@ -135,21 +136,21 @@ public class MultipleBlockBatchReadWriteProtocol extends AbstractBlocksFrame {
 	@Override
 	public void addWriteRequest(String code, String num, String score, String dataType, String data) throws Exception {
 		if (getCommand() != Command.MULTIPLE_BLCOK_WRITE)
-			throw new Exception("쓰기 요구를 할수 없는 명령어 입니다.");
+			throw new MCProtocolException("쓰기 요구를 할수 없는 명령어 입니다.");
 		if (num.length() > 6)
-			throw new Exception("잘못된 형식의 디바이스 번호입니다.");
+			throw new MCProtocolException("잘못된 형식의 디바이스 번호입니다.");
 		if (score.length() > 4)
-			throw new Exception("잘못된 형식의 스코어 입니다.");
+			throw new MCProtocolException("잘못된 형식의 스코어 입니다.");
 
 		int iScore = Integer.parseInt(score);
 		if (iScore != data.length() / 4)
-			throw new Exception("스코어에 해당하는 쓰기 데이터 길이가 불일치 합니다.");
+			throw new MCProtocolException("스코어에 해당하는 쓰기 데이터 길이가 불일치 합니다.");
 
 		totalScore = totalScore + iScore;
 		totalBlock++;
 		
 		if ((totalBlock*4)+totalScore>=960) {
-			throw new Exception("쓸 수 있는 최대 수를 초과 하였습니다.");
+			throw new MCProtocolException("쓸 수 있는 최대 수를 초과 하였습니다.");
 		}
 
 		this.requestWriteData.add(new RequestWriteDataObj(code, num, score, data));

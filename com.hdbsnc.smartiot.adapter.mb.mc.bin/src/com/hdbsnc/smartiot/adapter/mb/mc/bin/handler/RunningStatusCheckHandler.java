@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IRunningStatus;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StatusRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
@@ -46,9 +47,9 @@ public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctio
 			String protocolVerion = req.getParam().getVersion();
 			String protocolMethod = req.getMethod();
 			if(!Util.PROTOCOL_VERSION.equals(protocolVerion)) {
-				throw new Exception("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
+				throw new ApplicationException("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
 			}else if(!ADAPTER_HANDLER_PROTOCOL_METHOD_NAME.equals(protocolMethod)) {
-				throw new Exception("프로토콜 기능명이 일치 하지 않습니다. 기능명을 확인해주세요");
+				throw new ApplicationException("프로토콜 기능명이 일치 하지 않습니다. 기능명을 확인해주세요");
 			}
 			
 			Map statusMap = _manager.statusAll();

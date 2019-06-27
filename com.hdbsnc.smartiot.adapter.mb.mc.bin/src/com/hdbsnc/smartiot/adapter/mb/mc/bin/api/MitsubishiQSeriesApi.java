@@ -12,7 +12,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.Comma
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.SubCommand;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.BatchReadWriteProtocol;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MitsubishiQSeriesMCCompleteException;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 import com.hdbsnc.smartiot.util.logger.Log;
 
@@ -160,7 +160,7 @@ public class MitsubishiQSeriesApi {
 
 		// 만약 에러코드가 날아오면 Exception 처리
 		if (!(frame.getResponseCode().equals("0000"))) {
-			throw new MitsubishiQSeriesMCCompleteException(frame.getResponseCode(), frame.getResponseData());
+			throw new MCProtocolResponseException(frame.getResponseCode(), frame.getResponseData());
 		} else {
 			// 성공적이라면 데이터 부만 받아서 리턴
 			return frame.getResponseData();

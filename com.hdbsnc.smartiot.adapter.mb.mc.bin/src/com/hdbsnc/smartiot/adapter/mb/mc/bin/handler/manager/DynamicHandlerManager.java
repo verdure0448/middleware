@@ -11,11 +11,10 @@ import java.util.Set;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.ReadBatchProcessHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
-import com.hdbsnc.smartiot.common.context.handler.exception.ElementNotFoundException;
-import com.hdbsnc.smartiot.common.context.handler.exception.ElementNullOrEmptyPathException;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.impl.RootHandler;
 import com.hdbsnc.smartiot.common.em.IEventManager;
@@ -68,7 +67,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	
 		// 이미 만들어진 IP 및 PORT가 있는지 확인
 		if (isConnection(ip, port)) {
-			throw new Exception("이미 기동 중인 IP : " + ip + " Port : " + port + " 입니다.");
+			throw new ApplicationException("이미 기동 중인 IP : " + ip + " Port : " + port + " 입니다.");
 		}
 		// 만들어진 IP 및 PORT가 없다면 생성
 		MitsubishiQSeriesApi api = new MitsubishiQSeriesApi(TransMode.BINARY, _log);
@@ -83,7 +82,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			_handlerMap.put(path, handler);
 			break;
 		default:
-			throw new Exception("지원하지 않는 핸들러입니다.");
+			throw new ApplicationException("지원하지 않는 핸들러입니다.");
 		}
 
 		startPolling(sEmKey, pollingIntervalSec);
@@ -123,7 +122,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	public void delete(String path) throws Exception {
 		
 		if (!_handlerMap.containsKey(path)) {
-			throw new Exception("존재하지 않는 핸들러 입니다.");
+			throw new ApplicationException("존재하지 않는 핸들러 입니다.");
 		}
 		
 		_root.deleteHandler(path.split("/"));

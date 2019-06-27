@@ -2,12 +2,13 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.BitSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.DatatypeConverter;
+
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.EditutilException;
 
 public class EditUtil {
 
@@ -81,7 +82,7 @@ public class EditUtil {
 	 */
 	public static byte[] hexStr6ToBigEndianBytes(String val) throws Exception {
 		if (val.length() % 6 != 0) {
-			throw new Exception("6자리의 에디안만 변경가능 합니다.");
+			throw new EditutilException("6자리의 에디안만 변경가능 합니다.");
 		}
 
 		StringBuilder preSb = new StringBuilder();
@@ -104,7 +105,7 @@ public class EditUtil {
 	 */
 	public static byte[] hexStr4ToBigEndianBytes(String val) throws Exception {
 		if (val.length() % 4 != 0) {
-			throw new Exception("4자리의 에디안만 변경가능 합니다.");
+			throw new EditutilException("4자리의 에디안만 변경가능 합니다.");
 		}
 
 		byte[] src = hexStrToBytes(val);
@@ -129,7 +130,7 @@ public class EditUtil {
 
 		byte[] result = new byte[bVal.length];
 		if (bVal.length %2 != 0) {
-			throw new Exception("4자리의 에디안만 변경가능 합니다.");
+			throw new EditutilException("4자리의 에디안만 변경가능 합니다.");
 		}
 
 		for (int i = 0; i < bVal.length / 2; i++) {
@@ -294,7 +295,7 @@ public class EditUtil {
 	public static String getBitStrFromHexStr(byte[] bVal, int idex) throws Exception {
 
 		if (bVal.length != 2)
-			throw new Exception("byte배열 length 오류.");
+			throw new EditutilException("byte배열 length 오류.");
 		char[] chars = new char[16];
 
 		for (int i = 0; i < 8; i++) {
@@ -322,7 +323,7 @@ public class EditUtil {
 	public static String parserRecvData(String data, String formatter) throws Exception {
 		Matcher m1 = p1.matcher(formatter);
 		if (!m1.find()) {
-			throw new ParseException(formatter, 0);
+			throw new EditutilException(formatter);
 		}
 
 		// index, length

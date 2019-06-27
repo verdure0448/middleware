@@ -4,33 +4,33 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception;
  * @author DBeom
  * 공통적인 에러코드가 들어갈 곳
  */ 
-public class ApplicationException extends Exception {
+public class EditutilException extends Exception {
 
 	private String code = "null";
 	private String msg = "null";
 
-	public ApplicationException(){
+	public EditutilException(){
 		super();
 	}
 	
-	public ApplicationException(Exception e){
+	public EditutilException(Exception e){
 		super(e);
 	}
 	
-	public ApplicationException(String code){
+	public EditutilException(String code){
 		super(code);
 	}
 	
-	public ApplicationException(String code, Exception e){
+	public EditutilException(String code, Exception e){
 		super(code, e);
 	}
 	
-	public ApplicationException(String code, String msg){
+	public EditutilException(String code, String msg){
 		super(code);
 		this.code = code;
 	}
 	
-	public ApplicationException(String code, String msg, Exception e){
+	public EditutilException(String code, String msg, Exception e){
 		super(code, e);
 		
 		this.code = code;

@@ -4,6 +4,7 @@ package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 import java.nio.ByteBuffer;
 
 import com.google.gson.Gson;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling.HandlerType;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
@@ -53,9 +54,9 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 			String protocolVerion = req.getParam().getVersion();
 			String protocolMethod = req.getMethod();
 			if(!Util.PROTOCOL_VERSION.equals(protocolVerion)) {
-				throw new Exception("프로토콜 버전 불일치 .");
+				throw new ApplicationException("프로토콜 버전 불일치 .");
 			}else if(!ADAPTER_HANDLER_PROTOCOL_METHOD_NAME.equals(protocolMethod)) {
-				throw new Exception("지원하지 않는 Method 요청.");
+				throw new ApplicationException("지원하지 않는 Method 요청.");
 			}
 			
 			String sPath = makePath(req);

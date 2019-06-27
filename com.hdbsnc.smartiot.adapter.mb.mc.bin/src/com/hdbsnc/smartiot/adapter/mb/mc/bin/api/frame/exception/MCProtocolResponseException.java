@@ -6,7 +6,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
  * @author dbkim
  * 멜섹의 에러코드들이 실제적으로 들어갈 곳
  */
-public class MitsubishiQSeriesMCCompleteException extends Exception{
+public class MCProtocolResponseException extends Exception{
 
 	public final static String LIMIT = "";
 	public final static String READ_STARTADDRESS = "C050";
@@ -26,7 +26,7 @@ public class MitsubishiQSeriesMCCompleteException extends Exception{
 	private String resSubCmd;
 	private String errorCode;
 	
-	public MitsubishiQSeriesMCCompleteException(String errorCode, String responseData) throws Exception {
+	public MCProtocolResponseException(String errorCode, String responseData) throws Exception {
 		super("ErrorCode : "+ errorCode);
 		this.errorCode = errorCode;
 
