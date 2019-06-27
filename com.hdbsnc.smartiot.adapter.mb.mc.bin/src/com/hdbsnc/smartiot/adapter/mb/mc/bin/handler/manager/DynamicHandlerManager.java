@@ -120,15 +120,16 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public void delete(String path) throws IOException, ElementNullOrEmptyPathException, ElementNotFoundException {
+	public void delete(String path) throws Exception {
 		
-		if (_handlerMap.containsKey(path)) {
-			
-			_root.deleteHandler(path.split("/"));
-			_handlerMap.remove(path);
-			_log.info("[Handler] : " + path + " 해제");
+		if (!_handlerMap.containsKey(path)) {
+			throw new Exception("존재하지 않는 핸들러 입니다.");
 		}
-
+		
+		_root.deleteHandler(path.split("/"));
+		_handlerMap.remove(path);
+		_log.info("[Handler] : " + path + " 해제");
+		
 		MitsubishiQSeriesApi api;
 		// 키가 존재
 		if (_apiMap.containsKey(path)) {

@@ -59,13 +59,13 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 		manager = new DynamicHandlerManager(root, aim, _em, did, sid, _log);
 		
 		//멜섹 프로토콜 핸들러를 동적으로 생성한다
-		root.putHandler("create/mb/melsec", new CreateRequestHandler("handler", 3000, sid, manager, aim, _log));
+		root.putHandler("create/mb/melsec", new CreateRequestHandler("handler", 3000, manager, _log));
 		//멜섹 프로토콜 핸들러를 삭제한다.
-		root.putHandler("delete/mb/melsec", new DeleteRequestHandler("handler", 3000, sid, manager, aim, _log));
+		root.putHandler("delete/mb/melsec", new DeleteRequestHandler("handler", 3000, manager, _log));
 		//멜섹 프로토콜 핸들러를 전체삭제한다.
-		root.putHandler("delete/all/mb/melsec", new DeleteRequestHandler("handler", 3000, sid, manager, aim, _log));
+		root.putHandler("delete/all/mb/melsec", new DeleteRequestHandler("handler", 3000, manager, _log));
 		//멜섹 핸들러의 상태를 확인한다.
-		root.putHandler("status/mb/melsec", new RunningStatusCheckHandler("handler", 3000, sid, manager, aim, _log));
+		root.putHandler("status/mb/melsec", new RunningStatusCheckHandler("handler", 3000, manager, _log));
 		
 		root.printString();
 	}

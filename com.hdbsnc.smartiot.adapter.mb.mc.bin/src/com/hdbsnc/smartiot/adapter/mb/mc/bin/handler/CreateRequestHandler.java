@@ -1,12 +1,13 @@
 
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 
+import java.nio.ByteBuffer;
+
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling.HandlerType;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
-import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
@@ -21,24 +22,18 @@ import com.hdbsnc.smartiot.util.logger.Log;
  */
 public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHandler {
 	
-	private static final String ADAPTER_HANDLER_TARGET_ID = "zeromq.1";
-	private static final String ADAPTER_HANDLER_TARGET_HANDLER_PATH = "zmq/res";
 	private static final String ADAPTER_HANDLER_PROTOCOL_METHOD_NAME = "start";
 	
 	private ICreatePolling _manager;
-	private IAdapterInstanceManager _aim;
 	private Log _log;
-	private String _sid;
 	private Gson _gson;
 	
-	public CreateRequestHandler(String name, long timeout, String sid, ICreatePolling manager, IAdapterInstanceManager aim, Log log) {
+	public CreateRequestHandler(String name, long timeout, ICreatePolling manager, Log log) {
 		super(name, timeout);
 		
 		_manager = manager;
-		_aim = aim;
 		_log = log.logger(this.getClass());
-		_sid = sid;
-		 _gson = new Gson();
+		_gson = new Gson();
 	}
 	
 	@Override
@@ -79,8 +74,12 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 			sResContents = Util.makeFailStartResponseJson(sId, "-1", e.getMessage());
 		}
 
-		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sResContents);
-		outboundCtx.dispose();
+		outboundCtx.getPaths().add("ack");
+		outboundCtx.setTID("this");
+		outboundCtx.setTransmission("res");
+		outboundCtx.setContenttype("json");
+		outboundCtx.setContent(ByteBuffer.wrap(sResContents.getBytes()));
+		_log.trace(UrlParser.getInstance().convertToString(outboundCtx));
 	}
 	 
 	@Override
