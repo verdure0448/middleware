@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import javax.xml.bind.DatatypeConverter;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.EditutilException;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopRequest;
 
 public class EditUtil {
 
@@ -449,6 +450,33 @@ public class EditUtil {
 	}
 
 	
-	
-	
+	/**
+	 * 핸들러의 이름을 가지고 온다.
+	 * @param path
+	 * @return
+	 */
+	public static String getHandlerName(String path) {
+
+		int length = path.split("/").length;
+		String result = path.split("/")[length-1];
+
+		return result;
+	}
+
+	/**
+	 * 핸들러 경로를 가지고 온다.
+	 * @param path
+	 * @return
+	 */
+	public static String getHandlerPath(String path) {
+		String result = "";
+
+		for (int i = 0; i < path.split("/").length - 1; i++) {
+			if (i != 0) {
+				result += "/";
+			}
+			result += path.split("/")[i];
+		}
+		return result;
+	}
 }

@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IDeletePolling;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopRequest;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
@@ -90,19 +91,18 @@ public class DeleteRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));		
 	}
 
+
 	/**
-	 * 삭제할 핸들러의 경로를 만들어 준다.
-	 * 경로 : read/polling/프로토콜id/프로토콜event.id
+	 * 핸들러 풀경로를 만들어 준다.
+	 * 경로 : read/polling/프로토콜event.id
 	 * @param req
 	 * @return
 	 */
-	private String makePath(StopRequest req) {
+	public static String makePath(StopRequest req) {
 
 		StringBuffer sbPath = new StringBuffer();
 		sbPath.append("read/");
 		sbPath.append("polling/");
-		sbPath.append(req.getId());
-		sbPath.append("/");
 		sbPath.append(req.getParam().getEventID());
 		
 		return sbPath.toString();

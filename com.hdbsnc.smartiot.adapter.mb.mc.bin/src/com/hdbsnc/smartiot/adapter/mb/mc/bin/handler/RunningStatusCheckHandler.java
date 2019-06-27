@@ -1,7 +1,6 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
 
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
@@ -52,7 +51,7 @@ public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctio
 				throw new ApplicationException("프로토콜 기능명이 일치 하지 않습니다. 기능명을 확인해주세요");
 			}
 			
-			Map statusMap = _manager.statusAll();
+			Object[] statusMap = _manager.statusAll();
 
 			//정상 Start 후 응답
 			sResContents = Util.makeSuccessStatusResponseJson(sId, statusMap);

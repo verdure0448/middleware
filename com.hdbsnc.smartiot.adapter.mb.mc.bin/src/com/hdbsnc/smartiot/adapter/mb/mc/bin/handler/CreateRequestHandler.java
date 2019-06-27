@@ -8,6 +8,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationExce
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling.HandlerType;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
@@ -98,10 +99,10 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 
 		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));		
 	}
-
+	
 	/**
 	 * 생성할 핸들러의 경로를 만들어 준다.
-	 * 경로 : read/polling/프로토콜id/프로토콜event.id
+	 * 경로 : read/polling/프로토콜event.id
 	 * @param req
 	 * @return
 	 */

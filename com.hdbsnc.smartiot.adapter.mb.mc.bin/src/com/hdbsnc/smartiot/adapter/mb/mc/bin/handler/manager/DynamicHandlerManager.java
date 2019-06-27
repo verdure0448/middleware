@@ -1,21 +1,18 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.ReadBatchProcessHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
-import com.hdbsnc.smartiot.common.context.handler.exception.ElementNotFoundException;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.impl.RootHandler;
 import com.hdbsnc.smartiot.common.em.IEventManager;
@@ -26,12 +23,8 @@ import com.hdbsnc.smartiot.util.logger.Log;
  */
 public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IRunningStatus {
 
-	// 핸들러를 저장하기 위한 핸들러
-	private Map<String, AbstractTransactionTimeoutFunctionHandler> _handlerMap;
-	// 이벤트 매니저의 키를 저장
-	private Set<String> _emKeySet;
-	private Map<String, MitsubishiQSeriesApi> _apiMap;
-	private Map<String, StartRequest.Param> _status;
+	//EM, MelsecAPI, Hanlder을 관리한다.
+	private Map<String, Value> _handleManager;
 
 	private IEventManager _em;
 	private RootHandler _root;
@@ -45,10 +38,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 
 	public DynamicHandlerManager(RootHandler root, IAdapterInstanceManager aim, IEventManager em, String did, String sid, Log log) {
 
-		_handlerMap = new Hashtable<String, AbstractTransactionTimeoutFunctionHandler>();
-		_apiMap = new Hashtable<String, MitsubishiQSeriesApi>();
-		_emKeySet = new HashSet<String>();
-		_status = new Hashtable<String, StartRequest.Param>();
+		_handleManager = new HashMap<String, Value>();
 
 		_em = em;
 		_aim = aim;
@@ -62,147 +52,92 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	@Override
 	public synchronized void start(HandlerType kind, String path, String ip, int port, int pollingIntervalSec, StartRequest startRequest) throws Exception{
 
-		String sHandlerPath = getHandlerPath(path);
-		String sHandlerName = getHandlerName(path);
-		String sEmKey = path;
-
-		// 이미 만들어진 핸들러가 있는지 확인
-		if(isHandler(path)) {
-			throw new ApplicationException("이미 존재하는 핸들러입니다. id 및 event.id를 확인해주세요.");
-		}
+		String key = path;
+		Value value = new Value(key, startRequest);
 		
-		// 이미 만들어진 IP 및 PORT가 있는지 확인
-		if (isConnection(ip, port)) {
-			throw new ApplicationException("이미 기동 중인 IP : " + ip + " Port : " + port + " 입니다.");
-		}
-		// 만들어진 IP 및 PORT가 없다면 생성
-		MitsubishiQSeriesApi api = new MitsubishiQSeriesApi(TransMode.BINARY, _log);
-		
-		//연결의 문제가 있을 경우 connection refuser로 Throw 발생
-		api.connect(ip, port);
-
 		switch (kind) {
 		case READ_BATCH_PROCESS_HANDLER:
-			AbstractTransactionTimeoutFunctionHandler handler = new ReadBatchProcessHandler(sHandlerName, 3000,_aim, _sid, api, startRequest, _log); 
-			_root.putHandler(sHandlerPath, handler);
-			_handlerMap.put(path, handler);
+			try {
+				value.createApi(ip, port);
+				value.createHandler();
+				value.createEm(pollingIntervalSec);
+				_handleManager.put(key, value);
+				_root.printString();
+			}catch(Exception e) {
+				value.cancleAll();
+				throw e;
+			}
+			
 			break;
 		default:
 			throw new ApplicationException("지원하지 않는 핸들러입니다.");
 		}
-
-		startPolling(sEmKey, pollingIntervalSec);
-		_status.put(sEmKey, startRequest.getParam());
-		_apiMap.put(sEmKey, api);
-
-		_root.printString();
+		
 	}
 
-	/**
-	 * 인자로 전달 받은 Path에 핸들러가 존재하는지 확인한다.
-	 * @param path
-	 * @return
-	 */
-	private boolean isHandler(String path) {
-
-		if(_handlerMap.containsKey(path)){
-			return true;
-		}
+	@Override
+	public Object[] statusAll() throws ApplicationException {
+		// 키가 존재
+		Iterator it = _handleManager.keySet().iterator();
+		String path;
+		List<StartRequest.Param> stauslist = new ArrayList();
+		Value value;
 		
-		return false;
-	}
-
-	/**
-	 * IP 및 PORT가 이미 기동중인지 확인한다.
-	 * @param sIP
-	 * @param iPort
-	 * @return
-	 */
-	private boolean isConnection(String sIP, int iPort) {
-
-		if(_apiMap.size()==0) {
-			return false;
-		}
-		
-		Iterator it = _apiMap.keySet().iterator();
-		String key;
-		MitsubishiQSeriesApi api;
 		while (it.hasNext()) {
-			key = (String) it.next();
-			api = _apiMap.get(key);
-
-			if (api.getIp().equals(sIP) && api.getPort() == iPort) {
-				return true;
-			}
+			path = (String) it.next();
+			value = _handleManager.get(path);
+			stauslist.add(value.getParam());
 		}
 
-		return false;
-	}
-
-	@Override
-	public Map statusAll() {
-		return _status;
-	}
-
-	@Override
-	public synchronized void delete(String path) throws Exception {
+		Object[] result = stauslist.toArray(new StartRequest.Param[stauslist.size()]);
+		if(result == null || result.length == 0) {
+			throw new ApplicationException("기동중인 핸들러가 존재하지 않습니다.");
+		}
 		
-		if (!_handlerMap.containsKey(path)) {
+		return result;
+	}
+
+	@Override
+	public synchronized void delete(String key) throws Exception {
+		
+		if (!_handleManager.containsKey(key)) {
 			throw new ApplicationException("존재하지 않는 핸들러 입니다.");
 		}
-		
-		_root.deleteHandler(path.split("/"));
-		_handlerMap.remove(path);
-		_log.info("[Handler] : " + path + " 해제");
-		
-		MitsubishiQSeriesApi api;
-		// 키가 존재
-		if (_apiMap.containsKey(path)) {
-			api = _apiMap.get(path);
-			if (api.isConnected()) {
-				api.disconnect();
-				api = null;
-			}
-			_apiMap.remove(path);
-		}
 
-		stopPolling(path);
+		_handleManager.get(key).cancleAll();
+		_log.info("[Handler] : " + key + " 해제");
+		
+		_handleManager.remove(key);
 		_root.printString();
 	}
 
 	@Override
 	public synchronized String[] deleteAll() throws Exception {
 		
-		List<String> eventIdList = new ArrayList<String>();
-		String eventId;
+		if(_handleManager.size()==0) {
+			throw new ApplicationException("삭제할 핸들러가 존재하지 않습니다.");
+		}
 		
-		Set<String> copyKeys = new HashSet();
-		copyKeys.addAll(_emKeySet);
+		//DEEP COPY
+		Map tmp = new HashMap();
+		tmp.putAll(_handleManager);
 		
-		for (String key : copyKeys) {
+		Iterator it = tmp.keySet().iterator();
+		String key, eventId;
+		List<String> eventIdList = new ArrayList();
+		while (it.hasNext()) {
+			key = (String) it.next();
 			delete(key);
-			
-			//read/polling/프로토콜event.id
-			eventId = key.split("/")[2];
+			eventId = EditUtil.getHandlerName(key);
 			eventIdList.add(eventId);
 		}
 		
-		_emKeySet.clear();
-		_handlerMap.clear();
-		_apiMap.clear();
-		_status.clear();
-
 		String[] result = eventIdList.toArray(new String[eventIdList.size()]);
-		if(result == null || result.length == 0) {
-			throw new ApplicationException("핸들러 PATH가 존재하지않습니다.");
-		}
 		
 		return result;
-
 	}
 
 	private void startPolling(String emKey, int intervalSec) {
-		_emKeySet.add(emKey);
 		_em.addPollingAdapterProcessorEvent(emKey, _sid, _did, emKey, null, intervalSec);
 		_log.info("[EventManager] : " + emKey + " 등록");
 	}
@@ -213,31 +148,156 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			_em.removePollingAdapterProcessorEvent(emKey);
 
 			_log.info("[EventManager] : " + emKey + " 해제");
-			
-			_emKeySet.remove(emKey);
-			
-			//[PLC 수집 조회 프로토콜]에서 제외 되므로 삭제
-			_status.remove(emKey);
 		}
 	}
+	
+	
+	/**
+	 * @author user
+	 * 핸들러 동적 생성 시 관리할 내용들을 저장할 클래스
+	 */
+	class Value {
 
-	private String getHandlerName(String path) {
+		String path;
+		AbstractTransactionTimeoutFunctionHandler handler;
+		MitsubishiQSeriesApi api;
+		StartRequest startRequest;
 
-		int length = path.split("/").length;
-		String result = path.split("/")[length-1];
+		Value(String key, StartRequest startRequest){
+			this.path = key;
+			this.startRequest = startRequest;
+		}
+		
+		/**
+		 * Melsec API를 만들어 준다.
+		 * @param ip
+		 * @param port
+		 * @throws Exception
+		 */
+		void createApi(String ip, int port) throws Exception {
 
-		return result;
-	}
-
-	private String getHandlerPath(String path) {
-		String result = "";
-
-		for (int i = 0; i < path.split("/").length - 1; i++) {
-			if (i != 0) {
-				result += "/";
+			// 이미 만들어진 IP 및 PORT가 있는지 확인
+			if (isConnection(ip, port)) {
+				throw new ApplicationException("이미 기동 중인 IP : " + ip + " Port : " + port + " 입니다.");
 			}
-			result += path.split("/")[i];
+			api = null;
+			try {
+				api = new MitsubishiQSeriesApi(TransMode.BINARY, _log);
+				api.connect(ip, port);
+			}catch(Exception e) {
+				throw e;
+			}
 		}
-		return result;
+		
+		/**
+		 * 멜섹 핸들러를 만들어 준다.
+		 * @throws ApplicationException 
+		 */
+		void createHandler() throws Exception {
+			try {
+				String sHandlerPath = EditUtil.getHandlerPath(path);
+				String sHandlerName = EditUtil.getHandlerName(path);
+				
+				// 이미 만들어진 핸들러가 있는지 확인
+				if(isHandler(path)) {
+					throw new ApplicationException("이미 존재하는 핸들러입니다. id 및 event.id를 확인해주세요.");
+				}
+				
+				// 만들어진 IP 및 PORT가 없다면 생성
+				handler = new ReadBatchProcessHandler(sHandlerName, 3000,_aim, _sid, api, startRequest, _log); 
+				_root.putHandler(sHandlerPath, handler);
+				_root.printString();
+			}catch(Exception e) {
+				throw e;
+			}
+		}
+		
+		/**
+		 * 정해진 Path를 주기적으로 폴링한다.
+		 * @param intervalSec
+		 * @throws Exception
+		 */
+		void createEm(int intervalSec) throws Exception{
+			startPolling(path, intervalSec);
+		}
+		
+		/**
+		 * 생성된 모든 객체를 제거한다.
+		 * @throws Exception
+		 */
+		void cancleAll() throws Exception {
+			
+			//_root에 핸들러가 있으면 제거
+			if(handler != null) {
+				if(_root.findHandler(path)!=null) {
+					_root.deleteHandler(path.split("/"));
+				}
+			}
+			//api가 있으면 제거
+			if(api != null) {
+				if(api.isConnected()) {
+					api.disconnect();
+				}
+			}
+			//폴링 정지
+			stopPolling(path);
+			
+			handler = null;
+			api = null;
+			path = null;
+		}
+		
+		StartRequest.Param getParam(){
+			return startRequest.getParam();
+		}
+		
+		/**
+		 * 인자로 전달 받은 Path에 핸들러가 존재하는지 확인한다.
+		 * @param path
+		 * @return
+		 */
+		boolean isHandler(String path) throws Exception{
+
+			if(handler != null) {
+				if(_root.findHandler(path)!=null) {
+					return true;
+				}
+			}
+			
+			return false;
+		}
+
+		/**
+		 * IP 및 PORT가 이미 기동중인지 확인한다.
+		 * @param sIP
+		 * @param iPort
+		 * @return
+		 */
+		boolean isConnection(String sIP, int iPort) {
+
+			if(_handleManager.size()==0) {
+				return false;
+			}
+
+			//DEEP COPY
+			Map tmp = new HashMap();
+			tmp.putAll(_handleManager);
+			
+			Iterator it = tmp.keySet().iterator();
+			String key;
+			MitsubishiQSeriesApi api;
+			while (it.hasNext()) {
+				key = (String) it.next();
+				api = _handleManager.get(key).api;
+
+				if (api.getIp().equals(sIP) && api.getPort() == iPort) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 	}
+	
 }

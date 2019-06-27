@@ -269,10 +269,10 @@ public class Util {
 	/**
 	 * [PLC 수집 조회 프로토콜] 성공시 JSON PROTOCOL을 만들어준다.
 	 * @param id
-	 * @param statusMap
+	 * @param statusArray
 	 * @return
 	 */
-	public static String makeSuccessStatusResponseJson(String id, Map statusMap) {
+	public static String makeSuccessStatusResponseJson(String id, Object[] paramArray) {
 		
 		String result;
 		
@@ -282,25 +282,19 @@ public class Util {
 		
 		StatusResponse.Result statusResult = statusRes.new Result();
 		statusResult.setVersion(PROTOCOL_VERSION);
-
-		StatusResponse.Status[] statusArray = new StatusResponse.Status[statusMap.size()]; 
 		
-		Iterator it = (Iterator) statusMap.keySet().iterator();
-		String key;
-		int idx = 0;
-		StartRequest.Param param;
-		while(it.hasNext()) {
-			key = (String) it.next();
+		StatusResponse.Status[] statusArray = new StatusResponse.Status[paramArray.length]; 
 
-			param = (StartRequest.Param) statusMap.get(key);
+		StartRequest.Param param;
+		for(int i=0; i< paramArray.length; i++) {
+			param = (StartRequest.Param) paramArray[i];
 			
-			statusArray[idx] = statusRes.new Status();
-			statusArray[idx].setEventID(param.getEventID());
-			statusArray[idx].setPlcIp(param.getPlcIp());
-			statusArray[idx].setPlcPort(param.getPlcPort());
-			statusArray[idx].setPollingPeriod(param.getPollingPeriod());
+			statusArray[i] = statusRes.new Status();
+			statusArray[i].setEventID(param.getEventID());
+			statusArray[i].setPlcIp(param.getPlcIp());
+			statusArray[i].setPlcPort(param.getPlcPort());
+			statusArray[i].setPollingPeriod(param.getPollingPeriod());
 			
-			idx++;
 		}
 		
 		statusResult.setStatus(statusArray);
