@@ -132,13 +132,16 @@ public class ZeromqApi {
 			throw new UnsupportedDataTypeException("Unsupported function.");
 		}
 		
-		byte[] sendData = new byte[topic.length + msg.length + 1];
-		System.arraycopy(topic, 0, sendData, 0, topic.length);
-		sendData[topic.length] = 0x20;
-		System.arraycopy(msg, 0, sendData, topic.length + 1, msg.length);
+//		byte[] sendData = new byte[topic.length + msg.length + 1];
+//		System.arraycopy(topic, 0, sendData, 0, topic.length);
+//		sendData[topic.length] = 0x20;
+//		System.arraycopy(msg, 0, sendData, topic.length + 1, msg.length);
 
-		System.out.println(new String(sendData));
-		mSocket.send(sendData, 0);
+		//System.out.println(new String(sendData));
+		//mSocket.send(sendData, 0);
+		
+		mSocket.sendMore(topic);
+		mSocket.send(msg, 0);
 	}
 
 	class EventProcess implements Runnable {

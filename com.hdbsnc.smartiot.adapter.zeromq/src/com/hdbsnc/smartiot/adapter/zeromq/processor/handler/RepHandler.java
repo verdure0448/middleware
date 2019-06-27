@@ -14,6 +14,7 @@ import com.hdbsnc.smartiot.adapter.zeromq.obj.CommonResponse;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.ResError;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.StatusRequest;
+import com.hdbsnc.smartiot.adapter.zeromq.obj.StopAllRequest;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.StopRequest;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
@@ -103,7 +104,11 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_DELETE_HANDLER_PATH.split("/")));
 			break;
 		case "stop.all":
-			// TODO
+			gson.fromJson(content, StopAllRequest.class);
+
+			ICtx.setSid(inboundCtx.getSID()); // Device ID
+			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
+			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_DELETE_ALL_HANDLER_PATH.split("/")));
 			break;
 		case "status":
 			// 포멧 체크
