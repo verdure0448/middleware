@@ -60,6 +60,7 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 			sResContents = Util.makeSuccessStopAllResponseJson(sId, eventIdArray);
 		}catch(Exception e) {
 			//비정상 Start 후 응답
+			_log.err(e);
 			sResContents = Util.makeFailStopAllResponseJson(sId, "-1", e.getMessage());
 		}
 

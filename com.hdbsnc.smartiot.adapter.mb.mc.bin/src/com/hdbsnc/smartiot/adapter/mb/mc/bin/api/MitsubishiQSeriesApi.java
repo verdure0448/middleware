@@ -39,7 +39,7 @@ public class MitsubishiQSeriesApi {
 	 * @param ports
 	 * @throws IOException
 	 */
-	public synchronized void connect(String ip, int port) throws IOException {
+	public void connect(String ip, int port) throws IOException {
 		//포트를 List에 담을 수있도록 파서 한다.
 		
 		
@@ -62,7 +62,7 @@ public class MitsubishiQSeriesApi {
 	 * 연결이  해제 될 경우 호출한다.
 	 * @throws IOException
 	 */
-	public synchronized void reConnect() throws IOException {
+	public void reConnect() throws IOException {
 		this._socket = new Socket();
 		this._socket.setKeepAlive(false);
 		this._socket.setReuseAddress(false);
@@ -80,7 +80,7 @@ public class MitsubishiQSeriesApi {
 	 * 현재 연결되 있는 PLC와의 접속을 해제한다.
 	 * @throws IOException
 	 */
-	public synchronized void disconnect() throws IOException {
+	public void disconnect() throws IOException {
 		if (this._socket != null) {
 			this._socket.close();
 			this._socket=null;
@@ -91,7 +91,7 @@ public class MitsubishiQSeriesApi {
 	 * 현재 연결이 유효한지 확인한다.
 	 * @return
 	 */
-	public synchronized boolean isConnected() {
+	public boolean isConnected() {
 		if (this._socket != null) {
 			if (this._socket.isConnected() && !this._socket.isClosed())
 				return true;
@@ -106,7 +106,7 @@ public class MitsubishiQSeriesApi {
 	 * @return
 	 * @throws IOException
 	 */
-	private synchronized byte[] sendData(byte[] reqData) throws IOException {
+	private byte[] sendData(byte[] reqData) throws IOException {
 		ByteArrayOutputStream out = null;
 		BufferedInputStream in = null;
 		byte[] result;

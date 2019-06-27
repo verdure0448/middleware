@@ -58,6 +58,7 @@ public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctio
 			sResContents = Util.makeSuccessStatusResponseJson(sId, statusMap);
 		}catch(Exception e) {
 			//비정상 Start 후 응답
+			_log.err(e);
 			sResContents = Util.makeFailStartResponseJson(sId, "-1", e.getMessage());
 		}
 
