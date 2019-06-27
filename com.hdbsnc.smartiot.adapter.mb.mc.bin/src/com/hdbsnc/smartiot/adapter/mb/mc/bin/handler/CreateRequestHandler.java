@@ -62,7 +62,7 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 			String sPath = makePath(req);
 			String sEventId = req.getParam().getEventID();
 	
-			int iPollingIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod());
+			int iPollingIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod()) * 1000;
 			String sIP = req.getParam().getPlcIp();
 			int iPort = Integer.parseInt(req.getParam().getPlcPort());
 			
