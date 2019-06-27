@@ -110,8 +110,6 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		StringBuffer sbPath = new StringBuffer();
 		sbPath.append("read/");
 		sbPath.append("polling/");
-		sbPath.append(req.getId());
-		sbPath.append("/");
 		sbPath.append(req.getParam().getEventID());
 		
 		return sbPath.toString();

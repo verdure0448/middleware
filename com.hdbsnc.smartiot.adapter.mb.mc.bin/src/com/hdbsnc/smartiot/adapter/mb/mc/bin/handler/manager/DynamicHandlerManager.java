@@ -15,6 +15,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationExce
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.ReadBatchProcessHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
+import com.hdbsnc.smartiot.common.context.handler.exception.ElementNotFoundException;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.impl.RootHandler;
 import com.hdbsnc.smartiot.common.em.IEventManager;
@@ -59,12 +60,17 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public void start(HandlerType kind, String path, String ip, int port, int pollingIntervalSec, StartRequest startRequest) throws Exception{
+	public synchronized void start(HandlerType kind, String path, String ip, int port, int pollingIntervalSec, StartRequest startRequest) throws Exception{
 
 		String sHandlerPath = getHandlerPath(path);
 		String sHandlerName = getHandlerName(path);
 		String sEmKey = path;
-	
+
+		// 이미 만들어진 핸들러가 있는지 확인
+		if(isHandler(path)) {
+			throw new ApplicationException("이미 존재하는 핸들러입니다. id 및 event.id를 확인해주세요.");
+		}
+		
 		// 이미 만들어진 IP 및 PORT가 있는지 확인
 		if (isConnection(ip, port)) {
 			throw new ApplicationException("이미 기동 중인 IP : " + ip + " Port : " + port + " 입니다.");
@@ -92,6 +98,26 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		_root.printString();
 	}
 
+	/**
+	 * 인자로 전달 받은 Path에 핸들러가 존재하는지 확인한다.
+	 * @param path
+	 * @return
+	 */
+	private boolean isHandler(String path) {
+
+		if(_handlerMap.containsKey(path)){
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * IP 및 PORT가 이미 기동중인지 확인한다.
+	 * @param sIP
+	 * @param iPort
+	 * @return
+	 */
 	private boolean isConnection(String sIP, int iPort) {
 
 		if(_apiMap.size()==0) {
@@ -119,7 +145,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public void delete(String path) throws Exception {
+	public synchronized void delete(String path) throws Exception {
 		
 		if (!_handlerMap.containsKey(path)) {
 			throw new ApplicationException("존재하지 않는 핸들러 입니다.");
@@ -145,51 +171,34 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public String[] deleteAll() throws IOException {
+	public synchronized String[] deleteAll() throws Exception {
 		
 		List<String> eventIdList = new ArrayList<String>();
 		String eventId;
 		
-		// 키가 존재
-		Iterator it = _apiMap.keySet().iterator();
-		String path;
-		MitsubishiQSeriesApi api;
-
-		while (it.hasNext()) {
-			path = (String) it.next();
-			api = _apiMap.get(path);
-			if (api.isConnected()) {
-				api.disconnect();
-				api = null;
-			}
-			_apiMap.remove(path);
-		}
-
-		// 컨슈머 해제
-		for (String emKey : _emKeySet) {
-			stopPolling(emKey);
+		Set<String> copyKeys = new HashSet();
+		copyKeys.addAll(_emKeySet);
+		
+		for (String key : copyKeys) {
+			delete(key);
 			
-			//read/polling/프로토콜id/프로토콜event.id
-			eventId = emKey.split("/")[3];
+			//read/polling/프로토콜event.id
+			eventId = key.split("/")[2];
 			eventIdList.add(eventId);
 		}
-
-		// 핸들러 해제
-		it = _handlerMap.keySet().iterator();
-		while (it.hasNext()) {
-			path = (String) it.next();
-			_root.removeHandler(_handlerMap.get(path));
-			_handlerMap.remove(path);
-			_log.info("[Handler] : " + path + " 해제");
-		}
-
 		
 		_emKeySet.clear();
 		_handlerMap.clear();
 		_apiMap.clear();
 		_status.clear();
+
+		String[] result = eventIdList.toArray(new String[eventIdList.size()]);
+		if(result == null || result.length == 0) {
+			throw new ApplicationException("핸들러 PATH가 존재하지않습니다.");
+		}
 		
-		return (String[]) eventIdList.toArray();
+		return result;
+
 	}
 
 	private void startPolling(String emKey, int intervalSec) {

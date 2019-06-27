@@ -66,8 +66,6 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 
 				plcData = plcRead(outboundCtx);
 				sContents = Util.makeSucessPublishJson(sId, sEventId, plcData);
-				
-				
 			} catch (IOException e) {
 				_log.err(e);
 				_log.debug("재연결 시도 2.");
@@ -88,6 +86,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 			sContents = Util.makeFailPublishJson(sId, "-1", e.getMessage());			
 		}
 		
+		_log.debug("[PUB] " + sContents);
 		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
 		outboundCtx.dispose();
 	}
