@@ -24,6 +24,8 @@ public class MitsubishiQSeriesApi {
 
 	private TransMode _transMode;
 	private Log _log;
+	
+	private Object sync = new Object();
 
 	public MitsubishiQSeriesApi(TransMode pmode,Log log) {
 
@@ -41,8 +43,6 @@ public class MitsubishiQSeriesApi {
 	 */
 	public void connect(String ip, int port) throws IOException {
 		//포트를 List에 담을 수있도록 파서 한다.
-		
-		
 		_ip = ip;		
 		_socket = new Socket();
 		_socket.setKeepAlive(false);
@@ -63,16 +63,18 @@ public class MitsubishiQSeriesApi {
 	 * @throws IOException
 	 */
 	public void reConnect() throws IOException {
-		this._socket = new Socket();
-		this._socket.setKeepAlive(false);
-		this._socket.setReuseAddress(false);
-		this._socket.setSoTimeout(5000);
-
-		try {
-			this._socket.connect(new InetSocketAddress(_ip, _port), 2000);
-			_log.info("MELSEC CONNECTION SUCESS, IP : " + this._ip + " 포트 : "+ this._port);		
-		} catch (Exception e) {
-			throw e;
+		synchronized(sync) {
+			this._socket = new Socket();
+			this._socket.setKeepAlive(false);
+			this._socket.setReuseAddress(false);
+			this._socket.setSoTimeout(5000);
+	
+			try {
+				this._socket.connect(new InetSocketAddress(_ip, _port), 2000);
+				_log.info("MELSEC CONNECTION SUCESS, IP : " + this._ip + " 포트 : "+ this._port);		
+			} catch (Exception e) {
+				throw e;
+			}
 		}
 	}
 	
@@ -81,9 +83,11 @@ public class MitsubishiQSeriesApi {
 	 * @throws IOException
 	 */
 	public void disconnect() throws IOException {
-		if (this._socket != null) {
-			this._socket.close();
-			this._socket=null;
+		synchronized(sync) {
+			if (this._socket != null) {
+				this._socket.close();
+				this._socket=null;
+			}
 		}
 	}
 
@@ -111,25 +115,27 @@ public class MitsubishiQSeriesApi {
 		BufferedInputStream in = null;
 		byte[] result;
 
-		try {
-			out = new ByteArrayOutputStream();
-			in = new BufferedInputStream(this._socket.getInputStream());
-
-			byte[] buffer = new byte[4096];
-
-			this._socket.getOutputStream().write(reqData);
-			
-			out.reset();
-			
-			int cnt = 0;
-			while ((cnt = in.read(buffer)) > 0) {
-				out.write(buffer, 0, cnt);
-				if (in.available() < 1)
-					break;
+		synchronized(sync) {
+			try {
+				out = new ByteArrayOutputStream();
+				in = new BufferedInputStream(this._socket.getInputStream());
+	
+				byte[] buffer = new byte[4096];
+	
+				this._socket.getOutputStream().write(reqData);
+				
+				out.reset();
+				
+				int cnt = 0;
+				while ((cnt = in.read(buffer)) > 0) {
+					out.write(buffer, 0, cnt);
+					if (in.available() < 1)
+						break;
+				}
+				result = out.toByteArray();
+			} catch (IOException ex) {
+				throw ex;
 			}
-			result = out.toByteArray();
-		} catch (IOException ex) {
-			throw ex;
 		}
 
 		return result;
