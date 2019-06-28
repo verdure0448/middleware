@@ -12,6 +12,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.Comma
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.SubCommand;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.BatchReadWriteProtocol;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 import com.hdbsnc.smartiot.util.logger.Log;
@@ -110,10 +111,14 @@ public class MitsubishiQSeriesApi {
 	 * @return
 	 * @throws IOException
 	 */
-	private byte[] sendData(byte[] reqData) throws IOException {
+	private byte[] sendData(byte[] reqData) throws Exception {
 		ByteArrayOutputStream out = null;
 		BufferedInputStream in = null;
 		byte[] result;
+		
+		if(_socket == null) {
+			throw new MCProtocolException("이미 해제된 연결 입니다.");
+		}
 
 		synchronized(sync) {
 			try {
