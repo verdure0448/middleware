@@ -115,12 +115,12 @@ public class MitsubishiQSeriesApi {
 		ByteArrayOutputStream out = null;
 		BufferedInputStream in = null;
 		byte[] result;
-		
-		if(_socket == null) {
-			throw new MCProtocolException("이미 해제된 연결 입니다.");
-		}
-
+	
 		synchronized(sync) {
+			if(_socket == null) {
+				throw new MCProtocolException("이미 해제된 연결 입니다.");
+			}
+
 			try {
 				out = new ByteArrayOutputStream();
 				in = new BufferedInputStream(this._socket.getInputStream());
