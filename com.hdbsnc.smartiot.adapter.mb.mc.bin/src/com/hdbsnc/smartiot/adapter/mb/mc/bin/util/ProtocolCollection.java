@@ -19,7 +19,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopResponse;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.impl.InnerContext;
 
-public class Util {
+public class ProtocolCollection {
 
 	//성공 시 
 	public final static String PROTOCOL_VERSION = "0.1.3";
@@ -90,18 +90,24 @@ public class Util {
 	 * @param errorMsg
 	 * @return
 	 */
-	public static String makeFailPublishJson(String id, String errorCode, String errorMsg) {
+	public static String makeFailPublishJson(String id, String eventId, String errorCode, String errorMsg) {
 
 		String result;
 		GatheringPublish pub = new GatheringPublish();
 		pub.setJsonrpc(JSON_RPC_VERSION);
 		pub.setId(id);
 		
+		GatheringPublish.Result pubResult = pub.new Result();
+		pubResult.setEventID(eventId);
+		pubResult.setProcData(sdf.format(new Date(System.currentTimeMillis())));
+		pubResult.setVersion(PROTOCOL_VERSION );
+		
 		ResError pubError = new ResError();
 		pubError.setCode(errorCode);
 		pubError.setMessage(errorMsg);
 
 		pub.setError(pubError);
+		pub.setResult(pubResult);
 		
 		result = (new Gson()).toJson(pub)+"\r\n";
 		return result;

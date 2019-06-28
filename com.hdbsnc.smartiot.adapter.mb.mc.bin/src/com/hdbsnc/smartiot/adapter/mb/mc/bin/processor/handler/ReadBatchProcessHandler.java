@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.ProtocolCollection;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
@@ -65,7 +65,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 				}
 
 				plcData = plcRead(outboundCtx);
-				sContents = Util.makeSucessPublishJson(sId, sEventId, plcData);
+				sContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
 			} catch (IOException e) {
 				_log.err(e);
 				_log.debug("재연결 시도 2.");
@@ -76,18 +76,18 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 				}
 				
 				plcData = plcRead(outboundCtx);
-				sContents = Util.makeSucessPublishJson(sId, sEventId, plcData);
+				sContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
 				
 			} catch (Exception e) {
 				throw e;
 			}
 		} catch (Exception e) {
 			_log.err(e);
-			sContents = Util.makeFailPublishJson(sId, "-1", e.getMessage());			
+			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-1", e.getMessage());			
 		}
 		
 		_log.debug("[PUB] " + sContents);
-		Util.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
+		ProtocolCollection.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
 		outboundCtx.dispose();
 	}
 
@@ -98,7 +98,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 	 * @throws Exception
 	 */
 	private Map<String, String> plcRead(OutboundContext outboundCtx) throws Exception {
-		Map<String, String> result = new HashMap<String, String>();
+		Map<String, String> result= new HashMap<String, String>();
 		String sRawData;
 		String sDevCode, sDevNum, sDevScore;
 		StartRequest.Items[] items = _startRequest.getParam().getItems();

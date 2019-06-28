@@ -24,7 +24,7 @@ import com.hdbsnc.smartiot.util.logger.Log;
 public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IRunningStatus {
 
 	//EM, MelsecAPI, Hanlder을 관리한다.
-	private Map<String, Value> _handleManager;
+	private Map<String, ManagerVo> _handleManager;
 
 	private IEventManager _em;
 	private RootHandler _root;
@@ -38,7 +38,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 
 	public DynamicHandlerManager(RootHandler root, IAdapterInstanceManager aim, IEventManager em, String did, String sid, Log log) {
 
-		_handleManager = new HashMap<String, Value>();
+		_handleManager = new HashMap<String, ManagerVo>();
 
 		_em = em;
 		_aim = aim;
@@ -53,7 +53,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	public synchronized void start(HandlerType kind, String path, String ip, int port, int pollingIntervalSec, StartRequest startRequest) throws Exception{
 
 		String key = path;
-		Value value = new Value(key, startRequest);
+		ManagerVo value = new ManagerVo(key, startRequest);
 		
 		switch (kind) {
 		case READ_BATCH_PROCESS_HANDLER:
@@ -81,7 +81,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		Iterator it = _handleManager.keySet().iterator();
 		String path;
 		List<StartRequest.Param> stauslist = new ArrayList();
-		Value value;
+		ManagerVo value;
 		
 		while (it.hasNext()) {
 			path = (String) it.next();
@@ -156,14 +156,14 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	 * @author user
 	 * 핸들러 동적 생성 시 관리할 내용들을 저장할 클래스
 	 */
-	class Value {
+	class ManagerVo {
 
 		String path;
 		AbstractTransactionTimeoutFunctionHandler handler;
 		MitsubishiQSeriesApi api;
 		StartRequest startRequest;
 
-		Value(String key, StartRequest startRequest){
+		ManagerVo(String key, StartRequest startRequest){
 			this.path = key;
 			this.startRequest = startRequest;
 		}

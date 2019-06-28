@@ -6,7 +6,7 @@ import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IRunningStatus;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StatusRequest;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.Util;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.ProtocolCollection;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
 import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
@@ -45,7 +45,7 @@ public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctio
 			
 			String protocolVerion = req.getParam().getVersion();
 			String protocolMethod = req.getMethod();
-			if(!Util.PROTOCOL_VERSION.equals(protocolVerion)) {
+			if(!ProtocolCollection.PROTOCOL_VERSION.equals(protocolVerion)) {
 				throw new ApplicationException("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
 			}else if(!ADAPTER_HANDLER_PROTOCOL_METHOD_NAME.equals(protocolMethod)) {
 				throw new ApplicationException("프로토콜 기능명이 일치 하지 않습니다. 기능명을 확인해주세요");
@@ -54,11 +54,11 @@ public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctio
 			Object[] statusMap = _manager.statusAll();
 
 			//정상 Start 후 응답
-			sResContents = Util.makeSuccessStatusResponseJson(sId, statusMap);
+			sResContents = ProtocolCollection.makeSuccessStatusResponseJson(sId, statusMap);
 		}catch(Exception e) {
 			//비정상 Start 후 응답
 			_log.err(e);
-			sResContents = Util.makeFailStartResponseJson(sId, "-1", e.getMessage());
+			sResContents = ProtocolCollection.makeFailStartResponseJson(sId, "-1", e.getMessage());
 		}
 
 		outboundCtx.getPaths().add("ack");
