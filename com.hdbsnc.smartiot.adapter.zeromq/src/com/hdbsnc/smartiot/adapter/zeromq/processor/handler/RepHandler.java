@@ -85,34 +85,34 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 
 		switch (method) {
 		case "start":
-			// [json string] -> [vo]
-			StartRequest req = gson.fromJson(content, StartRequest.class);
-
-			// TODO 삭제 예정 [vo] -> [json string]
-			String sReq = gson.toJson(req);
+//			// [json string] -> [vo]
+//			StartRequest req = gson.fromJson(content, StartRequest.class);
+//
+//			// TODO 삭제 예정 [vo] -> [json string]
+//			String sReq = gson.toJson(req);
 
 			ICtx.setSid(inboundCtx.getSID()); // Device ID
 			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
 			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_CREATE_HANDLER_PATH.split("/")));
 			break;
 		case "stop.part":
-			// 포멧 체크
-			gson.fromJson(content, StopRequest.class);
+//			// 포멧 체크
+//			gson.fromJson(content, StopRequest.class);
 
 			ICtx.setSid(inboundCtx.getSID()); // Device ID
 			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
 			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_DELETE_HANDLER_PATH.split("/")));
 			break;
 		case "stop.all":
-			gson.fromJson(content, StopAllRequest.class);
+//			gson.fromJson(content, StopAllRequest.class);
 
 			ICtx.setSid(inboundCtx.getSID()); // Device ID
 			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
 			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_DELETE_ALL_HANDLER_PATH.split("/")));
 			break;
 		case "status":
-			// 포멧 체크
-			gson.fromJson(content, StatusRequest.class);
+//			// 포멧 체크
+//			gson.fromJson(content, StatusRequest.class);
 
 			ICtx.setSid(inboundCtx.getSID()); // Device ID
 			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
@@ -160,7 +160,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 		Gson gson = new Gson();
 		CommonRequest req = gson.fromJson(reqContent, CommonRequest.class);
 
-		sendErrorResponse(req.getId(), "-32004", "트랜젝션이 잠겨 있습니다.");
+		sendErrorResponse(req.getId(), "-32004", "멜섹 핸들러 트랜젝션이 잠겨 있습니다.");
 
 	}
 
