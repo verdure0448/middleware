@@ -48,9 +48,9 @@ public class RepCallback implements IContextCallback {
 		// 로그 에러 처리
 		log.err("Rep Callback처리에 장애 발생.");
 
-		String reqContent;
+		String resContent;
 		try {
-			reqContent = new String(ctxTracer.getResponseContext().getContent().array(), "UTF-8");
+			resContent = new String(ctxTracer.getResponseContext().getContent().array(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			// 후속처리 불가이므로 로그처리만
 			log.err(e);
@@ -59,17 +59,7 @@ public class RepCallback implements IContextCallback {
 
 		// 요청 컨텐츠
 		Gson gson = new Gson();
-		CommonRequest req = gson.fromJson(reqContent, CommonRequest.class);
-
-		CommonResponse res = new CommonResponse();
-		ResError error = new ResError();
-
-		res.setJsonrpc("2.0");
-		res.setId(req.getId());
-
-		error.setCode("RepCallback:001");
-		error.setMessage("Rep 요청 처리 실패.");
-		res.setError(error);
+		CommonResponse res = gson.fromJson(resContent, CommonResponse.class);
 
 		String sRes = gson.toJson(res);
 
