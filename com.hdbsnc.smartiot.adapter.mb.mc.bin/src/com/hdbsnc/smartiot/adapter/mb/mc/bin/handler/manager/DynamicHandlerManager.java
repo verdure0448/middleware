@@ -226,21 +226,22 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		 * @throws Exception
 		 */
 		void cancleAll() throws Exception {
+
+			//폴링 정지
+			stopPolling(path);
 			
-			//_root에 핸들러가 있으면 제거
-			if(handler != null) {
-				if(_root.findHandler(path)!=null) {
-					_root.deleteHandler(path.split("/"));
-				}
-			}
 			//api가 있으면 제거
 			if(api != null) {
 				if(api.isConnected()) {
 					api.disconnect();
 				}
 			}
-			//폴링 정지
-			stopPolling(path);
+			//_root에 핸들러가 있으면 제거
+			if(handler != null) {
+				if(_root.findHandler(path)!=null) {
+					_root.deleteHandler(path.split("/"));
+				}
+			}
 			
 			handler = null;
 			api = null;

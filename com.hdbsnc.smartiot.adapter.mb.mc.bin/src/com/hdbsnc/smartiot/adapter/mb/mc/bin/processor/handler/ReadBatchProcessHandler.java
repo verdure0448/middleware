@@ -1,7 +1,6 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -59,7 +59,7 @@ public class ProtocolCollection {
 		pubResult.setVersion(PROTOCOL_VERSION);
 		pubResult.setEventID(eventId);
 		pubResult.setProcData(sdf.format(new Date(System.currentTimeMillis())));
-
+		
 		GatheringPublish.Items[] itemArray = new GatheringPublish.Items[plcData.size()];
 		
 		int idx = 0;
