@@ -4,9 +4,7 @@ import java.io.UnsupportedEncodingException;
 
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.zeromq.api.ZeromqApi;
-import com.hdbsnc.smartiot.adapter.zeromq.obj.CommonRequest;
 import com.hdbsnc.smartiot.adapter.zeromq.obj.CommonResponse;
-import com.hdbsnc.smartiot.adapter.zeromq.obj.ResError;
 import com.hdbsnc.smartiot.common.context.IContextCallback;
 import com.hdbsnc.smartiot.common.context.IContextTracer;
 import com.hdbsnc.smartiot.util.logger.Log;
@@ -33,9 +31,10 @@ public class RepCallback implements IContextCallback {
 			return;
 		}
 
-		System.out.println("******************************"+content);
+		
 		try {
 			zmqApi.send(content.getBytes("UTF-8"));
+			log.debug("Zmq Response: " + content);
 		} catch (Exception e) {
 			// 통신 장애이므로 에러로그 처리만
 			log.err(e);
