@@ -457,8 +457,11 @@ public class Em implements IEventManager, Runnable{
 				try {
 					aim.handOverContextByCurrentThread(request, null);
 					Thread.sleep(intervalMs);
-				} catch (Exception e1) {
-					log.err(e1);
+				} catch (InterruptedException ie) {
+					// 정상정지 이므로 디버그 로그만 출력
+					log.debug(ie.getMessage());
+				} catch (Exception e) {
+					log.err(e);
 				}
 			}
 			log.info("PollingWorker("+consumerName+") stoped.");
