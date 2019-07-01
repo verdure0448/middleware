@@ -22,19 +22,13 @@ public class RepCallback implements IContextCallback {
 	@Override
 	public void responseSuccess(IContextTracer ctxTracer) {
 
-		String content;
-		try {
-			content = new String(ctxTracer.getResponseContext().getContent().array(), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			// 후속처리 불가이므로 로그처리만
-			log.err(e);
-			return;
-		}
-
+		
+		byte[] content = ctxTracer.getResponseContext().getContent().array();
+		
 		
 		try {
-			zmqApi.send(content.getBytes("UTF-8"));
-			log.debug("Zmq Response: " + content);
+			zmqApi.send(content);
+			log.debug("Zmq Response: " + new String(content, "UTF-8"));
 		} catch (Exception e) {
 			// 통신 장애이므로 에러로그 처리만
 			log.err(e);
