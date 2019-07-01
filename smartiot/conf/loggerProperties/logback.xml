@@ -16,7 +16,7 @@
 	<!-- pattern -->
 	<property name="LOG_PATTERN" value="%level[%d{HH:mm:ss.SSS} %thread] %msg%n" />
 	<!-- LEVEL trace/debug/info/warn/error -->
-	<property name="LOG_OUTPUT_LEVEL" value="trace" />
+	<property name="LOG_OUTPUT_LEVEL" value="debug" />
 
 	<!-- log file save -->
 	<appender name="FILE"
