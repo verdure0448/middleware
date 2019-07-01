@@ -55,6 +55,12 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		String key = path;
 		ManagerVo value = new ManagerVo(key, startRequest);
 		
+		if(isConnection(ip, port)) {
+			throw new ApplicationException("이미 기동 중인 IP : " + ip + " Port : " + port + " 입니다.");
+		}else if(isHandleManagerKey(path)) {
+			throw new ApplicationException("이미 존재하는 event.id : " + path);
+		}
+		
 		switch (kind) {
 		case READ_BATCH_PROCESS_HANDLER:
 			try {
@@ -143,7 +149,56 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			_log.info("[EventManager] : " + emKey + " 해제");
 		}
 	}
-	
+
+	/**
+	 * Path가 존재 하는지 확인한다.
+	 * 이미 키가 존재하면 return true
+	 * 키가 존재 하지 않으면 return false
+	 * @param path
+	 * @return
+	 */
+	boolean isHandleManagerKey(String path) {
+		
+		if(_handleManager.containsKey(path)) {
+			return true;
+		}
+		
+		return false;
+	}
+	/**
+	 * IP 및 PORT가 이미 기동중인지 확인한다.
+	 * 기동 중이라면 return true
+	 * 기동 중이 아니라면 false
+	 * @param ip
+	 * @param port
+	 * @return
+	 */
+	boolean isConnection(String ip, int port) {
+
+		if(_handleManager.size()==0) {
+			return false;
+		}
+
+		
+		//핸들러 이름은 틀리지만 이미 기동중인 IP, PORT가 있을 수 있으므로 전체에서 검색
+		//DEEP COPY
+		Map tmp = new HashMap();
+		tmp.putAll(_handleManager);
+		
+		Iterator it = tmp.keySet().iterator();
+		String key;
+		MitsubishiQSeriesApi api;
+		while (it.hasNext()) {
+			key = (String) it.next();
+			api = _handleManager.get(key).api;
+
+			if (api.getIp().equals(ip) && api.getPort() == port) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 	
 	/**
 	 * @author user
@@ -169,11 +224,6 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		 */
 		void createApi(String ip, int port) throws Exception {
 
-			// 이미 만들어진 IP 및 PORT가 있는지 확인
-			if (isConnection(ip, port)) {
-				throw new ApplicationException("이미 기동 중인 IP : " + ip + " Port : " + port + " 입니다.");
-			}
-			api = null;
 			try {
 				api = new MitsubishiQSeriesApi(TransMode.BINARY, _log);
 				api.connect(ip, port);
@@ -191,12 +241,6 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 				String sHandlerPath = EditUtil.getHandlerPath(path);
 				String sHandlerName = EditUtil.getHandlerName(path);
 				
-				// 이미 만들어진 핸들러가 있는지 확인
-				if(isHandler(path)) {
-					throw new ApplicationException("이미 존재하는 핸들러입니다. id 및 event.id를 확인해주세요.");
-				}
-				
-				// 만들어진 IP 및 PORT가 없다면 생성
 				handler = new ReadBatchProcessHandler(sHandlerName, 3000,_aim, _sid, api, startRequest, _log); 
 				_root.putHandler(sHandlerPath, handler);
 				_root.printString();
@@ -212,6 +256,10 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		 */
 		void createEm(int intervalSec) throws Exception{
 			startPolling(path, intervalSec);
+		}
+		
+		StartRequest.Param getParam(){
+			return startRequest.getParam();
 		}
 		
 		/**
@@ -239,57 +287,6 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 			handler = null;
 			api = null;
 			path = null;
-		}
-		
-		StartRequest.Param getParam(){
-			return startRequest.getParam();
-		}
-		
-		/**
-		 * 인자로 전달 받은 Path에 핸들러가 존재하는지 확인한다.
-		 * @param path
-		 * @return
-		 */
-		boolean isHandler(String path) throws Exception{
-
-			if(handler != null) {
-				if(_root.findHandler(path)!=null) {
-					return true;
-				}
-			}
-			
-			return false;
-		}
-
-		/**
-		 * IP 및 PORT가 이미 기동중인지 확인한다.
-		 * @param sIP
-		 * @param iPort
-		 * @return
-		 */
-		boolean isConnection(String sIP, int iPort) {
-
-			if(_handleManager.size()==0) {
-				return false;
-			}
-
-			//DEEP COPY
-			Map tmp = new HashMap();
-			tmp.putAll(_handleManager);
-			
-			Iterator it = tmp.keySet().iterator();
-			String key;
-			MitsubishiQSeriesApi api;
-			while (it.hasNext()) {
-				key = (String) it.next();
-				api = _handleManager.get(key).api;
-
-				if (api.getIp().equals(sIP) && api.getPort() == iPort) {
-					return true;
-				}
-			}
-
-			return false;
 		}
 
 	}
