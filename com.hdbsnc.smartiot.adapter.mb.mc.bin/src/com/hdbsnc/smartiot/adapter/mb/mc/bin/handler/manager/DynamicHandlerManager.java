@@ -90,9 +90,6 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		}
 
 		Object[] result = stauslist.toArray(new StartRequest.Param[stauslist.size()]);
-		if(result == null || result.length == 0) {
-			throw new ApplicationException("기동중인 핸들러가 존재하지 않습니다.");
-		}
 		
 		return result;
 	}
@@ -113,11 +110,7 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 
 	@Override
 	public synchronized String[] deleteAll() throws Exception {
-		
-		if(_handleManager.size()==0) {
-			throw new ApplicationException("삭제할 핸들러가 존재하지 않습니다.");
-		}
-		
+
 		//DEEP COPY
 		Map tmp = new HashMap();
 		tmp.putAll(_handleManager);
