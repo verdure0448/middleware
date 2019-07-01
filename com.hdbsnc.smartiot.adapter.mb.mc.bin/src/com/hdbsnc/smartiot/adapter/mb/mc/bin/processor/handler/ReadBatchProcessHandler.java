@@ -85,7 +85,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-1", e.getMessage());			
 		}
 		
-		_log.debug("[PUB] " + sContents);
+		_log.debug("[PUB] " + new String(sContents, "UTF-8"));
 		ProtocolCollection.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
 		outboundCtx.dispose();
 	}

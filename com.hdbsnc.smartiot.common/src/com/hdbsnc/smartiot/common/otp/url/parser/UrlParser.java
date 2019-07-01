@@ -234,7 +234,7 @@ public class UrlParser {
 		return otp;
 	}
 	
-	public String convertToString(IContext outboundCtx) throws UrlParseException{
+	public String convertToString(IContext outboundCtx) throws UrlParseException, UnsupportedEncodingException{
 		Url resUrl = Url.createOtp(outboundCtx.getPaths(), outboundCtx.getParams());
 		resUrl.setHostInfo(outboundCtx.getTID(), outboundCtx.getTPort());
 		resUrl.setUserInfo(outboundCtx.getSID(), outboundCtx.getSPort());
@@ -245,7 +245,7 @@ public class UrlParser {
 		StringBuilder sb = new StringBuilder();
 		sb.append(parse(resUrl));
 		if(outboundCtx.containsContent()){
-			sb.append(new String(outboundCtx.getContent().array()));
+			sb.append(new String(outboundCtx.getContent().array(), "UTF-8"));
 		}
 		return sb.toString();
 	}
