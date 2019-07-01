@@ -37,7 +37,7 @@ public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctio
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 	
 		String sId = null;
-		String sResContents = null;
+		byte[] sResContents = null;
 		try {
 			String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 			StatusRequest req = _gson.fromJson(jsonContents, StatusRequest.class);
@@ -58,14 +58,14 @@ public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctio
 		}catch(Exception e) {
 			//비정상 Start 후 응답
 			_log.err(e);
-			sResContents = ProtocolCollection.makeFailStartResponseJson(sId, "-1", e.getMessage());
+			sResContents = ProtocolCollection.makeFailStatusResponseJson(sId, "-1", e.getMessage());
 		}
 
 		outboundCtx.getPaths().add("ack");
 		outboundCtx.setTID("this");
 		outboundCtx.setTransmission("res");
 		outboundCtx.setContenttype("json");
-		outboundCtx.setContent(ByteBuffer.wrap(sResContents.getBytes()));
+		outboundCtx.setContent(ByteBuffer.wrap(sResContents));
 		_log.trace(UrlParser.getInstance().convertToString(outboundCtx));
 	}
 

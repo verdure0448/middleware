@@ -46,7 +46,7 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		//호출자의 tid 및 path인지 확인필요
 		//호출자의 tid 및 path가 아니라면 아래 주석 과정 수행
 		String sId = null;
-		String sResContents = null;
+		byte[] sResContents = null;
 		try {
 			String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 			StartRequest req = _gson.fromJson(jsonContents, StartRequest.class);
@@ -63,6 +63,7 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 			String sPath = makePath(req);
 			String sEventId = req.getParam().getEventID();
 	
+//			int iPollingIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod());
 			int iPollingIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod()) * 1000;
 			String sIP = req.getParam().getPlcIp();
 			int iPort = Integer.parseInt(req.getParam().getPlcPort());
@@ -81,7 +82,7 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		outboundCtx.setTID("this");
 		outboundCtx.setTransmission("res");
 		outboundCtx.setContenttype("json");
-		outboundCtx.setContent(ByteBuffer.wrap(sResContents.getBytes()));
+		outboundCtx.setContent(ByteBuffer.wrap(sResContents));
 		_log.trace(UrlParser.getInstance().convertToString(outboundCtx));
 	}
 	 

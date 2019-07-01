@@ -40,7 +40,7 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 	public void transactionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 //		{"jsonrpc":"2.0","method":"stop.all","id":"1","param":{"protocol.version":"1.0"}}
 		String sId = null;
-		String sResContents = null;
+		byte[] sResContents = null;
 		try {
 			String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 			StopAllRequest req = _gson.fromJson(jsonContents, StopAllRequest.class);
@@ -68,7 +68,7 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 		outboundCtx.setTID("this");
 		outboundCtx.setTransmission("res");
 		outboundCtx.setContenttype("json");
-		outboundCtx.setContent(ByteBuffer.wrap(sResContents.getBytes()));
+		outboundCtx.setContent(ByteBuffer.wrap(sResContents));
 		_log.trace(UrlParser.getInstance().convertToString(outboundCtx));
 	}
 

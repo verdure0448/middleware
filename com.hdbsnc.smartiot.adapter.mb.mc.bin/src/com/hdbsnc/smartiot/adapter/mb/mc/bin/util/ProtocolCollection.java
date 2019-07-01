@@ -1,5 +1,6 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.util;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -31,13 +32,13 @@ public class ProtocolCollection {
 		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
 	}
 	
-	public synchronized static void callHandler(IAdapterInstanceManager aim, String path, String sid, String tid, String contents) throws Exception {
+	public synchronized static void callHandler(IAdapterInstanceManager aim, String path, String sid, String tid, byte[] contents) throws Exception {
 
 		InnerContext request = new InnerContext();
 		request.setSid(sid);
 		request.setTid(tid);
 		request.setPaths(Arrays.asList(path.split("/")));
-		request.setContent(ByteBuffer.wrap(contents.getBytes()));
+		request.setContent(ByteBuffer.wrap(contents));
 		aim.handOverContext(request, null);	
 	}
 	
@@ -47,8 +48,9 @@ public class ProtocolCollection {
 	 * @param eventId
 	 * @param plcData
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeSucessPublishJson(String id, String eventId, Map<String, String> plcData) {
+	public static byte[] makeSucessPublishJson(String id, String eventId, Map<String, String> plcData) throws UnsupportedEncodingException {
 		
 		String result;
 		GatheringPublish pub = new GatheringPublish();
@@ -80,7 +82,7 @@ public class ProtocolCollection {
 		pub.setResult(pubResult);
 		
 		result = (new Gson()).toJson(pub)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 	}
 	
 	/**
@@ -89,8 +91,9 @@ public class ProtocolCollection {
 	 * @param errorCode
 	 * @param errorMsg
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeFailPublishJson(String id, String eventId, String errorCode, String errorMsg) {
+	public static byte[] makeFailPublishJson(String id, String eventId, String errorCode, String errorMsg) throws UnsupportedEncodingException {
 
 		String result;
 		GatheringPublish pub = new GatheringPublish();
@@ -110,7 +113,7 @@ public class ProtocolCollection {
 		pub.setResult(pubResult);
 		
 		result = (new Gson()).toJson(pub)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 	}
 	
 	/**
@@ -118,8 +121,9 @@ public class ProtocolCollection {
 	 * @param id
 	 * @param eventId
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeSuccessStartResponseJson(String id, String eventId) {
+	public static byte[] makeSuccessStartResponseJson(String id, String eventId) throws UnsupportedEncodingException {
 		
 		String result;
 		StartResponse startRes = new StartResponse();
@@ -134,7 +138,7 @@ public class ProtocolCollection {
 		startRes.setResult(startResult);
 		
 		result = (new Gson()).toJson(startRes)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 	}
 	
 	/**
@@ -143,8 +147,9 @@ public class ProtocolCollection {
 	 * @param errorCode
 	 * @param errorMsg
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeFailStartResponseJson(String id, String errorCode, String errorMsg) {
+	public static byte[] makeFailStartResponseJson(String id, String errorCode, String errorMsg) throws UnsupportedEncodingException {
 		
 		String result;
 		
@@ -159,7 +164,7 @@ public class ProtocolCollection {
 		startRes.setError(startError);
 
 		result = (new Gson()).toJson(startRes)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 		
 	}
 	
@@ -168,8 +173,9 @@ public class ProtocolCollection {
 	 * @param id
 	 * @param eventId
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeSuccessStopResponseJson(String id, String eventId) {
+	public static byte[] makeSuccessStopResponseJson(String id, String eventId) throws UnsupportedEncodingException {
 		
 		String result;
 		
@@ -185,7 +191,7 @@ public class ProtocolCollection {
 		stopRes.setResult(stopResult);
 
 		result = (new Gson()).toJson(stopRes)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 	}
 	
 	/**
@@ -194,8 +200,9 @@ public class ProtocolCollection {
 	 * @param errorCode
 	 * @param errorMsg
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeFailStopResponseJson(String id, String errorCode, String errorMsg) {
+	public static byte[] makeFailStopResponseJson(String id, String errorCode, String errorMsg) throws UnsupportedEncodingException {
 		
 		String result;
 		
@@ -210,7 +217,7 @@ public class ProtocolCollection {
 		stopRes.setError(stopError);
 
 		result = (new Gson()).toJson(stopRes)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 		
 	}
 
@@ -219,8 +226,9 @@ public class ProtocolCollection {
 	 * @param id
 	 * @param eventIdArray
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeSuccessStopAllResponseJson(String id, String[] eventIdArray) {
+	public static byte[] makeSuccessStopAllResponseJson(String id, String[] eventIdArray) throws UnsupportedEncodingException {
 		
 		String result;
 		
@@ -244,7 +252,7 @@ public class ProtocolCollection {
 		stopAllRes.setResult(stopAllResult);
 
 		result = (new Gson()).toJson(stopAllRes)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 	}
 	
 	/**
@@ -253,8 +261,9 @@ public class ProtocolCollection {
 	 * @param errorCode
 	 * @param errorMsg
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeFailStopAllResponseJson(String id, String errorCode, String errorMsg) {
+	public static byte[] makeFailStopAllResponseJson(String id, String errorCode, String errorMsg) throws UnsupportedEncodingException {
 
 		String result;
 		
@@ -269,7 +278,7 @@ public class ProtocolCollection {
 		stopAllRes.setError(stopAllerror);
 
 		result = (new Gson()).toJson(stopAllRes)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 	}
 
 	/**
@@ -277,8 +286,9 @@ public class ProtocolCollection {
 	 * @param id
 	 * @param statusArray
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeSuccessStatusResponseJson(String id, Object[] paramArray) {
+	public static byte[] makeSuccessStatusResponseJson(String id, Object[] paramArray) throws UnsupportedEncodingException {
 		
 		String result;
 		
@@ -307,7 +317,7 @@ public class ProtocolCollection {
 		statusRes.setResult(statusResult);
 
 		result = (new Gson()).toJson(statusRes)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 	}
 	
 	/**
@@ -316,8 +326,9 @@ public class ProtocolCollection {
 	 * @param errorCode
 	 * @param errorMsg
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public static String makeFailStatusResponseJson(String id, String errorCode, String errorMsg) {
+	public static byte[] makeFailStatusResponseJson(String id, String errorCode, String errorMsg) throws UnsupportedEncodingException {
 		
 		String result;
 		
@@ -332,7 +343,7 @@ public class ProtocolCollection {
 		statusRes.setError(stopAllerror);
 
 		result = (new Gson()).toJson(statusRes)+"\r\n";
-		return result;
+		return result.getBytes("UTF-8");
 
 	}
 }	

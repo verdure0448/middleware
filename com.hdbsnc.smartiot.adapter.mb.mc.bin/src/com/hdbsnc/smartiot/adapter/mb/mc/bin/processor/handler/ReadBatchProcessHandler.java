@@ -45,7 +45,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 		//PLC DATA Key,Value 저장 
 		//Key = startRequest, Value = PLC로부터 수집한 값
 		Map<String, String> plcData;
-		String sContents = null;
+		byte[] sContents = null;
 		String sId = _startRequest.getId();
 		String sEventId = _startRequest.getParam().getEventID();
 		
