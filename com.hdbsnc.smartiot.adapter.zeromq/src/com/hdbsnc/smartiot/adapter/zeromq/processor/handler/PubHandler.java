@@ -52,6 +52,8 @@ public class PubHandler extends AbstractTransactionTimeoutFunctionHandler {
 		////////////////////////////////////////////////////////////////////////////////////
 		this.zmqApi.publish(publish.getResult().getEventID().getBytes("UTF-8"), content.getBytes("UTF-8"));
 
+		log.debug(String.format("Zmq Publish [%s]: [%s]", publish.getResult().getEventID(), content));
+	
 		outboundCtx.dispose();
 	}
 

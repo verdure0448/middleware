@@ -66,6 +66,7 @@ public class RepCallback implements IContextCallback {
 		// 장애 통신 전송
 		try {
 			zmqApi.send(sRes.getBytes("UTF-8"));
+			log.debug("Zmq Response: " + sRes);
 		} catch (Exception e) {
 			// 통신 장애이므로 에러로그 처리만
 			log.err(e);

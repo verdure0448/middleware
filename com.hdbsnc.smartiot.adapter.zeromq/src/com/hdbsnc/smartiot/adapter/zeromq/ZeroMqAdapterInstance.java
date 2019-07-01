@@ -102,7 +102,7 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 			@Override
 			public void onRecv(byte[] msg) {
 				// JSON 파싱 및 멜셀 수집/정지/조회 처리
-				System.out.println("onRevc : " + new String(msg));
+				log.debug("Zmq Request: " + new String(msg));
 
 				// 응답메세지 전송(이벤트 핸들러 호출 결과에 따른 )
 				// zeromqApi.send(msg);
