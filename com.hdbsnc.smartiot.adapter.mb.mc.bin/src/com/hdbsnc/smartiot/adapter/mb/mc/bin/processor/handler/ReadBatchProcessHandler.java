@@ -89,9 +89,9 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 			//PLC Response에러 응답
 			_log.err(e);
 			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, e.getCode(), e.getMsg());			
-		}  catch (Exception e) {
+		} catch (Exception e) {
 			_log.err(e);
-			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33002", e.getMessage());			
+			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33005", e.getMessage());			
 		}
 		
 		_log.debug("[PUB] " + new String(sContents, "UTF-8"));
@@ -105,7 +105,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<String, String> plcRead(OutboundContext outboundCtx) throws Exception {
+	private Map<String, String> plcRead(OutboundContext outboundCtx) throws IOException, MCProtocolResponseException, Exception  {
 		Map<String, String> result= new HashMap<String, String>();
 		String sRawData;
 		String sDevCode, sDevNum, sDevScore;
@@ -132,7 +132,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 		String sId = _startRequest.getId();
 		String sEventId = _startRequest.getParam().getEventID();
 		
-		byte[] sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33501", "PLC데이터수집 핸들러의 트랜젝션이 잠겨 있습니다");			
+		byte[] sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33001", "PLC데이터수집 핸들러의 트랜젝션이 잠겨 있습니다");			
 
 		outboundCtx.getPaths().add("nack");
 		outboundCtx.setTID("this");

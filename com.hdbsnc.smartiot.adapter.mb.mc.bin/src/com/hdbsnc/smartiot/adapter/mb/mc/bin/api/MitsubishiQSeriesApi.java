@@ -42,7 +42,7 @@ public class MitsubishiQSeriesApi {
 	 * @throws Exception
 	 * @throws MCProtocolResponseException
 	 */
-	public void connect(String ip, int port) throws Exception, MCProtocolResponseException {
+	public void connect(String ip, int port) throws IOException, MCProtocolResponseException {
 		//포트를 List에 담을 수있도록 파서 한다.
 		_ip = ip;		
 		try {
@@ -60,7 +60,7 @@ public class MitsubishiQSeriesApi {
 			if(e.getMessage().contains("Connection refused: connect")) {
 				throw new MCProtocolResponseException("-33003", String.format(e.getMessage()+" : IP(%s), Port(%s)입니다", _ip,_port));	
 			}
-			throw new Exception(e);
+			throw e;
 		}
 	}
 
@@ -68,7 +68,7 @@ public class MitsubishiQSeriesApi {
 	 * 연결이  해제 될 경우 호출한다.
 	 * @throws IOException
 	 */
-	public void reConnect() throws MCProtocolResponseException, Exception {
+	public void reConnect() throws MCProtocolResponseException, IOException {
 		synchronized(sync) {
 			try {
 				this._socket = new Socket();
@@ -84,7 +84,7 @@ public class MitsubishiQSeriesApi {
 				if(e.getMessage().contains("Connection refused: connect")) {
 					throw new MCProtocolResponseException("-33003", String.format(e.getMessage()+" : IP(%s), Port(%s)입니다", _ip,_port));	
 				}
-				throw new Exception(e);
+				throw e;
 			}
 		}
 	}
@@ -129,7 +129,7 @@ public class MitsubishiQSeriesApi {
 	
 		synchronized(sync) {
 			if(_socket == null) {
-				throw new MCProtocolResponseException("-33001","사용자 명령에 의해 중지된 Event입니다");
+				throw new MCProtocolResponseException("-33004","사용자 명령에 의해 중지된 Event입니다");
 			}
 
 			try {

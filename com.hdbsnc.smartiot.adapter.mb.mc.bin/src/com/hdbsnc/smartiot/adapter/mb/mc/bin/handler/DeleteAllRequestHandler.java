@@ -65,7 +65,7 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 		}catch(Exception e) {
 			//비정상 Start 후 응답
 			_log.err(e);
-			sResContents = ProtocolCollection.makeFailStopAllResponseJson(sId, "-33300", "PLC 일괄수집정지 핸들러 호출에 실패 하였습니다");
+			sResContents = ProtocolCollection.makeFailStopAllResponseJson(sId, "-33300", "PLC 일괄 수집정지 핸들러 호출에 실패 하였습니다");
 		}
 
 		outboundCtx.getPaths().add("ack");
@@ -82,7 +82,7 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 		StopAllRequest req = _gson.fromJson(jsonContents, StopAllRequest.class);
 		String sId = req.getId();
 		
-		byte[] sResContents = ProtocolCollection.makeFailStopAllResponseJson(sId, "-33301", "PLC 수집 일괄중지 핸들러의 트랜젝션이 잠겨 있습니다");
+		byte[] sResContents = ProtocolCollection.makeFailStopAllResponseJson(sId, "-33301", "PLC 일괄 수집정지 핸들러의 트랜젝션이 잠겨 있습니다");
 
 		outboundCtx.getPaths().add("nack");
 		outboundCtx.setTID("this");

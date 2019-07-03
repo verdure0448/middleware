@@ -9,7 +9,6 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolRespo
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling.HandlerType;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.ProtocolCollection;
 import com.hdbsnc.smartiot.common.context.IContext;
 import com.hdbsnc.smartiot.common.context.handler2.OutboundContext;
