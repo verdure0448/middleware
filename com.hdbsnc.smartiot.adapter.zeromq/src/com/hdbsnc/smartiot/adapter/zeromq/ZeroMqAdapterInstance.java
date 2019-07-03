@@ -1,10 +1,13 @@
 
 package com.hdbsnc.smartiot.adapter.zeromq;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.zeromq.SocketType;
 
@@ -68,17 +71,18 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		IAdapterInstanceManager aim = ctx.getAdapterInstanceManager();
 		
-		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
-		String ip = instanceInfo.getIp();
-		//int port = Integer.parseInt(instanceInfo.getPort());
+		String home_path = System.getenv("SMARTIOT_HOME");
+		File propFile = new File(home_path+"//conf//config.conf");
 		
-		// ","구분자로 Rep 포트와 Pub포트 정의
-		String sPort = instanceInfo.getPort();
-		String[] ports = sPort.split(",");
-		if(ports.length != 2) {
-			log.err("ZQM 포트 설정 오류.");
-			throw service.getExceptionfactory().createAppException(this.getClass().getName() + ":001", new String[] {sPort});
+		Properties config = new Properties();
+		if(propFile.exists()){
+			config.load(new FileInputStream(propFile));
 		}
+		String ip = config.getProperty("zeromq.ip");
+		String reqPort = config.getProperty("zeromq.req");
+		String publicPort = config.getProperty("zeromq.publish");
+		
+		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
 		
 		String userId = instanceInfo.getSelfId();
 		String upass = instanceInfo.getSelfPw();
@@ -86,8 +90,8 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		session = ctx.getSessionManager().certificate(defaultDid, userId, upass);
 
-		zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://" + ip + ":" + ports[0]);
-		zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://" + ip + ":" + ports[1]);
+		zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://" + ip + ":" + reqPort);
+		zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://" + ip + ":" + publicPort);
 		
 		////////////////////////////////////////////////////////////////////////////////////
 		// [PLC 수집 시작 명령 프로토콜]
