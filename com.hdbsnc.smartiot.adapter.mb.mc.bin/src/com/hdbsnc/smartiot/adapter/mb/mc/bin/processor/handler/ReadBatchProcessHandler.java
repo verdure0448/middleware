@@ -1,10 +1,12 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.ProtocolCollection;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
@@ -65,6 +67,9 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 
 				plcData = plcRead(outboundCtx);
 				sContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
+			} catch(MCProtocolResponseException e) {
+				//PLC Response에러 응답
+				throw e;
 			} catch (IOException e) {
 				_log.err(e);
 				_log.debug("재연결 시도 2.");
@@ -80,9 +85,13 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 			} catch (Exception e) {
 				throw e;
 			}
-		} catch (Exception e) {
+		} catch(MCProtocolResponseException e) {
+			//PLC Response에러 응답
 			_log.err(e);
-			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-1", e.getMessage());			
+			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, e.getCode(), e.getMsg());			
+		}  catch (Exception e) {
+			_log.err(e);
+			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33002", e.getMessage());			
 		}
 		
 		_log.debug("[PUB] " + new String(sContents, "UTF-8"));
@@ -120,16 +129,17 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 	@Override
 	public void rejectionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 
-		outboundCtx.getPaths().add("nack");
-		outboundCtx.setSID(inboundCtx.getSID());
-		outboundCtx.setSPort(inboundCtx.getSPort());
-		outboundCtx.setTID(inboundCtx.getTID());
-		outboundCtx.setTPort(inboundCtx.getTPort());
-		outboundCtx.getParams().put("code", "W9001");
-		outboundCtx.getParams().put("type", "warn");
-		outboundCtx.getParams().put("msg", "트랜젝션이 잠겨 있습니다.(다른 request가 선행 호출되어 있을 수 있습니다.)");
-		outboundCtx.setTransmission("res");		
+		String sId = _startRequest.getId();
+		String sEventId = _startRequest.getParam().getEventID();
+		
+		byte[] sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33501", "PLC데이터수집 핸들러의 트랜젝션이 잠겨 있습니다");			
 
-		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));		
+		outboundCtx.getPaths().add("nack");
+		outboundCtx.setTID("this");
+		outboundCtx.setTransmission("res");
+		outboundCtx.setContenttype("json");
+		outboundCtx.setContent(ByteBuffer.wrap(sContents));
+
+		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));
 	}
 }

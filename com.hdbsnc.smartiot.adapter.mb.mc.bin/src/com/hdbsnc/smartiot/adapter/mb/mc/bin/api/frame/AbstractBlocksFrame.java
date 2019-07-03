@@ -158,8 +158,8 @@ public abstract class AbstractBlocksFrame {
 	 * @throws Exception
 	 */
 	public abstract String getResponseCode() throws Exception;
-	public abstract String getResponseData() throws Exception;
-	public abstract String getResponsePacket() throws Exception;
+	public abstract String getResponseData();
+	public abstract String getResponsePacket();
 
 	public abstract void setResponsePacket(byte[] val) throws Exception;
 

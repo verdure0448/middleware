@@ -12,7 +12,6 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.Comma
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.SubCommand;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.BatchReadWriteProtocol;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 import com.hdbsnc.smartiot.util.logger.Log;
@@ -40,22 +39,28 @@ public class MitsubishiQSeriesApi {
 	 * PLC로 연결할 경우 호출한다.
 	 * @param ip
 	 * @param ports
-	 * @throws IOException
+	 * @throws Exception
+	 * @throws MCProtocolResponseException
 	 */
-	public void connect(String ip, int port) throws IOException {
+	public void connect(String ip, int port) throws Exception, MCProtocolResponseException {
 		//포트를 List에 담을 수있도록 파서 한다.
 		_ip = ip;		
-		_socket = new Socket();
-		_socket.setKeepAlive(false);
-		_socket.setReuseAddress(false);
-		_socket.setSoTimeout(5000);
-		this._port = port;	
-		
 		try {
+			_socket = new Socket();
+			_socket.setKeepAlive(false);
+			_socket.setReuseAddress(false);
+			_socket.setSoTimeout(5000);
+			this._port = port;	
 			this._socket.connect(new InetSocketAddress(ip, port), 2000);
 			_log.info("MELSEC CONNECTION SUCESS, IP : " + this._ip + " 포트 : "+ this._port);		
-		} catch (Exception e) {
-			throw e;
+		} catch (IOException e) {
+			if(e.getMessage().contains("connect timed out")) {
+				throw new MCProtocolResponseException("-33002", String.format(e.getMessage()+" : IP(%s), Port(%s)입니다", _ip,_port));
+			}
+			if(e.getMessage().contains("Connection refused: connect")) {
+				throw new MCProtocolResponseException("-33003", String.format(e.getMessage()+" : IP(%s), Port(%s)입니다", _ip,_port));	
+			}
+			throw new Exception(e);
 		}
 	}
 
@@ -63,18 +68,23 @@ public class MitsubishiQSeriesApi {
 	 * 연결이  해제 될 경우 호출한다.
 	 * @throws IOException
 	 */
-	public void reConnect() throws IOException {
+	public void reConnect() throws MCProtocolResponseException, Exception {
 		synchronized(sync) {
-			this._socket = new Socket();
-			this._socket.setKeepAlive(false);
-			this._socket.setReuseAddress(false);
-			this._socket.setSoTimeout(5000);
-	
 			try {
+				this._socket = new Socket();
+				this._socket.setKeepAlive(false);
+				this._socket.setReuseAddress(false);
+				this._socket.setSoTimeout(5000);
 				this._socket.connect(new InetSocketAddress(_ip, _port), 2000);
 				_log.info("MELSEC CONNECTION SUCESS, IP : " + this._ip + " 포트 : "+ this._port);		
-			} catch (Exception e) {
-				throw e;
+			} catch (IOException e) {
+				if(e.getMessage().contains("connect timed out")) {
+					throw new MCProtocolResponseException("-33002", String.format(e.getMessage()+" : IP(%s), Port(%s)입니다", _ip,_port));
+				}
+				if(e.getMessage().contains("Connection refused: connect")) {
+					throw new MCProtocolResponseException("-33003", String.format(e.getMessage()+" : IP(%s), Port(%s)입니다", _ip,_port));	
+				}
+				throw new Exception(e);
 			}
 		}
 	}
@@ -109,16 +119,17 @@ public class MitsubishiQSeriesApi {
 	 * Request 데이터를 PLC로 전송한다.
 	 * @param reqData
 	 * @return
+	 * @throws MCProtocolResponseException
 	 * @throws IOException
 	 */
-	private byte[] sendData(byte[] reqData) throws Exception {
+	private byte[] sendData(byte[] reqData) throws MCProtocolResponseException, IOException {
 		ByteArrayOutputStream out = null;
 		BufferedInputStream in = null;
 		byte[] result;
 	
 		synchronized(sync) {
 			if(_socket == null) {
-				throw new MCProtocolException("이미 해제된 연결 입니다.");
+				throw new MCProtocolResponseException("-33001","사용자 명령에 의해 중지된 Event입니다");
 			}
 
 			try {
@@ -152,9 +163,10 @@ public class MitsubishiQSeriesApi {
 	 * @param devNum - 디바이스 메모리번지
 	 * @param devScore - 읽을 갯수 (1score = 2byte)
 	 * @return
-	 * @throws Exception
+	 * @throws IOException - 외부 에러 처리
+	 * @throws MCProtocolResponseException  - 외부 에러 처리
 	 */
-	public String read(String devCode, String devNum, String devScore) throws Exception {
+	public String read(String devCode, String devNum, String devScore) throws IOException, MCProtocolResponseException, Exception {
 		 
 		//프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
 		AbstractBlocksFrame frame = new BatchReadWriteProtocol(_transMode, Command.BATCH_READ, SubCommand.WORD);
@@ -171,7 +183,7 @@ public class MitsubishiQSeriesApi {
 
 		// 만약 에러코드가 날아오면 Exception 처리
 		if (!(frame.getResponseCode().equals("0000"))) {
-			throw new MCProtocolResponseException(frame.getResponseCode(), frame.getResponseData());
+			throw new MCProtocolResponseException("-33000", String.format("PLC로부터 에러가 발생하였습니다(%s)", frame.getResponseData()));
 		} else {
 			// 성공적이라면 데이터 부만 받아서 리턴
 			return frame.getResponseData();

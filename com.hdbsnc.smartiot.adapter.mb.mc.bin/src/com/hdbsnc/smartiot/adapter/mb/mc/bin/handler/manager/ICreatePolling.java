@@ -1,5 +1,7 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager;
 
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 
 /**
@@ -20,8 +22,10 @@ public interface ICreatePolling {
 	 * @param port - PLC PORT
 	 * @param pollingIntervalSec - 데이터 폴링 주기
 	 * @param startRequest - startRequest 정보
+	 * @throws MCProtocolResponseException
+	 * @throws ApplicationException
 	 * @throws Exception
 	 */
-	public void start(HandlerType kind, String path, String ip, int port, int pollingIntervalSec, StartRequest startRequest) throws Exception;
+	public void start(HandlerType kind, String path, String ip, int port, int pollingIntervalSec, StartRequest startRequest) throws MCProtocolResponseException, ApplicationException, Exception;
 	
 }

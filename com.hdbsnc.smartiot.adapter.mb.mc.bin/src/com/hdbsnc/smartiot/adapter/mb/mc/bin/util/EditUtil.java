@@ -8,9 +8,6 @@ import java.util.regex.Pattern;
 
 import javax.xml.bind.DatatypeConverter;
 
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.EditutilException;
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopRequest;
-
 public class EditUtil {
 
 	
@@ -83,7 +80,7 @@ public class EditUtil {
 	 */
 	public static byte[] hexStr6ToBigEndianBytes(String val) throws Exception {
 		if (val.length() % 6 != 0) {
-			throw new EditutilException("6자리의 에디안만 변경가능 합니다.");
+			throw new Exception("6자리의 에디안만 변경가능 합니다.");
 		}
 
 		StringBuilder preSb = new StringBuilder();
@@ -106,7 +103,7 @@ public class EditUtil {
 	 */
 	public static byte[] hexStr4ToBigEndianBytes(String val) throws Exception {
 		if (val.length() % 4 != 0) {
-			throw new EditutilException("4자리의 에디안만 변경가능 합니다.");
+			throw new Exception("4자리의 에디안만 변경가능 합니다.");
 		}
 
 		byte[] src = hexStrToBytes(val);
@@ -131,7 +128,7 @@ public class EditUtil {
 
 		byte[] result = new byte[bVal.length];
 		if (bVal.length %2 != 0) {
-			throw new EditutilException("4자리의 에디안만 변경가능 합니다.");
+			throw new Exception("4자리의 에디안만 변경가능 합니다.");
 		}
 
 		for (int i = 0; i < bVal.length / 2; i++) {
@@ -158,9 +155,8 @@ public class EditUtil {
 	 * 
 	 * @param src
 	 * @return
-	 * @throws Exception
 	 */
-	public static byte[] word8ToBigEndianBytes(byte[] bVal) throws Exception {
+	public static byte[] word8ToBigEndianBytes(byte[] bVal) {
 
 		byte[] result = new byte[bVal.length];
 
@@ -296,7 +292,7 @@ public class EditUtil {
 	public static String getBitStrFromHexStr(byte[] bVal, int idex) throws Exception {
 
 		if (bVal.length != 2)
-			throw new EditutilException("byte배열 length 오류.");
+			throw new Exception("byte배열 length 오류.");
 		char[] chars = new char[16];
 
 		for (int i = 0; i < 8; i++) {
@@ -324,7 +320,7 @@ public class EditUtil {
 	public static String parserRecvData(String data, String formatter) throws Exception {
 		Matcher m1 = p1.matcher(formatter);
 		if (!m1.find()) {
-			throw new EditutilException(formatter);
+			throw new Exception(formatter);
 		}
 
 		// index, length
@@ -381,7 +377,6 @@ public class EditUtil {
 	 * 
 	 * @param buf
 	 * @return
-	 * @throws Exception
 	 */
 	public static byte[] shortToBytes(short value){
 		return new byte[] {  (byte) ((value & 0xFF00) >> 8) , (byte) (value & 0x00FF)};
@@ -392,7 +387,6 @@ public class EditUtil {
 	 * 
 	 * @param buf
 	 * @return
-	 * @throws Exception
 	 */
 	public static short bytesToShort(byte[] bVal){
 		return (short)(((bVal[0] & 0xFF) << 8) | (bVal[1] & 0xFF));
@@ -402,15 +396,15 @@ public class EditUtil {
 	 * 바이트 배열을 하나의 바이트 배열로 만들어 준다.
 	 * @param args
 	 * @return
-	 * @throws IOException 
+	 * @throws Exception 
 	 */
-	public static byte[] byteCopy(byte[]... args) throws IOException {
+	public static byte[] byteCopy(byte[]... args) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		for (byte[] bytes : args) {
 			try {
 				baos.write(bytes);
 			} catch (IOException e) {
-				throw e;
+				throw new Exception(e.getMessage());
 			}
 		}
 		return baos.toByteArray();

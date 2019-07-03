@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import com.google.gson.Gson;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.CommonResponse;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.GatheringPublish;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.ResError;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
@@ -144,18 +145,24 @@ public class ProtocolCollection {
 	/**
 	 * [PLC 수집시작 프로토콜] 실패시 JSON PROTOCOL을 만들어 준다.
 	 * @param id
+	 * @param eventId
 	 * @param errorCode
 	 * @param errorMsg
 	 * @return
 	 * @throws UnsupportedEncodingException 
 	 */
-	public static byte[] makeFailStartResponseJson(String id, String errorCode, String errorMsg) throws UnsupportedEncodingException {
+	public static byte[] makeFailStartResponseJson(String id, String eventId, String errorCode, String errorMsg) throws UnsupportedEncodingException {
 		
 		String result;
 		
 		StartResponse startRes = new StartResponse();
 		startRes.setJsonrpc(JSON_RPC_VERSION);
 		startRes.setId(id);
+
+		StartResponse.Result startResult = startRes.new Result();
+		startResult.setVersion(PROTOCOL_VERSION);
+		startResult.setEventID(eventId);
+		startResult.setProcData(sdf.format(new Date(System.currentTimeMillis())));
 		
 		ResError startError = new ResError();
 		startError.setCode(errorCode);
@@ -202,13 +209,18 @@ public class ProtocolCollection {
 	 * @return
 	 * @throws UnsupportedEncodingException 
 	 */
-	public static byte[] makeFailStopResponseJson(String id, String errorCode, String errorMsg) throws UnsupportedEncodingException {
+	public static byte[] makeFailStopResponseJson(String id, String eventId, String errorCode, String errorMsg) throws UnsupportedEncodingException {
 		
 		String result;
 		
 		StopResponse stopRes = new StopResponse();
 		stopRes.setJsonrpc(JSON_RPC_VERSION);
 		stopRes.setId(id);
+
+		StopResponse.Result stopResult = stopRes.new Result();
+		stopResult.setVersion(PROTOCOL_VERSION);
+		stopResult.setEventID(eventId);
+		stopResult.setProcData(sdf.format(new Date(System.currentTimeMillis())));
 		
 		ResError stopError = new ResError();
 		stopError.setCode(errorCode);
@@ -344,6 +356,22 @@ public class ProtocolCollection {
 
 		result = (new Gson()).toJson(statusRes)+"\r\n";
 		return result.getBytes("UTF-8");
+	}
+	
+	public static byte[] makeRejectionResponseJson(String id, String errorCode, String errorMsg) throws UnsupportedEncodingException {
+		
+		String result;
 
+		CommonResponse res = new CommonResponse();
+		ResError error = new ResError();
+
+		res.setJsonrpc("2.0");
+		res.setId(id);
+		error.setCode(errorCode);
+		error.setMessage(errorMsg);
+		res.setError(error);
+
+		result = (new Gson()).toJson(res)+"\r\n";
+		return result.getBytes("UTF-8");
 	}
 }	

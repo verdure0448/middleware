@@ -9,6 +9,7 @@ import java.util.Map;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.ReadBatchProcessHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
@@ -50,15 +51,15 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public synchronized void start(HandlerType kind, String path, String ip, int port, int pollingIntervalSec, StartRequest startRequest) throws Exception{
+	public synchronized void start(HandlerType kind, String path, String ip, int port, int pollingIntervalSec, StartRequest startRequest) throws ApplicationException, MCProtocolResponseException, Exception {
 
 		String key = path;
 		ManagerVo value = new ManagerVo(key, startRequest);
 		
 		if(isConnection(ip, port)) {
-			throw new ApplicationException("이미 기동 중인 IP : " + ip + " Port : " + port + " 입니다.");
+			throw new ApplicationException("-33104", String.format("이미 기동중인 IP(%s), Port(%s)입니다", ip, port));
 		}else if(isHandleManagerKey(path)) {
-			throw new ApplicationException("이미 존재하는 event.id : " + path);
+			throw new ApplicationException("-33105", String.format("이미 존재하는 event.id(%s) 입니다", startRequest.getParam().getEventID()));
 		}
 		
 		switch (kind) {
@@ -69,14 +70,14 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 				value.createEm(pollingIntervalSec);
 				_handleManager.put(key, value);
 				_root.printString();
-			}catch(Exception e) {
+			}catch(MCProtocolResponseException e) {
 				value.cancleAll();
 				throw e;
 			}
 			
 			break;
 		default:
-			throw new ApplicationException("지원하지 않는 핸들러입니다.");
+			throw new Exception("지원하지 않는 핸들러입니다.");
 		}
 		
 	}
@@ -220,14 +221,15 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 		 * Melsec API를 만들어 준다.
 		 * @param ip
 		 * @param port
+		 * @throws MCProtocolResponseException
 		 * @throws Exception
 		 */
-		void createApi(String ip, int port) throws Exception {
+		void createApi(String ip, int port) throws MCProtocolResponseException, Exception {
 
 			try {
 				api = new MitsubishiQSeriesApi(TransMode.BINARY, _log);
 				api.connect(ip, port);
-			}catch(Exception e) {
+			}catch(MCProtocolResponseException e) {
 				throw e;
 			}
 		}

@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.IDeletePolling;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StopAllRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.ProtocolCollection;
 import com.hdbsnc.smartiot.common.context.IContext;
@@ -49,9 +50,9 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 			String protocolVerion = req.getParam().getVersion();
 			String protocolMethod = req.getMethod();
 			if(!ProtocolCollection.PROTOCOL_VERSION.equals(protocolVerion)) {
-				throw new ApplicationException("프로토콜 버전이 일치 하지 않습니다. 프로토콜 버전을 확인해주세요");
+				throw new ApplicationException("-33302", String.format("프로토콜 버전이 일치하지 않습니다(%s)", protocolVerion));
 			}else if(!ADAPTER_HANDLER_PROTOCOL_METHOD_NAME.equals(protocolMethod)) {
-				throw new ApplicationException("프로토콜 기능명이 일치 하지 않습니다. 기능명을 확인해주세요");
+				throw new ApplicationException("-33303", String.format("지원하는 않는 Method 입니다(%s)", protocolMethod));
 			}
 			
 			String[] eventIdArray = _manager.deleteAll();
@@ -74,15 +75,17 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 
 	@Override
 	public void rejectionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
+		String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
+		StopAllRequest req = _gson.fromJson(jsonContents, StopAllRequest.class);
+		String sId = req.getId();
+		
+		byte[] sResContents = ProtocolCollection.makeFailStopAllResponseJson(sId, "-33301", "PLC 수집 일괄중지 핸들러의 트랜젝션이 잠겨 있습니다");
+
 		outboundCtx.getPaths().add("nack");
-		outboundCtx.setSID(inboundCtx.getSID());
-		outboundCtx.setSPort(inboundCtx.getSPort());
-		outboundCtx.setTID(inboundCtx.getTID());
-		outboundCtx.setTPort(inboundCtx.getTPort());
-		outboundCtx.getParams().put("code", "W9001");
-		outboundCtx.getParams().put("type", "warn");
-		outboundCtx.getParams().put("msg", "트랜젝션이 잠겨 있습니다.(다른 request가 선행 호출되어 있을 수 있습니다.)");
-		outboundCtx.setTransmission("res");		
+		outboundCtx.setTID("this");
+		outboundCtx.setTransmission("res");
+		outboundCtx.setContenttype("json");
+		outboundCtx.setContent(ByteBuffer.wrap(sResContents));
 
 		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));		
 	}

@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.ICreatePolling.HandlerType;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
@@ -46,22 +47,23 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		//호출자의 tid 및 path인지 확인필요
 		//호출자의 tid 및 path가 아니라면 아래 주석 과정 수행
 		String sId = null;
+		String sEventId = null;
 		byte[] sResContents = null;
 		try {
 			String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 			StartRequest req = _gson.fromJson(jsonContents, StartRequest.class);
 			sId = req.getId();
+			sEventId = req.getParam().getEventID();
 						
 			String protocolVerion = req.getParam().getVersion();
 			String protocolMethod = req.getMethod();
 			if(!ProtocolCollection.PROTOCOL_VERSION.equals(protocolVerion)) {
-				throw new ApplicationException("프로토콜 버전 불일치 .");
+				throw new ApplicationException("-33102", String.format("프로토콜 버전이 일치하지 않습니다(%s)", protocolVerion));
 			}else if(!ADAPTER_HANDLER_PROTOCOL_METHOD_NAME.equals(protocolMethod)) {
-				throw new ApplicationException("지원하지 않는 Method 요청.");
+				throw new ApplicationException("-33103", String.format("지원하는 않는 Method 입니다(%s)", protocolMethod));
 			}
 			
 			String sPath = makePath(req);
-			String sEventId = req.getParam().getEventID();
 	
 //			int iPollingIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod());
 			int iPollingIntervalSec = Integer.parseInt(req.getParam().getPollingPeriod()) * 1000;
@@ -72,10 +74,16 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 
 			//정상 Start 후 응답
 			sResContents = ProtocolCollection.makeSuccessStartResponseJson(sId, sEventId);
-		}catch(Exception e) {
+		} catch (MCProtocolResponseException e) {
+			_log.err(e);
+			sResContents = ProtocolCollection.makeFailStartResponseJson(sId, sEventId, e.getCode(), e.getMsg());
+		} catch(ApplicationException e) {
+			_log.err(e);
+			sResContents = ProtocolCollection.makeFailStartResponseJson(sId, sEventId, e.getCode(), e.getMsg());
+		} catch(Exception e) {
 			//비정상 Start 후 응답
 			_log.err(e);
-			sResContents = ProtocolCollection.makeFailStartResponseJson(sId, "-1", e.getMessage());
+			sResContents = ProtocolCollection.makeFailStartResponseJson(sId, sEventId,"-33100", "핸들러 호출에 장애가 발생하였습니다.");
 		}
 
 		outboundCtx.getPaths().add("ack");
@@ -88,15 +96,18 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 	 
 	@Override
 	public void rejectionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
+		String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
+		StartRequest req = _gson.fromJson(jsonContents, StartRequest.class);
+		String sId = req.getId();
+		String sEventId = req.getParam().getEventID();
+		
+		byte[] sResContents = ProtocolCollection.makeFailStartResponseJson(sId, sEventId, "-33101", "PLC 수집시작 핸들러의 트랜젝션이 잠겨 있습니다");
+
 		outboundCtx.getPaths().add("nack");
-		outboundCtx.setSID(inboundCtx.getSID());
-		outboundCtx.setSPort(inboundCtx.getSPort());
-		outboundCtx.setTID(inboundCtx.getTID());
-		outboundCtx.setTPort(inboundCtx.getTPort());
-		outboundCtx.getParams().put("code", "W9001");
-		outboundCtx.getParams().put("type", "warn");
-		outboundCtx.getParams().put("msg", "트랜젝션이 잠겨 있습니다.(다른 request가 선행 호출되어 있을 수 있습니다.)");
-		outboundCtx.setTransmission("res");		
+		outboundCtx.setTID("this");
+		outboundCtx.setTransmission("res");
+		outboundCtx.setContenttype("json");
+		outboundCtx.setContent(ByteBuffer.wrap(sResContents));
 
 		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));		
 	}

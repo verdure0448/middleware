@@ -1,13 +1,11 @@
 package com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.DatatypeConverter;
 
-import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 
 public class BatchReadWriteProtocol extends AbstractBlocksFrame {
@@ -73,7 +71,7 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 	 * 수신 패킷 가져오기
 	 */
 	@Override
-	public String getResponsePacket() throws Exception {
+	public String getResponsePacket() {
 		return _packet;
 	}
 	
@@ -83,7 +81,7 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 	 * @throws Exception 
 	 */
 	@Override
-	public String getResponseCode() throws Exception {
+	public String getResponseCode() {
 		return _packet.substring(18, 22);
 	}
 
@@ -91,25 +89,25 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 	 * 데이터 부분 반환
 	 */
 	@Override
-	public String getResponseData() throws Exception {
+	public String getResponseData() {
 		return _packet.substring(HEADER_END_POINT - 1, _packet.length());
 	}
 
 	@Override
-	public void addReadRequest(String code, String num, String score) throws MCProtocolException {
+	public void addReadRequest(String code, String num, String score) throws Exception {
 		if(_requestReadData != null)
-			throw new MCProtocolException("일괄읽기에서는 한개의 블록 설정만 가능합니다.");
+			throw new Exception("일괄읽기에서는 한개의 블록 설정만 가능합니다.");
 		if (getCommand() != Command.BATCH_READ)
-			throw new MCProtocolException("읽기 요구를 할수 없는 명령어 입니다.");
+			throw new Exception("읽기 요구를 할수 없는 명령어 입니다.");
 		if (num.length() > 6)
-			throw new MCProtocolException("잘못된 형식의 디바이스 번호입니다.");
+			throw new Exception("잘못된 형식의 디바이스 번호입니다.");
 		if (score.length() > 4)
-			throw new MCProtocolException("잘못된 형식의 스코어 입니다.");
+			throw new Exception("잘못된 형식의 스코어 입니다.");
 		
 		_score = Integer.parseInt(score);
 		
 		if (_score >= MAX_SCORE) {
-			throw new MCProtocolException("최대스코어를 초과 하였습니다.");
+			throw new Exception("최대스코어를 초과 하였습니다.");
 		}
 		
 		_requestReadData = new RequestReadDataObj(code, num, score);
@@ -118,28 +116,28 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 	@Override
 	public void addWriteRequest(String code, String num, String score, String dataType, String data) throws Exception {
 		if(_requestWriteData != null)
-			throw new MCProtocolException("일괄읽기에서는 한개의 블록 설정만 가능합니다.");
+			throw new Exception("일괄읽기에서는 한개의 블록 설정만 가능합니다.");
 		if (getCommand() != Command.BATCH_WRITE)
-			throw new MCProtocolException("쓰기 요구를 할수 없는 명령어 입니다.");
+			throw new Exception("쓰기 요구를 할수 없는 명령어 입니다.");
 		if (num.length() > 6)
-			throw new MCProtocolException("잘못된 형식의 디바이스 번호입니다.");
+			throw new Exception("잘못된 형식의 디바이스 번호입니다.");
 		if (score.length() > 4)
-			throw new MCProtocolException("잘못된 형식의 스코어 입니다.");
+			throw new Exception("잘못된 형식의 스코어 입니다.");
 		//데이터 타입이 유효한지 체크
 		//ASCII, SHORT, HEX
 		if(!checkDataType(dataType)) {
-			throw new MCProtocolException("지원하지 않는 DataType입니다.");
+			throw new Exception("지원하지 않는 DataType입니다.");
 		}
 		
 		int iScore = Integer.parseInt(score);
 		//HEX라면 0000의 4자리가 들어오고 ASCII라면 2자리가 들어고기 때문에 정확한 자릿수가 들어왔는지 예외처리
 		if ((dataType.equals("HEX")&&iScore != data.length() / 4)||(dataType.equals("ASCII") && iScore != data.length() / 2))
-			throw new MCProtocolException("스코어에 해당하는 쓰기 데이터 길이가 불일치 합니다.");
+			throw new Exception("스코어에 해당하는 쓰기 데이터 길이가 불일치 합니다.");
 
 		_score = Integer.parseInt(score);
 		
 		if (_score >= MAX_SCORE) {
-			throw new MCProtocolException("최대스코어를 초과 하였습니다.");
+			throw new Exception("최대스코어를 초과 하였습니다.");
 		}
 
 
@@ -188,16 +186,19 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 	 * @throws Exception
 	 */
 	private byte[] getDataBytes() throws Exception {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		byte[] dataByte;
 
 		if (getCommand() == Command.BATCH_READ) {
-			baos.write(_requestReadData.getBytes(getTransMode()));
+//			baos.write(_requestReadData.getBytes(getTransMode()));
+			dataByte = _requestReadData.getBytes(getTransMode());
 		} else if(getCommand() == Command.BATCH_WRITE){ // Write 명령
-			baos.write(_requestWriteData.getBytes(getTransMode()));
+//			baos.write(_requestWriteData.getBytes(getTransMode()));
+			dataByte = _requestWriteData.getBytes(getTransMode());
 		} else {
-			throw new MCProtocolException("올바르지 않은 커맨드 입니다. 커맨드를 한번더 확인해주세요");
+			throw new Exception("올바르지 않은 커맨드 입니다. 커맨드를 한번더 확인해주세요");
 		}
-		return baos.toByteArray();
+		return dataByte;
 	}
 
 	/**
