@@ -83,7 +83,7 @@ public class CreateRequestHandler extends AbstractTransactionTimeoutFunctionHand
 		} catch(Exception e) {
 			//비정상 Start 후 응답
 			_log.err(e);
-			sResContents = ProtocolCollection.makeFailStartResponseJson(sId, sEventId,"-33100", "핸들러 호출에 장애가 발생하였습니다.");
+			sResContents = ProtocolCollection.makeFailStartResponseJson(sId, sEventId,"-33100", "PLC 수집시작 핸들러 생성에 실패 하였습니다.");
 		}
 
 		outboundCtx.getPaths().add("ack");
