@@ -97,18 +97,18 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 	@Override
 	public void addReadRequest(String code, String num, String score) throws ApplicationException {
 		if(_requestReadData != null)
-			throw new ApplicationException("-33006", "일괄읽기에서는 한개의 블록 설정만 가능합니다");
+			throw new ApplicationException("일괄읽기에서는 한개의 블록 설정만 가능합니다");
 		if (getCommand() != Command.BATCH_READ)
-			throw new ApplicationException("-33007", "읽기 요구를 할수 없는 명령어 입니다");
+			throw new ApplicationException("읽기 요구를 할수 없는 명령어 입니다");
 		if (num.length() > 6)
-			throw new ApplicationException("-33008", String.format("잘못된 형식의 디바이스 번호(%s)입니다", num));
+			throw new ApplicationException("-33006", String.format("잘못된 형식의 디바이스 번호(%s)입니다", num));
 		if (score.length() > 4)
-			throw new ApplicationException("-33009", String.format("잘못된 형식의 스코어(%s) 입니다", score));
+			throw new ApplicationException("-33007", String.format("잘못된 형식의 스코어(%s) 입니다", score));
 		
 		_score = Integer.parseInt(score);
 		
 		if (_score >= MAX_SCORE) {
-			throw new ApplicationException("-33010", String.format("최대스코어(%s)를 초과 하였습니다", score));
+			throw new ApplicationException("-33008", String.format("최대스코어(%s)를 초과 하였습니다", score));
 		}
 		
 		_requestReadData = new RequestReadDataObj(code, num, score);
@@ -197,7 +197,7 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 //			baos.write(_requestWriteData.getBytes(getTransMode()));
 			dataByte = _requestWriteData.getBytes(getTransMode());
 		} else {
-			throw new ApplicationException("-33011", "올바르지 않은 커맨드 입니다");
+			throw new ApplicationException("올바르지 않은 커맨드 입니다");
 		}
 		return dataByte;
 	}
@@ -254,7 +254,7 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 
 			DeviceCodeDefine def = getDeviceCode(this.sDeviceCode);
 			if(def == null) {
-				throw new ApplicationException("-33012", String.format("올바르지 않는 디바이스 코드(%s)입니다", this.sDeviceCode));
+				throw new ApplicationException("-33009", String.format("올바르지 않는 디바이스 코드(%s)입니다", this.sDeviceCode));
 			}
 			
 			if (mode == TransMode.BINARY) {
