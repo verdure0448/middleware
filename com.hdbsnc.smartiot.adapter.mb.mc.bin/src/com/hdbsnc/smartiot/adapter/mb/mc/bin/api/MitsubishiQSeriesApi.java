@@ -12,6 +12,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.Comma
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.SubCommand;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.BatchReadWriteProtocol;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 import com.hdbsnc.smartiot.util.logger.Log;
@@ -165,8 +166,9 @@ public class MitsubishiQSeriesApi {
 	 * @return
 	 * @throws IOException - 외부 에러 처리
 	 * @throws MCProtocolResponseException  - 외부 에러 처리
+	 * @throws ApplicationException  - 외부 에러 처리
 	 */
-	public String read(String devCode, String devNum, String devScore) throws IOException, MCProtocolResponseException, Exception {
+	public String read(String devCode, String devNum, String devScore) throws IOException, ApplicationException, MCProtocolResponseException, Exception {
 		 
 		//프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
 		AbstractBlocksFrame frame = new BatchReadWriteProtocol(_transMode, Command.BATCH_READ, SubCommand.WORD);

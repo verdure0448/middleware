@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import javax.xml.bind.DatatypeConverter;
 
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 
 public class BatchReadWriteProtocol extends AbstractBlocksFrame {
@@ -94,54 +95,53 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 	}
 
 	@Override
-	public void addReadRequest(String code, String num, String score) throws Exception {
+	public void addReadRequest(String code, String num, String score) throws ApplicationException {
 		if(_requestReadData != null)
-			throw new Exception("일괄읽기에서는 한개의 블록 설정만 가능합니다.");
+			throw new ApplicationException("-33006", "일괄읽기에서는 한개의 블록 설정만 가능합니다");
 		if (getCommand() != Command.BATCH_READ)
-			throw new Exception("읽기 요구를 할수 없는 명령어 입니다.");
+			throw new ApplicationException("-33007", "읽기 요구를 할수 없는 명령어 입니다");
 		if (num.length() > 6)
-			throw new Exception("잘못된 형식의 디바이스 번호입니다.");
+			throw new ApplicationException("-33008", String.format("잘못된 형식의 디바이스 번호(%s)입니다", num));
 		if (score.length() > 4)
-			throw new Exception("잘못된 형식의 스코어 입니다.");
+			throw new ApplicationException("-33009", String.format("잘못된 형식의 스코어(%s) 입니다", score));
 		
 		_score = Integer.parseInt(score);
 		
 		if (_score >= MAX_SCORE) {
-			throw new Exception("최대스코어를 초과 하였습니다.");
+			throw new ApplicationException("-33010", String.format("최대스코어(%s)를 초과 하였습니다", score));
 		}
 		
 		_requestReadData = new RequestReadDataObj(code, num, score);
 	}
 
-	@Override
-	public void addWriteRequest(String code, String num, String score, String dataType, String data) throws Exception {
-		if(_requestWriteData != null)
-			throw new Exception("일괄읽기에서는 한개의 블록 설정만 가능합니다.");
-		if (getCommand() != Command.BATCH_WRITE)
-			throw new Exception("쓰기 요구를 할수 없는 명령어 입니다.");
-		if (num.length() > 6)
-			throw new Exception("잘못된 형식의 디바이스 번호입니다.");
-		if (score.length() > 4)
-			throw new Exception("잘못된 형식의 스코어 입니다.");
-		//데이터 타입이 유효한지 체크
-		//ASCII, SHORT, HEX
-		if(!checkDataType(dataType)) {
-			throw new Exception("지원하지 않는 DataType입니다.");
-		}
-		
-		int iScore = Integer.parseInt(score);
-		//HEX라면 0000의 4자리가 들어오고 ASCII라면 2자리가 들어고기 때문에 정확한 자릿수가 들어왔는지 예외처리
-		if ((dataType.equals("HEX")&&iScore != data.length() / 4)||(dataType.equals("ASCII") && iScore != data.length() / 2))
-			throw new Exception("스코어에 해당하는 쓰기 데이터 길이가 불일치 합니다.");
-
-		_score = Integer.parseInt(score);
-		
-		if (_score >= MAX_SCORE) {
-			throw new Exception("최대스코어를 초과 하였습니다.");
-		}
-
-
-		_requestWriteData = new RequestWriteDataObj(code, num, score, dataType, data);
+	public void addWriteRequest(String code, String num, String score, String dataType, String data) throws ApplicationException {
+//		if(_requestWriteData != null)
+//			throw new ApplicationException("일괄읽기에서는 한개의 블록 설정만 가능합니다.");
+//		if (getCommand() != Command.BATCH_WRITE)
+//			throw new ApplicationException("쓰기 요구를 할수 없는 명령어 입니다.");
+//		if (num.length() > 6)
+//			throw new ApplicationException("잘못된 형식의 디바이스 번호입니다.");
+//		if (score.length() > 4)
+//			throw new ApplicationException("잘못된 형식의 스코어 입니다.");
+//		//데이터 타입이 유효한지 체크
+//		//ASCII, SHORT, HEX
+//		if(!checkDataType(dataType)) {
+//			throw new ApplicationException("지원하지 않는 DataType입니다.");
+//		}
+//		
+//		int iScore = Integer.parseInt(score);
+//		//HEX라면 0000의 4자리가 들어오고 ASCII라면 2자리가 들어고기 때문에 정확한 자릿수가 들어왔는지 예외처리
+//		if ((dataType.equals("HEX")&&iScore != data.length() / 4)||(dataType.equals("ASCII") && iScore != data.length() / 2))
+//			throw new ApplicationException("스코어에 해당하는 쓰기 데이터 길이가 불일치 합니다.");
+//
+//		_score = Integer.parseInt(score);
+//		
+//		if (_score >= MAX_SCORE) {
+//			throw new ApplicationException("최대스코어를 초과 하였습니다.");
+//		}
+//
+//
+//		_requestWriteData = new RequestWriteDataObj(code, num, score, dataType, data);
 	}
 
 	/**
@@ -184,8 +184,9 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 	 * 
 	 * @return
 	 * @throws Exception
+	 * @throws ApplicationException
 	 */
-	private byte[] getDataBytes() throws Exception {
+	private byte[] getDataBytes() throws ApplicationException, Exception {
 //		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		byte[] dataByte;
 
@@ -196,7 +197,7 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 //			baos.write(_requestWriteData.getBytes(getTransMode()));
 			dataByte = _requestWriteData.getBytes(getTransMode());
 		} else {
-			throw new Exception("올바르지 않은 커맨드 입니다. 커맨드를 한번더 확인해주세요");
+			throw new ApplicationException("-33011", "올바르지 않은 커맨드 입니다. 커맨드를 한번더 확인해주세요");
 		}
 		return dataByte;
 	}

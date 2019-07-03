@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.ProtocolCollection;
@@ -67,6 +68,8 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 
 				plcData = plcRead(outboundCtx);
 				sContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
+			} catch(ApplicationException e) {
+				throw e;
 			} catch(MCProtocolResponseException e) {
 				//PLC Response에러 응답
 				throw e;
@@ -85,6 +88,9 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 			} catch (Exception e) {
 				throw e;
 			}
+		} catch(ApplicationException e) {
+			_log.err(e);
+			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, e.getCode(), e.getMsg());
 		} catch(MCProtocolResponseException e) {
 			//PLC Response에러 응답
 			_log.err(e);
