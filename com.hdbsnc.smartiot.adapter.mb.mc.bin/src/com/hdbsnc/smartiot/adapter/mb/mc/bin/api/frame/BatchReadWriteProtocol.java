@@ -197,7 +197,7 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 //			baos.write(_requestWriteData.getBytes(getTransMode()));
 			dataByte = _requestWriteData.getBytes(getTransMode());
 		} else {
-			throw new ApplicationException("-33011", "올바르지 않은 커맨드 입니다. 커맨드를 한번더 확인해주세요");
+			throw new ApplicationException("-33011", "올바르지 않은 커맨드 입니다");
 		}
 		return dataByte;
 	}
@@ -246,13 +246,17 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 			this.sDeviceScore = score;
 		}
 
-		public byte[] getBytes(TransMode mode) throws Exception {
+		public byte[] getBytes(TransMode mode) throws ApplicationException, Exception {
 
 			byte[] code = null;
 			byte[] deviceNum = null;
 			byte[] score = null;
 
 			DeviceCodeDefine def = getDeviceCode(this.sDeviceCode);
+			if(def == null) {
+				throw new ApplicationException("-33012", String.format("올바르지 않는 디바이스 코드(%s)입니다", this.sDeviceCode));
+			}
+			
 			if (mode == TransMode.BINARY) {
 				code = new byte[] { def.getCodeByte() };
 				score = EditUtil.hexStr4ToBigEndianBytes(EditUtil.fillZero(EditUtil.decStrToHexStr(sDeviceScore), 4));
