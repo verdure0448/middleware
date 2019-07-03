@@ -102,10 +102,12 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 	}
 
 	@Override
-	public synchronized void delete(String key) throws Exception {
+	public synchronized void delete(String key) throws ApplicationException, Exception {
 		
 		if (!_handleManager.containsKey(key)) {
-			throw new ApplicationException("존재하지 않는 핸들러 입니다.");
+			String[] paths = key.split("/");
+			String name = paths[paths.length-1];
+			throw new ApplicationException("-33204",String.format("존재하지 않는 event.id(%s) 입니다", name));
 		}
 
 		_handleManager.get(key).cancleAll();

@@ -65,10 +65,13 @@ public class DeleteRequestHandler extends AbstractTransactionTimeoutFunctionHand
 
 			//정상 Start 후 응답
 			sResContents = ProtocolCollection.makeSuccessStopResponseJson(sId, sEventId);
+		}catch(ApplicationException e) {
+			_log.err(e);
+			sResContents = ProtocolCollection.makeFailStopResponseJson(sId, sEventId, e.getCode(), e.getMsg());
 		}catch(Exception e) {
 			//비정상 Start 후 응답
 			_log.err(e);
-			sResContents = ProtocolCollection.makeFailStopResponseJson(sId, sEventId,"-1", e.getMessage());
+			sResContents = ProtocolCollection.makeFailStopResponseJson(sId, sEventId,"-33200", e.getMessage());
 		}
 		
 		outboundCtx.getPaths().add("ack");
