@@ -59,7 +59,7 @@ public class RunningStatusCheckHandler extends AbstractTransactionTimeoutFunctio
 		}catch(Exception e) {
 			//비정상 Start 후 응답
 			_log.err(e);
-			sResContents = ProtocolCollection.makeFailStatusResponseJson(sId, "-1", e.getMessage());
+			sResContents = ProtocolCollection.makeFailStopAllResponseJson(sId, "-33400", "PLC 수집 조회 핸들러 호출에 실패 하였습니다");
 		}
 
 		outboundCtx.getPaths().add("ack");
