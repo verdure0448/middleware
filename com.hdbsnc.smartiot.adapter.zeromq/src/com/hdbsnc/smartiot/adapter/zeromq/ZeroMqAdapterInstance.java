@@ -79,8 +79,8 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 			config.load(new FileInputStream(propFile));
 		}
 		String ip = config.getProperty("zeromq.ip");
-		String reqPort = config.getProperty("zeromq.req");
-		String publicPort = config.getProperty("zeromq.publish");
+		String reqPort = config.getProperty("zeromq.req.port");
+		String publicPort = config.getProperty("zeromq.pub.port");
 		
 		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
 		
