@@ -60,11 +60,11 @@ public class DeleteAllRequestHandler extends AbstractTransactionTimeoutFunctionH
 			//정상 Start 후 응답
 			sResContents = ProtocolCollection.makeSuccessStopAllResponseJson(sId, eventIdArray);
 		}catch(ApplicationException e) {
-			_log.err(e);
+			_log.warn(e.getMessage());
 			sResContents = ProtocolCollection.makeFailStopAllResponseJson(sId, e.getCode(), e.getMsg());
 		}catch(Exception e) {
 			//비정상 Start 후 응답
-			_log.err(e);
+			_log.warn(e.getMessage());
 			sResContents = ProtocolCollection.makeFailStopAllResponseJson(sId, "-33300", "PLC 일괄 수집정지 핸들러 호출에 실패 하였습니다");
 		}
 

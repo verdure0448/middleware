@@ -66,11 +66,11 @@ public class DeleteRequestHandler extends AbstractTransactionTimeoutFunctionHand
 			//정상 Start 후 응답
 			sResContents = ProtocolCollection.makeSuccessStopResponseJson(sId, sEventId);
 		}catch(ApplicationException e) {
-			_log.err(e);
+			_log.warn(e.getMessage());
 			sResContents = ProtocolCollection.makeFailStopResponseJson(sId, sEventId, e.getCode(), e.getMsg());
 		}catch(Exception e) {
 			//비정상 Start 후 응답
-			_log.err(e);
+			_log.warn(e.getMessage());
 			sResContents = ProtocolCollection.makeFailStopResponseJson(sId, sEventId,"-33200", "PLC 수집정지 핸들러 호출에 실패 하였습니다");
 		}
 		
