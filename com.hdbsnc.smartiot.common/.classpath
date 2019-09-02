@@ -1,19 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="lib/commons-compiler-3.0.8.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/json-simple-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jopt-simple-3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/kafka_2.10-0.9.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/kafka-clients-0.9.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.15.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lz4-1.2.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/metrics-core-2.2.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/scala-library-2.10.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/scala-parser-combinators_2.11-1.0.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/slf4j-log4j12-1.7.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/snappy-java-1.1.1.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/zkclient-0.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/zookeeper-3.4.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/janino-3.0.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/logback-classic-1.2.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/logback-core-1.2.3.jar"/>
