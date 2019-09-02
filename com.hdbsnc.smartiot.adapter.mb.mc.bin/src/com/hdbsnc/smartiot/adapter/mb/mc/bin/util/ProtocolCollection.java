@@ -12,6 +12,7 @@ import java.util.TimeZone;
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.CommonResponse;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.GatheringPublish;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.ReadOnceResponse;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.ResError;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartRequest;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.protocol.obj.StartResponse;
@@ -371,6 +372,81 @@ public class ProtocolCollection {
 		error.setMessage(errorMsg);
 		res.setError(error);
 
+		result = (new Gson()).toJson(res)+"\r\n";
+		return result.getBytes("UTF-8");
+	}
+	
+	
+	/**
+	 * [PLC 수집정보 Publish] 성공시 JSON PROTOCOL을 만들어 준다.
+	 * @param id
+	 * @param eventId
+	 * @param plcData
+	 * @return
+	 * @throws UnsupportedEncodingException 
+	 */
+	public static byte[] makeSucessReadOnceResJson(String id, String eventId, Map<String, String> plcData) throws UnsupportedEncodingException {
+		
+		String result;
+		ReadOnceResponse res = new ReadOnceResponse();
+		res.setJsonrpc(JSON_RPC_VERSION);
+		res.setId(id);
+		 
+		ReadOnceResponse.Result resResult = res.new Result();
+		resResult.setVersion(PROTOCOL_VERSION);
+		resResult.setEventID(eventId);
+		resResult.setProcData(sdf.format(new Date(System.currentTimeMillis())));
+		
+		ReadOnceResponse.Items[] itemArray = new ReadOnceResponse.Items[plcData.size()];
+		
+		int idx = 0;
+		Iterator<String> it = plcData.keySet().iterator();
+		String sKey, sValue;
+		while(it.hasNext()) {
+			sKey = it.next();
+			sValue = plcData.get(sKey);
+			
+			itemArray[idx] = res.new Items();
+			itemArray[idx].setKey(sKey);
+			itemArray[idx].setValue(sValue);
+			
+			idx ++;
+		}
+
+		resResult.setItems(itemArray);
+		res.setResult(resResult);
+		
+		result = (new Gson()).toJson(res)+"\r\n";
+		return result.getBytes("UTF-8");
+	}
+	
+	/**
+	 * [PLC 수집정보 Publish] 실패시 JSON PROTOCOL을 만들어 준다.
+	 * @param id
+	 * @param errorCode
+	 * @param errorMsg
+	 * @return
+	 * @throws UnsupportedEncodingException 
+	 */
+	public static byte[] makeFailReadOnceResJson(String id, String eventId, String errorCode, String errorMsg) throws UnsupportedEncodingException {
+
+		String result;
+		ReadOnceResponse res = new ReadOnceResponse();
+		res.setJsonrpc(JSON_RPC_VERSION);
+		res.setId(id);
+		 
+		ReadOnceResponse.Result resResult = res.new Result();
+		resResult.setEventID(eventId);
+		resResult.setProcData(sdf.format(new Date(System.currentTimeMillis())));
+		resResult.setVersion(PROTOCOL_VERSION );
+		
+		ResError resError = new ResError();
+		resError.setCode(errorCode);
+		resError.setMessage(errorMsg);
+
+		res.setError(resError);
+		res.setResult(resResult);
+		
 		result = (new Gson()).toJson(res)+"\r\n";
 		return result.getBytes("UTF-8");
 	}

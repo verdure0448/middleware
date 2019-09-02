@@ -6,6 +6,7 @@ import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.DeleteAllRequestHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.DeleteRequestHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.RunningStatusCheckHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.DynamicHandlerManager;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.processor.handler.ReadOnceProcessHandler;
 import com.hdbsnc.smartiot.common.ICommonService;
 import com.hdbsnc.smartiot.common.aim.IAdapterContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstance;
@@ -26,7 +27,7 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 	private IEventManager _em;
 
 	private DynamicHandlerManager manager;
-	
+
 	public MitsubishiQSeriesMCAdapterInstance(ICommonService service, IEventManager em, IProfileManager pm) {
 
 		_service = service;
@@ -45,7 +46,7 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 	public void start(IAdapterContext ctx) throws Exception {
 		_log.info("start");
 		IAdapterInstanceManager aim = ctx.getAdapterInstanceManager();
-		
+
 		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
 
 		String userId = instanceInfo.getSelfId();
@@ -58,16 +59,18 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 		String sid = session.getSessionKey();
 
 		manager = new DynamicHandlerManager(root, aim, _em, did, sid, _log);
-		
-		//멜섹 프로토콜 핸들러를 동적으로 생성한다
+
+		// 멜섹 프로토콜 핸들러를 동적으로 생성한다
 		root.putHandler("create/mb/melsec", new CreateRequestHandler("handler", 3000, manager, _log));
-		//멜섹 프로토콜 핸들러를 삭제한다.
+		// 멜섹 프로토콜 핸들러를 삭제한다.
 		root.putHandler("delete/mb/melsec", new DeleteRequestHandler("handler", 3000, manager, _log));
-		//멜섹 프로토콜 핸들러를 전체삭제한다.
+		// 멜섹 프로토콜 핸들러를 전체삭제한다.
 		root.putHandler("delete/all/mb/melsec", new DeleteAllRequestHandler("handler", 3000, manager, _log));
-		//멜섹 핸들러의 상태를 확인한다.
+		// 멜섹 핸들러의 상태를 확인한다.
 		root.putHandler("status/mb/melsec", new RunningStatusCheckHandler("handler", 3000, manager, _log));
-		
+
+		// PLC 데이터 읽기 전용
+		root.putHandler("readonce/mb/melsec", new ReadOnceProcessHandler("handler", 3000, aim, manager, sid, _log));
 		root.printString();
 	}
 

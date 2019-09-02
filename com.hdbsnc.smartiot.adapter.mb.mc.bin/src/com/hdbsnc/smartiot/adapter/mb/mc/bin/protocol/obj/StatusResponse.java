@@ -93,6 +93,5 @@ public class StatusResponse extends CommonResponse {
 			this.pollingPeriod = pollingPeriod;
 		}
 		
-		
 	}
 }

@@ -38,6 +38,8 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 	public static final String ADAPTER_TARGET_DELETE_HANDLER_PATH = "delete/mb/melsec/handler";
 	public static final String ADAPTER_TARGET_DELETE_ALL_HANDLER_PATH = "delete/all/mb/melsec/handler";
 	public static final String ADAPTER_TARGET_STATUS_HANDLER_PATH = "status/mb/melsec/handler";
+	
+	public static final String ADAPTER_PLC_READ_ONCE_HANDLER_PATH = "readonce/mb/melsec/handler";
 
 	private IAdapterInstanceManager aim = null;
 	private ZeromqApi zmqApi = null;
@@ -117,6 +119,12 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			ICtx.setSid(inboundCtx.getSID()); // Device ID
 			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
 			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_STATUS_HANDLER_PATH.split("/")));
+			break;
+		// [2019-08-27] 요구사항 변경에 따른 수정
+		case "read":
+			ICtx.setSid(inboundCtx.getSID()); // Device ID
+			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
+			ICtx.setPaths(Arrays.asList(ADAPTER_PLC_READ_ONCE_HANDLER_PATH.split("/")));
 			break;
 		default:
 			// 로그처리
