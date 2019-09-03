@@ -36,8 +36,6 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 	private String _sid;
 	private DynamicHandlerManager _manager;
 
-	private String jsonID = null;;
-
 	public ReadOnceProcessHandler(String name, long timeout, IAdapterInstanceManager aim, DynamicHandlerManager manager,
 			String sid, Log log) {
 		super(name, timeout);
@@ -53,12 +51,13 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		// PLC DATA Key,Value 저장
 		// Key = startRequest, Value = PLC로부터 수집한 값
 		Map<String, String> plcData;
-
+		byte[] sContents = null;
+		
 		Gson gson = new Gson();
 		String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 		ReadOnceRequest req = gson.fromJson(jsonContents, ReadOnceRequest.class);
 
-		this.jsonID = req.getId();
+		String jsonID = req.getId();
 		String plcIP = req.getParam().getPlcIp();
 		int plcPort = Integer.parseInt(req.getParam().getPlcPort());
 		ManagerVo managerVo = _manager.getManagerInstance(plcIP, plcPort);
@@ -75,22 +74,25 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		try {
 			plcData = plcRead(mqApi, req);
 
-			// TODO 정상응답 구현
-		} catch (ApplicationException e) {
-			_log.err(e);
-			// TODO 이상응답 구현
-		} catch (MCProtocolResponseException e) {
-			_log.err(e);
-			// TODO 이상응답 구현
+			sContents = ProtocolCollection.makeSucessReadOnceResJson(jsonID, plcData);
 		} catch (Exception e) {
 			_log.err(e);
-			// TODO 이상응답 구현
+			// TODO 에러코드 할당후 수정 필요 
+			sContents = ProtocolCollection.makeFailReadOnceResJson(jsonID, "xxxxxx", e.getMessage());
 		} finally {
+			// 신규 생성한 MQ Api라면 해제 처리
 			if (isCreateMQApi) {
 				mqApi.disconnect();
 			}
 			managerVo.isUse = false;
 		}
+		
+		outboundCtx.getPaths().add("ack");
+		outboundCtx.setTID("this");
+		outboundCtx.setTransmission("res");
+		outboundCtx.setContenttype("json");
+		outboundCtx.setContent(ByteBuffer.wrap(sContents));
+		_log.trace(UrlParser.getInstance().convertToString(outboundCtx));
 	}
 
 	/**
@@ -107,8 +109,7 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		String sDevCode, sDevNum, sDevScore;
 		ReadOnceRequest.Items[] items = req.getParam().getItems();
 		ReadOnceRequest.Items item = null;
-		;
-
+		
 		for (int i = 0; i < items.length; i++) {
 			item = items[i];
 			sDevCode = item.getDeviceCode();
@@ -126,8 +127,13 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 	@Override
 	public void rejectionProcess(IContext inboundCtx, OutboundContext outboundCtx) throws Exception {
 
+		Gson gson = new Gson();
+		String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
+		ReadOnceRequest req = gson.fromJson(jsonContents, ReadOnceRequest.class);
+
+		String jsonID = req.getId();
 		// TODO 에러코드 할당후 수정 필요
-		byte[] sContents = ProtocolCollection.makeRejectionResponseJson(this.jsonID, "-3xxxx",
+		byte[] sContents = ProtocolCollection.makeRejectionResponseJson(jsonID, "-3xxxx",
 				"PLC데이터수집 핸들러의 트랜젝션이 잠겨 있습니다");
 
 		outboundCtx.getPaths().add("nack");

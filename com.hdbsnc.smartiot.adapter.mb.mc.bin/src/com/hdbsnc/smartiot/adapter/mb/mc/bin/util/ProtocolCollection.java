@@ -385,7 +385,7 @@ public class ProtocolCollection {
 	 * @return
 	 * @throws UnsupportedEncodingException 
 	 */
-	public static byte[] makeSucessReadOnceResJson(String id, String eventId, Map<String, String> plcData) throws UnsupportedEncodingException {
+	public static byte[] makeSucessReadOnceResJson(String id, Map<String, String> plcData) throws UnsupportedEncodingException {
 		
 		String result;
 		ReadOnceResponse res = new ReadOnceResponse();
@@ -394,7 +394,6 @@ public class ProtocolCollection {
 		 
 		ReadOnceResponse.Result resResult = res.new Result();
 		resResult.setVersion(PROTOCOL_VERSION);
-		resResult.setEventID(eventId);
 		resResult.setProcData(sdf.format(new Date(System.currentTimeMillis())));
 		
 		ReadOnceResponse.Items[] itemArray = new ReadOnceResponse.Items[plcData.size()];
@@ -428,7 +427,7 @@ public class ProtocolCollection {
 	 * @return
 	 * @throws UnsupportedEncodingException 
 	 */
-	public static byte[] makeFailReadOnceResJson(String id, String eventId, String errorCode, String errorMsg) throws UnsupportedEncodingException {
+	public static byte[] makeFailReadOnceResJson(String id, String errorCode, String errorMsg) throws UnsupportedEncodingException {
 
 		String result;
 		ReadOnceResponse res = new ReadOnceResponse();
@@ -436,7 +435,6 @@ public class ProtocolCollection {
 		res.setId(id);
 		 
 		ReadOnceResponse.Result resResult = res.new Result();
-		resResult.setEventID(eventId);
 		resResult.setProcData(sdf.format(new Date(System.currentTimeMillis())));
 		resResult.setVersion(PROTOCOL_VERSION );
 		
