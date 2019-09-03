@@ -67,17 +67,11 @@ public class ReadOnceRequest extends CommonRequest {
 		@SerializedName("protocol.version")
 		private String version;
 
-		@SerializedName("event.id")
-		private String eventID;
-
 		@SerializedName("plc.ip")
 		private String plcIp;
 
 		@SerializedName("plc.port")
 		private String plcPort;
-
-		@SerializedName("polling.period")
-		private String pollingPeriod;
 
 		@SerializedName("items")
 		private Items[] items;
@@ -90,13 +84,6 @@ public class ReadOnceRequest extends CommonRequest {
 			this.version = version;
 		}
 
-		public String getEventID() {
-			return eventID;
-		}
-
-		public void setEventID(String eventID) {
-			this.eventID = eventID;
-		}
 
 		public String getPlcIp() {
 			return plcIp;
@@ -112,14 +99,6 @@ public class ReadOnceRequest extends CommonRequest {
 
 		public void setPlcPort(String plcPort) {
 			this.plcPort = plcPort;
-		}
-
-		public String getPollingPeriod() {
-			return pollingPeriod;
-		}
-
-		public void setPollingPeriod(String pollingPeriod) {
-			this.pollingPeriod = pollingPeriod;
 		}
 
 		public Items[] getItems() {
