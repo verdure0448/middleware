@@ -25,7 +25,7 @@ import com.hdbsnc.smartiot.common.context.impl.InnerContext;
 public class ProtocolCollection {
 
 	//성공 시 
-	public final static String PROTOCOL_VERSION = "0.1.3";
+	public final static String PROTOCOL_VERSION = "0.1.4";
 	public final static String JSON_RPC_VERSION= "2.0";
 	
 	public final static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS");
