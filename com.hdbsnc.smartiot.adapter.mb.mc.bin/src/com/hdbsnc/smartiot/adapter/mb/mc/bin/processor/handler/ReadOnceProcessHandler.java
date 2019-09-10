@@ -8,6 +8,7 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.MitsubishiQSeriesApi;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.AbstractBlocksFrame.TransMode;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.DynamicHandlerManager;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.manager.DynamicHandlerManager.ManagerVo;
@@ -28,6 +29,8 @@ import com.hdbsnc.smartiot.util.logger.Log;
  */
 public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHandler {
 
+	private static final String ADAPTER_HANDLER_PROTOCOL_METHOD_NAME = "readonce";
+	
 	private Log _log;
 	private DynamicHandlerManager _manager;
 
@@ -49,46 +52,55 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		Gson gson = new Gson();
 		String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 		ReadOnceRequest req = gson.fromJson(jsonContents, ReadOnceRequest.class);
-
+		
+		String protocolVerion = req.getParam().getVersion();
+		String protocolMethod = req.getMethod();
+		if(!ProtocolCollection.PROTOCOL_VERSION.equals(protocolVerion)) {
+			throw new ApplicationException("-33502", String.format("프로토콜 버전이 일치하지 않습니다(%s)", protocolVerion));
+		}else if(!ADAPTER_HANDLER_PROTOCOL_METHOD_NAME.equals(protocolMethod)) {
+			throw new ApplicationException("-33503", String.format("지원하는 않는 Method 입니다(%s)", protocolMethod));
+		}
+		
 		String jsonID = req.getId();
 		String plcIP = req.getParam().getPlcIp();
 		int plcPort = Integer.parseInt(req.getParam().getPlcPort());
-		
+
 		ManagerVo managerVo = _manager.getManagerInstance(plcIP, plcPort);
-		MitsubishiQSeriesApi mqApi;
-		boolean isCreateMQApi;
-		
-		//이미 만들어진 객체가 존재한다면 기존의 객체를 이용하여 Read
-		if(managerVo != null) {
-			managerVo.isUse = true;
-			mqApi = managerVo.getMQApi();
+		MitsubishiQSeriesApi mqApi = null;
 
-			isCreateMQApi = false;
-		}
-		//기존의 객체가 존재하지 않는다면 객체를 만들어서 Read
-		else {
-			mqApi = new MitsubishiQSeriesApi(TransMode.BINARY, _log);
-			mqApi.connect(plcIP, plcPort);
-
-			isCreateMQApi = true;
-		}
-		
 		try {
+			// 이미 만들어진 객체가 존재한다면 기존의 객체를 이용하여 Read
+			if (managerVo != null) {
+				managerVo.isUse = true;
+				mqApi = managerVo.getMQApi();
+			}
+			// 기존의 객체가 존재하지 않는다면 객체를 만들어서 Read
+			else {
+				mqApi = new MitsubishiQSeriesApi(TransMode.BINARY, _log);
+				mqApi.connect(plcIP, plcPort);
+			}
+
 			plcData = plcRead(mqApi, req);
 
 			sContents = ProtocolCollection.makeSucessReadOnceResJson(jsonID, plcData);
+		}  catch (MCProtocolResponseException e) {
+			_log.warn(e.getMessage());
+			sContents = ProtocolCollection.makeFailStartResponseJson(jsonID, null, e.getCode(), e.getMsg());
+		} catch(ApplicationException e) {
+			_log.warn(e.getMessage());
+			sContents = ProtocolCollection.makeFailStartResponseJson(jsonID, null, e.getCode(), e.getMsg());
 		} catch (Exception e) {
 			_log.err(e);
 			// TODO 에러코드 할당후 수정 필요
-			sContents = ProtocolCollection.makeFailReadOnceResJson(jsonID, "xxxxxx", e.getMessage());
+			sContents = ProtocolCollection.makeFailReadOnceResJson(jsonID, "-33500", e.getMessage());
 		} finally {
 			// 신규 생성한 MQ Api라면 해제 처리
-			if (isCreateMQApi) {
+			if (managerVo == null) {
 				mqApi.disconnect();
 			}
 			// 기존의 MQ Api라면 아래를 처리함.
 			else {
-				managerVo.isUse = false;	
+				managerVo.isUse = false;
 			}
 		}
 
@@ -137,8 +149,8 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		ReadOnceRequest req = gson.fromJson(jsonContents, ReadOnceRequest.class);
 
 		String jsonID = req.getId();
-		// TODO 에러코드 할당후 수정 필요
-		byte[] bContents = ProtocolCollection.makeRejectionResponseJson(jsonID, "-3xxxx",
+		
+		byte[] bContents = ProtocolCollection.makeRejectionResponseJson(jsonID, "-33501",
 				"PLC데이터수집 핸들러의 트랜젝션이 잠겨 있습니다");
 
 		outboundCtx.getPaths().add("nack");
