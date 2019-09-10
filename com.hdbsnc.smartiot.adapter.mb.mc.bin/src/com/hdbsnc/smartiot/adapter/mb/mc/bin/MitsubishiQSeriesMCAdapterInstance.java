@@ -70,7 +70,7 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 		root.putHandler("status/mb/melsec", new RunningStatusCheckHandler("handler", 3000, manager, _log));
 
 		// PLC 데이터 읽기 전용
-		root.putHandler("readonce/mb/melsec", new ReadOnceProcessHandler("handler", 3000, aim, manager, sid, _log));
+		root.putHandler("readonce/mb/melsec", new ReadOnceProcessHandler("handler", 3000, manager, _log));
 		root.printString();
 	}
 
