@@ -134,14 +134,14 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 
 		String jsonID = req.getId();
 		// TODO 에러코드 할당후 수정 필요
-		byte[] sContents = ProtocolCollection.makeRejectionResponseJson(jsonID, "-3xxxx",
+		byte[] bContents = ProtocolCollection.makeRejectionResponseJson(jsonID, "-3xxxx",
 				"PLC데이터수집 핸들러의 트랜젝션이 잠겨 있습니다");
 
 		outboundCtx.getPaths().add("nack");
 		outboundCtx.setTID("this");
 		outboundCtx.setTransmission("res");
 		outboundCtx.setContenttype("json");
-		outboundCtx.setContent(ByteBuffer.wrap(sContents));
+		outboundCtx.setContent(ByteBuffer.wrap(bContents));
 
 		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));
 	}

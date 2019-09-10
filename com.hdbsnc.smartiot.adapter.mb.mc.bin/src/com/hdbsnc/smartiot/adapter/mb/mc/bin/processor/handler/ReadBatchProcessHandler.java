@@ -138,13 +138,13 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 		String sId = _startRequest.getId();
 		String sEventId = _startRequest.getParam().getEventID();
 		
-		byte[] sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33001", "PLC데이터수집 핸들러의 트랜젝션이 잠겨 있습니다");			
+		byte[] bContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33001", "PLC데이터수집 핸들러의 트랜젝션이 잠겨 있습니다");			
 
 		outboundCtx.getPaths().add("nack");
 		outboundCtx.setTID("this");
 		outboundCtx.setTransmission("res");
 		outboundCtx.setContenttype("json");
-		outboundCtx.setContent(ByteBuffer.wrap(sContents));
+		outboundCtx.setContent(ByteBuffer.wrap(bContents));
 
 		_log.warn("핸들러 트랜젝션 경고 : " + UrlParser.getInstance().convertToString(outboundCtx));
 	}
