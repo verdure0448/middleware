@@ -48,7 +48,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 		//PLC DATA Key,Value 저장 
 		//Key = startRequest, Value = PLC로부터 수집한 값
 		Map<String, String> plcData;
-		byte[] sContents = null;
+		byte[] bContents = null;
 		String sId = _startRequest.getId();
 		String sEventId = _startRequest.getParam().getEventID();
 		
@@ -67,7 +67,7 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 				}
 
 				plcData = plcRead(outboundCtx);
-				sContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
+				bContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
 			} catch(ApplicationException e) {
 				throw e;
 			} catch(MCProtocolResponseException e) {
@@ -83,25 +83,25 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 				}
 				
 				plcData = plcRead(outboundCtx);
-				sContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
+				bContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
 				
 			} catch (Exception e) {
 				throw e;
 			}
 		} catch(ApplicationException e) {
 			_log.err(e);
-			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, e.getCode(), e.getMsg());
+			bContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, e.getCode(), e.getMsg());
 		} catch(MCProtocolResponseException e) {
 			//PLC Response에러 응답
 			_log.err(e);
-			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, e.getCode(), e.getMsg());			
+			bContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, e.getCode(), e.getMsg());			
 		} catch (Exception e) {
 			_log.err(e);
-			sContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33005", e.getMessage());			
+			bContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, "-33005", e.getMessage());			
 		}
 		
-		_log.debug("[PUB] " + new String(sContents, "UTF-8"));
-		ProtocolCollection.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, sContents);
+		_log.debug("[PUB] " + new String(bContents, "UTF-8"));
+		ProtocolCollection.callHandler(_aim, ADAPTER_HANDLER_TARGET_HANDLER_PATH, _sid, ADAPTER_HANDLER_TARGET_ID, bContents);
 		outboundCtx.dispose();
 	}
 
