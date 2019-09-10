@@ -34,6 +34,7 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 	public ReadOnceProcessHandler(String name, long timeout, DynamicHandlerManager manager, Log log) {
 		super(name, timeout);
 
+		_manager = manager;
 		_log = log.logger(this.getClass());
 	}
 
