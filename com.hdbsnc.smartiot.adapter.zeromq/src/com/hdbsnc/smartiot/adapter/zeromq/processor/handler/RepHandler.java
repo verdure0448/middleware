@@ -121,7 +121,7 @@ public class RepHandler extends AbstractTransactionTimeoutFunctionHandler {
 			ICtx.setPaths(Arrays.asList(ADAPTER_TARGET_STATUS_HANDLER_PATH.split("/")));
 			break;
 		// [2019-08-27] 요구사항 변경에 따른 수정
-		case "read":
+		case "readonce":
 			ICtx.setSid(inboundCtx.getSID()); // Device ID
 			ICtx.setTid(ADAPTER_TARGET_ID); // Target ID
 			ICtx.setPaths(Arrays.asList(ADAPTER_PLC_READ_ONCE_HANDLER_PATH.split("/")));
