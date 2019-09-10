@@ -32,16 +32,11 @@ import com.hdbsnc.smartiot.util.logger.Log;
 public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHandler {
 
 	private Log _log;
-	private IAdapterInstanceManager _aim;
-	private String _sid;
 	private DynamicHandlerManager _manager;
 
-	public ReadOnceProcessHandler(String name, long timeout, IAdapterInstanceManager aim, DynamicHandlerManager manager,
-			String sid, Log log) {
+	public ReadOnceProcessHandler(String name, long timeout, DynamicHandlerManager manager, Log log) {
 		super(name, timeout);
 
-		_aim = aim;
-		_sid = sid;
 		_log = log.logger(this.getClass());
 	}
 
@@ -52,7 +47,7 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		// Key = startRequest, Value = PLC로부터 수집한 값
 		Map<String, String> plcData;
 		byte[] sContents = null;
-		
+
 		Gson gson = new Gson();
 		String jsonContents = new String(inboundCtx.getContent().array(), "UTF-8");
 		ReadOnceRequest req = gson.fromJson(jsonContents, ReadOnceRequest.class);
@@ -69,7 +64,7 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 			mqApi = new MitsubishiQSeriesApi(TransMode.BINARY, _log);
 			mqApi.connect(plcIP, plcPort);
 		}
-		
+
 		isCreateMQApi = true;
 
 		try {
@@ -78,7 +73,7 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 			sContents = ProtocolCollection.makeSucessReadOnceResJson(jsonID, plcData);
 		} catch (Exception e) {
 			_log.err(e);
-			// TODO 에러코드 할당후 수정 필요 
+			// TODO 에러코드 할당후 수정 필요
 			sContents = ProtocolCollection.makeFailReadOnceResJson(jsonID, "xxxxxx", e.getMessage());
 		} finally {
 			// 신규 생성한 MQ Api라면 해제 처리
@@ -87,7 +82,7 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 			}
 			managerVo.isUse = false;
 		}
-		
+
 		outboundCtx.getPaths().add("ack");
 		outboundCtx.setTID("this");
 		outboundCtx.setTransmission("res");
@@ -110,7 +105,7 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		String sDevCode, sDevNum, sDevScore;
 		ReadOnceRequest.Items[] items = req.getParam().getItems();
 		ReadOnceRequest.Items item = null;
-		
+
 		for (int i = 0; i < items.length; i++) {
 			item = items[i];
 			sDevCode = item.getDeviceCode();
