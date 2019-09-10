@@ -68,8 +68,9 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		if (mqApi == null) {
 			mqApi = new MitsubishiQSeriesApi(TransMode.BINARY, _log);
 			mqApi.connect(plcIP, plcPort);
-			isCreateMQApi = true;
 		}
+		
+		isCreateMQApi = true;
 
 		try {
 			plcData = plcRead(mqApi, req);
