@@ -1,0 +1,9 @@
+{
+	"jsonrpc" : "2.0",
+	"method" : "stop.part",
+	"id" : "1",
+	"param" : {
+		"protocol.version" : "0.1.3",
+		"event.id" : "event1"
+	}
+}

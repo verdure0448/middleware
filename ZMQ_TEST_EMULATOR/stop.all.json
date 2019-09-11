@@ -1,0 +1,8 @@
+{
+	"jsonrpc": "2.0",
+	"method" : "stop.all",
+	"id" : "1.0",
+	"param" : {
+		"protocol.version" : "1.0"
+	}
+}
