@@ -32,6 +32,8 @@ import com.hdbsnc.smartiot.util.logger.Log;
  */
 public class ZeroMqAdapterInstance implements IAdapterInstance {
 
+	private static final int DEFAULT_ZMQ_THREAD_COUNT = 1;
+	
 	private ICommonService service;
 	private Log log;
 	private ZeroMqAdapterProcessor processor = null;
@@ -41,10 +43,10 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 	private ISession session = null;
 
-	private List<AbstractTransactionTimeoutFunctionHandler> plcProcessHandlerList;
-	private List<String> emKeyList;
+	private List handlerList;
 
-	private ZeromqApi zmqRep = null;
+	private ZeromqApi mainZmqRep = null;
+	private ZeromqApi readonceZmqRep = null;
 	private ZeromqApi zmqPub = null;
 
 	public ZeroMqAdapterInstance(ICommonService service) {
@@ -53,8 +55,7 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		// this.em = em;
 		// this.pm = pm;
 
-		plcProcessHandlerList = new ArrayList<AbstractTransactionTimeoutFunctionHandler>();
-		emKeyList = new ArrayList<>();
+		handlerList = new ArrayList<>();
 	}
 
 	@Override
@@ -79,7 +80,8 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 			config.load(new FileInputStream(propFile));
 		}
 		String ip = config.getProperty("zeromq.ip");
-		String reqPort = config.getProperty("zeromq.req.port");
+		String mainReqPort = config.getProperty("zeromq.req.main.port");
+		String readonceReqPort = config.getProperty("zeromq.req.readonce.port");
 		String publicPort = config.getProperty("zeromq.pub.port");
 		
 		IInstanceObj instanceInfo = ctx.getAdapterInstanceInfo();
@@ -90,8 +92,9 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		session = ctx.getSessionManager().certificate(defaultDid, userId, upass);
 
-		zmqRep = new ZeromqApi(1, SocketType.REP, "tcp://" + ip + ":" + reqPort);
-		zmqPub = new ZeromqApi(1, SocketType.PUB, "tcp://" + ip + ":" + publicPort);
+		mainZmqRep = new ZeromqApi(DEFAULT_ZMQ_THREAD_COUNT, SocketType.REP, "tcp://" + ip + ":" + mainReqPort);
+		readonceZmqRep = new ZeromqApi(DEFAULT_ZMQ_THREAD_COUNT, SocketType.REP, "tcp://" + ip + ":" + readonceReqPort);
+		zmqPub = new ZeromqApi(DEFAULT_ZMQ_THREAD_COUNT, SocketType.PUB, "tcp://" + ip + ":" + publicPort);
 		
 		////////////////////////////////////////////////////////////////////////////////////
 		// [PLC 수집 시작 명령 프로토콜]
@@ -100,8 +103,7 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		// PLC 수집조회 프로토콜의 경우 위의 3가지 프로토콜 명령과 중첩하여 날아 갈 수 있으므로 따른 포트를 통해 생성
 		// EX) 수집 시작 명령 REQ 동작 중 수집명령 REQ가 날아올 수 있지만 나머지 위 3개 명령은 그런 확률이 거이 없음.
 		////////////////////////////////////////////////////////////////////////////////////
-
-		ZeromqApi.IEvent repEvent = new ZeromqApi.IEvent() {
+		ZeromqApi.IEvent mainRepEvent = new ZeromqApi.IEvent() {
 
 			@Override
 			public void onRecv(byte[] msg) {
@@ -119,7 +121,45 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 				InnerContext ICtx = new InnerContext();
 				ICtx.setSid(did); // Device ID
 				ICtx.setTid(did); // Target ID
-				ICtx.setPaths(Arrays.asList("zmq", "req"));
+				ICtx.setPaths(Arrays.asList("zmq", "main", "req"));
+				
+				
+				ByteBuffer buf = ByteBuffer.allocate(msg.length);
+				buf.put(msg);
+				
+				// 버퍼 포지션 초기화
+				buf.rewind();
+				ICtx.setContent(buf);
+				ICtx.setContentType("json");
+				
+				try {
+					aim.handOverContext(ICtx, null);
+				} catch (Exception e) {
+					// TODO 에러 발생 로그 처리 및 응답 전송
+					e.printStackTrace();
+				}
+			}
+		};
+
+		ZeromqApi.IEvent readOnceRepEvent = new ZeromqApi.IEvent() {
+
+			@Override
+			public void onRecv(byte[] msg) {
+				// JSON 파싱 및 멜셀 수집/정지/조회 처리
+				log.debug("Zmq Request: " + new String(msg));
+
+				// 응답메세지 전송(이벤트 핸들러 호출 결과에 따른 )
+				// zeromqApi.send(msg);
+				
+				// TODO zmq/req 핸들러 호출
+				// 자기 자신의 핸들로를 호출하는 처리로 hdadover 방식이 아니라 직접 핸들러를 호출하는 방법도 ?
+				
+				String did = session.getDeviceId();
+				
+				InnerContext ICtx = new InnerContext();
+				ICtx.setSid(did); // Device ID
+				ICtx.setTid(did); // Target ID
+				ICtx.setPaths(Arrays.asList("zmq", "readonce", "req"));
 				
 				
 				ByteBuffer buf = ByteBuffer.allocate(msg.length);
@@ -140,14 +180,16 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		};
 
 		// ZMQ REP 서버 기동
-		zmqRep.start(repEvent);
+		mainZmqRep.start(mainRepEvent);
+		readonceZmqRep.start(readOnceRepEvent);
 
 		// ZMQ PUB 서버 기동
 		zmqPub.start(null);
 		
 		RootHandler root = this.processor.getRootHandler();
 
-		root.putHandler("zmq", new RepHandler("req", aim, 3000, zmqRep, log));
+		root.putHandler("zmq/main", new RepHandler("req", aim, 3000, mainZmqRep, log));
+		root.putHandler("zmq/readonce", new RepHandler("req", aim, 3000, readonceZmqRep, log));
 		root.putHandler("zmq", new PubHandler("pub", 3000, zmqPub, log));
 	}
 
@@ -156,28 +198,22 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		log.info("stop");
 
-		// 컨슈머 해제
-//		for (String emKey : emKeyList) {
-//			if (em.containPollingAdapterProcessor(emKey)) {
-//				em.removePollingAdapterProcessorEvent(emKey);
-//
-//				log.info("[EventManager] : " + emKey + " 해제");
-//			}
-//		}
+		
+		//TODO 핸들러 자동 해지 로직 넣을 예정
 
-		// 핸들러 해제
-		for (AbstractTransactionTimeoutFunctionHandler handler : plcProcessHandlerList) {
-			this.processor.getRootHandler().removeHandler(handler);
-			log.info("[Handler] : " + handler.getName() + " 해제");
+		// Main ZMQ 중지
+		if (this.mainZmqRep != null) {
+			try {
+				mainZmqRep.stop();
+			} catch (Exception e) {
+				log.err(e);
+			}
 		}
 
-		emKeyList.clear();
-		plcProcessHandlerList.clear();
-
-		// ZMQ 중지
-		if (this.zmqRep != null) {
+		// readonce ZMQ 중지
+		if (this.mainZmqRep != null) {
 			try {
-				zmqRep.stop();
+				mainZmqRep.stop();
 			} catch (Exception e) {
 				log.err(e);
 			}
