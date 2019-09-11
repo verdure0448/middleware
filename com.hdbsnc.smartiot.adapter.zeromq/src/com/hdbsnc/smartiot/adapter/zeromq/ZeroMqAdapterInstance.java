@@ -19,7 +19,6 @@ import com.hdbsnc.smartiot.common.aim.IAdapterContext;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstance;
 import com.hdbsnc.smartiot.common.aim.IAdapterInstanceManager;
 import com.hdbsnc.smartiot.common.aim.IAdapterProcessor;
-import com.hdbsnc.smartiot.common.context.handler2.impl.AbstractTransactionTimeoutFunctionHandler;
 import com.hdbsnc.smartiot.common.context.handler2.impl.RootHandler;
 import com.hdbsnc.smartiot.common.context.impl.InnerContext;
 import com.hdbsnc.smartiot.common.ism.sm.ISession;
@@ -43,7 +42,7 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 	private ISession session = null;
 
-	private List handlerList;
+	private List<String> handlerList;
 
 	private ZeromqApi mainZmqRep = null;
 	private ZeromqApi readonceZmqRep = null;
@@ -52,8 +51,6 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 	public ZeroMqAdapterInstance(ICommonService service) {
 
 		this.service = service;
-		// this.em = em;
-		// this.pm = pm;
 
 		handlerList = new ArrayList<>();
 	}
@@ -96,6 +93,18 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 		readonceZmqRep = new ZeromqApi(DEFAULT_ZMQ_THREAD_COUNT, SocketType.REP, "tcp://" + ip + ":" + readonceReqPort);
 		zmqPub = new ZeromqApi(DEFAULT_ZMQ_THREAD_COUNT, SocketType.PUB, "tcp://" + ip + ":" + publicPort);
 		
+		RootHandler root = this.processor.getRootHandler();
+		
+		root.putHandler("zmq/main", new RepHandler("req", aim, 3000, mainZmqRep, log));
+		root.putHandler("zmq/readonce", new RepHandler("req", aim, 3000, readonceZmqRep, log));
+		root.putHandler("zmq", new PubHandler("pub", 3000, zmqPub, log));
+
+		//Stop시 삭제할 핸들러 명 저장.
+		handlerList.add("zmq/main/req");
+		handlerList.add("zmq/readonce/req");
+		handlerList.add("zmq/pub");
+		
+
 		////////////////////////////////////////////////////////////////////////////////////
 		// [PLC 수집 시작 명령 프로토콜]
 		// [PLC 수집 정지 명령 프로토콜]
@@ -185,21 +194,21 @@ public class ZeroMqAdapterInstance implements IAdapterInstance {
 
 		// ZMQ PUB 서버 기동
 		zmqPub.start(null);
-		
-		RootHandler root = this.processor.getRootHandler();
-
-		root.putHandler("zmq/main", new RepHandler("req", aim, 3000, mainZmqRep, log));
-		root.putHandler("zmq/readonce", new RepHandler("req", aim, 3000, readonceZmqRep, log));
-		root.putHandler("zmq", new PubHandler("pub", 3000, zmqPub, log));
 	}
 
 	@Override
 	public void stop(IAdapterContext ctx) throws Exception {
 
 		log.info("stop");
+		RootHandler root = this.processor.getRootHandler();
 
-		
-		//TODO 핸들러 자동 해지 로직 넣을 예정
+		//등록된 핸들러 삭제
+		for(int i=0; i<handlerList.size(); i++) {
+			String handlerPath = handlerList.get(i);
+			if (root.findHandler(handlerPath) != null) {
+				root.deleteHandler(handlerPath.split("/"));
+			}
+		}
 
 		// Main ZMQ 중지
 		if (this.mainZmqRep != null) {

@@ -1,6 +1,9 @@
 
 package com.hdbsnc.smartiot.adapter.mb.mc.bin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.CreateRequestHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.DeleteAllRequestHandler;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.handler.DeleteRequestHandler;
@@ -26,12 +29,16 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 	private MitsubishiQSeriesMCAdapterProcessor _processor = null;
 	private IEventManager _em;
 
-	private DynamicHandlerManager manager;
+	private DynamicHandlerManager _manager;
+	
+	private List<String> _handlerList;
 
 	public MitsubishiQSeriesMCAdapterInstance(ICommonService service, IEventManager em, IProfileManager pm) {
 
 		_service = service;
 		_em = em;
+		
+		_handlerList = new ArrayList<>();
 	}
 
 	@Override
@@ -55,28 +62,43 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 
 		ISession session = ctx.getSessionManager().certificate(did, userId, upass);
 
-		RootHandler root = this._processor.getRootHandler();
+		RootHandler root = _processor.getRootHandler();
 		String sid = session.getSessionKey();
 
-		manager = new DynamicHandlerManager(root, aim, _em, did, sid, _log);
-
+		_manager = new DynamicHandlerManager(root, aim, _em, did, sid, _log);
+		
 		// 멜섹 프로토콜 핸들러를 동적으로 생성한다
-		root.putHandler("create/mb/melsec", new CreateRequestHandler("handler", 3000, manager, _log));
+		root.putHandler("create/mb/melsec", new CreateRequestHandler("handler", 3000, _manager, _log));
 		// 멜섹 프로토콜 핸들러를 삭제한다.
-		root.putHandler("delete/mb/melsec", new DeleteRequestHandler("handler", 3000, manager, _log));
+		root.putHandler("delete/mb/melsec", new DeleteRequestHandler("handler", 3000, _manager, _log));
 		// 멜섹 프로토콜 핸들러를 전체삭제한다.
-		root.putHandler("delete/all/mb/melsec", new DeleteAllRequestHandler("handler", 3000, manager, _log));
+		root.putHandler("delete/all/mb/melsec", new DeleteAllRequestHandler("handler", 3000, _manager, _log));
 		// 멜섹 핸들러의 상태를 확인한다.
-		root.putHandler("status/mb/melsec", new RunningStatusCheckHandler("handler", 3000, manager, _log));
-
+		root.putHandler("status/mb/melsec", new RunningStatusCheckHandler("handler", 3000, _manager, _log));
 		// PLC 데이터 읽기 전용
-		root.putHandler("readonce/mb/melsec", new ReadOnceProcessHandler("handler", 3000, manager, _log));
+		root.putHandler("readonce/mb/melsec", new ReadOnceProcessHandler("handler", 3000, _manager, _log));
 		root.printString();
+		
+		//Stop시 삭제할 핸들러 명 저장.
+		_handlerList.add("create/mb/melsec/handler");
+		_handlerList.add("delete/mb/melsec/handler");
+		_handlerList.add("delete/all/mb/melsec/handler");
+		_handlerList.add("status/mb/melsec/handler");
+		_handlerList.add("readonce/mb/melsec/handler");
 	}
 
 	@Override
 	public void stop(IAdapterContext ctx) throws Exception {
 
+		RootHandler root = _processor.getRootHandler();
+
+		//등록된 핸들러 삭제
+		for(int i=0; i<_handlerList.size(); i++) {
+			String handlerPath = _handlerList.get(i);
+			if (root.findHandler(handlerPath) != null) {
+				root.deleteHandler(handlerPath.split("/"));
+			}
+		}
 	}
 
 	@Override
@@ -91,7 +113,7 @@ public class MitsubishiQSeriesMCAdapterInstance implements IAdapterInstance {
 
 	@Override
 	public IAdapterProcessor getProcessor() {
-		return this._processor;
+		return _processor;
 	}
 
 }
