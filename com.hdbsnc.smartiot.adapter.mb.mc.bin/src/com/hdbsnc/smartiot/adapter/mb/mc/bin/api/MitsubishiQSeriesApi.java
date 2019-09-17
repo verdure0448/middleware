@@ -128,31 +128,29 @@ public class MitsubishiQSeriesApi {
 		BufferedInputStream in = null;
 		byte[] result;
 	
-		synchronized(sync) {
-			if(_socket == null) {
-				throw new MCProtocolResponseException("-33004","사용자 명령에 의해 중지된 Event입니다");
-			}
+		if (_socket == null) {
+			throw new MCProtocolResponseException("-33004", "사용자 명령에 의해 중지된 Event입니다");
+		}
 
-			try {
-				out = new ByteArrayOutputStream();
-				in = new BufferedInputStream(this._socket.getInputStream());
-	
-				byte[] buffer = new byte[4096];
-	
-				this._socket.getOutputStream().write(reqData);
-				
-				out.reset();
-				
-				int cnt = 0;
-				while ((cnt = in.read(buffer)) > 0) {
-					out.write(buffer, 0, cnt);
-					if (in.available() < 1)
-						break;
-				}
-				result = out.toByteArray();
-			} catch (IOException ex) {
-				throw ex;
+		try {
+			out = new ByteArrayOutputStream();
+			in = new BufferedInputStream(this._socket.getInputStream());
+
+			byte[] buffer = new byte[4096];
+
+			this._socket.getOutputStream().write(reqData);
+
+			out.reset();
+
+			int cnt = 0;
+			while ((cnt = in.read(buffer)) > 0) {
+				out.write(buffer, 0, cnt);
+				if (in.available() < 1)
+					break;
 			}
+			result = out.toByteArray();
+		} catch (IOException ex) {
+			throw ex;
 		}
 
 		return result;
@@ -168,7 +166,7 @@ public class MitsubishiQSeriesApi {
 	 * @throws MCProtocolResponseException  - 외부 에러 처리
 	 * @throws ApplicationException  - 외부 에러 처리
 	 */
-	public String read(String devCode, String devNum, String devScore) throws IOException, ApplicationException, MCProtocolResponseException, Exception {
+	public synchronized String read(String devCode, String devNum, String devScore) throws IOException, ApplicationException, MCProtocolResponseException, Exception {
 		 
 		//프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
 		AbstractBlocksFrame frame = new BatchReadWriteProtocol(_transMode, Command.BATCH_READ, SubCommand.WORD);
