@@ -115,47 +115,6 @@ public class MitsubishiQSeriesApi {
 		return false;
 	}
 
-
-	/**
-	 * Request 데이터를 PLC로 전송한다.
-	 * @param reqData
-	 * @return
-	 * @throws MCProtocolResponseException
-	 * @throws IOException
-	 */
-	private byte[] sendData(byte[] reqData) throws MCProtocolResponseException, IOException {
-		ByteArrayOutputStream out = null;
-		BufferedInputStream in = null;
-		byte[] result;
-	
-		if (_socket == null) {
-			throw new MCProtocolResponseException("-33004", "사용자 명령에 의해 중지된 Event입니다");
-		}
-
-		try {
-			out = new ByteArrayOutputStream();
-			in = new BufferedInputStream(this._socket.getInputStream());
-
-			byte[] buffer = new byte[4096];
-
-			this._socket.getOutputStream().write(reqData);
-
-			out.reset();
-
-			int cnt = 0;
-			while ((cnt = in.read(buffer)) > 0) {
-				out.write(buffer, 0, cnt);
-				if (in.available() < 1)
-					break;
-			}
-			result = out.toByteArray();
-		} catch (IOException ex) {
-			throw ex;
-		}
-
-		return result;
-	}
-
 	/**
 	 * PLC로 부터 일괄 읽기 프로토콜을 통해 데이터를 읽는다.
 	 * @param devCode - 디바이스 코드
@@ -166,27 +125,79 @@ public class MitsubishiQSeriesApi {
 	 * @throws MCProtocolResponseException  - 외부 에러 처리
 	 * @throws ApplicationException  - 외부 에러 처리
 	 */
-	public synchronized String read(String devCode, String devNum, String devScore) throws IOException, ApplicationException, MCProtocolResponseException, Exception {
-		 
-		//프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
-		AbstractBlocksFrame frame = new BatchReadWriteProtocol(_transMode, Command.BATCH_READ, SubCommand.WORD);
-
-		frame.addReadRequest(devCode, devNum, devScore);
-
-		ByteBuffer reqData = frame.getRequestPacket();
-		_log.trace("[REQ] : "+EditUtil.bytesToHexStr(reqData.array()));
+	public String read(String devCode, String devNum, String devScore) throws IOException, ApplicationException, MCProtocolResponseException, Exception {
 		
-		// plc 요청 프로토콜 전송
-		byte[] resData = sendData(reqData.array());
-		_log.trace("[RES] : "+ EditUtil.bytesToHexStr(resData));
-		frame.setResponsePacket(resData);
+			//프레임의 전송방식 및 쓰기 읽기 선언 및 워드읽기 형식
+			AbstractBlocksFrame frame = new BatchReadWriteProtocol(_transMode, Command.BATCH_READ, SubCommand.WORD);
+	
+			frame.addReadRequest(devCode, devNum, devScore);
+	
+			ByteBuffer reqData = frame.getRequestPacket();
+			_log.trace("[REQ] : "+EditUtil.bytesToHexStr(reqData.array()));
+			
+			// plc 요청 프로토콜 전송
+			byte[] resData = sendData(reqData.array());
+			_log.trace("[RES] : "+ EditUtil.bytesToHexStr(resData));
+			frame.setResponsePacket(resData);
+	
+			// 만약 에러코드가 날아오면 Exception 처리
+			if (!(frame.getResponseCode().equals("0000"))) {
+				throw new MCProtocolResponseException("-33000", String.format("PLC로부터 에러가 발생하였습니다(%s)", frame.getResponseData()));
+//			} else if(frame.getResponsePacket()) {
+				
+			} else {
+				// 성공적이라면 데이터 부만 받아서 리턴
+				return frame.getResponseData();
+			}
+		
+	}
 
-		// 만약 에러코드가 날아오면 Exception 처리
-		if (!(frame.getResponseCode().equals("0000"))) {
-			throw new MCProtocolResponseException("-33000", String.format("PLC로부터 에러가 발생하였습니다(%s)", frame.getResponseData()));
-		} else {
-			// 성공적이라면 데이터 부만 받아서 리턴
-			return frame.getResponseData();
+	/**
+	 * Request 데이터를 PLC로 전송한다.
+	 * @param reqData
+	 * @return
+	 * @throws MCProtocolResponseException
+	 * @throws IOException
+	 */
+	private byte[] sendData(byte[] reqData) throws MCProtocolResponseException, IOException {
+
+		synchronized(sync) {
+			ByteArrayOutputStream out = null;
+			BufferedInputStream in = null;
+			byte[] result;
+			
+			if (_socket == null) {
+				throw new MCProtocolResponseException("-33004", "사용자 명령에 의해 중지된 Event입니다");
+			}
+	
+			try {
+				out = new ByteArrayOutputStream();
+				in = new BufferedInputStream(this._socket.getInputStream());
+	
+				byte[] buffer = new byte[4096];
+	
+				this._socket.getOutputStream().write(reqData);
+	
+				out.reset();
+	
+				int cnt = 0;
+				while ((cnt = in.read(buffer)) > 0) {
+					out.write(buffer, 0, cnt);
+					if (in.available() < 1)
+						break;
+				}
+				result = out.toByteArray();
+
+			} catch (IOException ex) {
+				//PLC로부터의 예외가 발생했을 경우 소켓을 제거함.
+				if(in != null) {
+					in.close();
+				}
+				throw ex;
+			} finally {
+				out.close();
+			}
+			return result;
 		}
 	}
 
