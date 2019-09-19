@@ -65,6 +65,9 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		String plcIP = req.getParam().getPlcIp();
 		int plcPort = Integer.parseInt(req.getParam().getPlcPort());
 
+		
+		
+		///IS USE 등으로 변경 필요
 		ManagerVo managerVo = _manager.getManagerInstance(plcIP, plcPort);
 		MitsubishiQSeriesApi mqApi = null;
 
@@ -73,6 +76,18 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 			if (managerVo != null) {
 				managerVo.isUse = true;
 				mqApi = managerVo.getMQApi();
+				
+				if (!mqApi.isConnected()) {
+					_log.debug("재연결 시도 1.");
+					try {
+						// 연결이 안되어있다면 재연결
+						mqApi.disconnect();
+						mqApi.reConnect();
+					} catch (Exception e) {
+						_log.err(e);
+						throw e;
+					}
+				}
 			}
 			// 기존의 객체가 존재하지 않는다면 객체를 만들어서 Read
 			else {
