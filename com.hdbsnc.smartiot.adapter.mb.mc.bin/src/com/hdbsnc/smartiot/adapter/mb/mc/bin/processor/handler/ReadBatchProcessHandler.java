@@ -53,41 +53,20 @@ public class ReadBatchProcessHandler extends AbstractTransactionTimeoutFunctionH
 		String sEventId = _startRequest.getParam().getEventID();
 		
 		try {
-			try {
-				// 연결이 되어 있는지 확인
-				if (!_api.isConnected()) {
-					_log.debug("재연결 시도 1.");
-					try {
-						// 연결이 안되어있다면 재연결
-						_api.disconnect();
-						_api.reConnect();
-					} catch (Exception e) {
-						throw e;
-					}
-				}
-
-				plcData = plcRead(outboundCtx);
-				bContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
-			} catch(ApplicationException e) {
-				throw e;
-			} catch(MCProtocolResponseException e) {
-				//PLC Response에러 응답
-				throw e;
-			} catch (IOException e) {
-				_log.err(e);
-				_log.debug("재연결 시도 2.");
+			// 연결이 되어 있는지 확인
+			if (!_api.isConnected()) {
+				_log.debug("재연결 시도 1.");
 				try {
+					// 연결이 안되어있다면 재연결
+					_api.disconnect();
 					_api.reConnect();
-				} catch (Exception e1) {
-					throw e1;
+				} catch (Exception e) {
+					throw e;
 				}
-				
-				plcData = plcRead(outboundCtx);
-				bContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
-				
-			} catch (Exception e) {
-				throw e;
 			}
+
+			plcData = plcRead(outboundCtx);
+			bContents = ProtocolCollection.makeSucessPublishJson(sId, sEventId, plcData);
 		} catch(ApplicationException e) {
 			_log.err(e);
 			bContents = ProtocolCollection.makeFailPublishJson(sId, sEventId, e.getCode(), e.getMsg());
