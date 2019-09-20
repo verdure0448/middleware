@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import javax.xml.bind.DatatypeConverter;
 
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.ApplicationException;
+import com.hdbsnc.smartiot.adapter.mb.mc.bin.api.frame.exception.MCProtocolResponseException;
 import com.hdbsnc.smartiot.adapter.mb.mc.bin.util.EditUtil;
 
 public class BatchReadWriteProtocol extends AbstractBlocksFrame {
@@ -54,16 +55,38 @@ public class BatchReadWriteProtocol extends AbstractBlocksFrame {
 	}
 
 	@Override
-	public void setResponsePacket(byte[] val) throws Exception {
+	public void setResponsePacket(byte[] val) throws  MCProtocolResponseException, Exception {
 
 		String sPacket = null;
+		//프로토콜에 포함된 응답데이터길이
+		int resDataLength;
+		//프로토콜의 데이터 길이
+		int dataLength;
+ 		byte bLength[] = {0x00, 0x00};
+ 	// 바이너리 모드면 HexString
 		if (getTransMode() == TransMode.BINARY) {
-			// 바이너리 모드면 HexString
+
+			//응답데이터 길이를 가지고 옴(LittleEndian 이기 때문에 순서 뒤집기)
+			bLength[0] = val[8];
+			bLength[1] = val[7];
+			resDataLength = EditUtil.bytesToShort(bLength);
+			//프로토콜전체길이에서 해더 부분 제거 
+			dataLength = val.length-9; 
+			
+			//응답받은 프로토콜길이와 실제 프로토콜 길이가 같은지 확인
+			if(dataLength != resDataLength) {
+				throw new MCProtocolResponseException("-33010", String.format("Request에 대한 데이터 길이(%s)와 Response의 데이터 길이(%s)가 올바르지 않습니다", resDataLength, dataLength));
+			}
+
 			sPacket = EditUtil.bytesToHexStr(val);
+			
 		} else {
+			//TODO 위와 같은 길이에 대한 처리를 해야함 !!! 에러 처리.
 			// 아스키 모드면 new String
 			sPacket = new String(val);
 		}
+		
+		//응답데이터 길이 및 종료 코드 획득 후 변수에 저장 필요
 
 		_packet = sPacket;
 	}
