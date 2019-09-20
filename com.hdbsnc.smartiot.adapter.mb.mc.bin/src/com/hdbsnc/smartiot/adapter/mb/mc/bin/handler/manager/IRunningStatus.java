@@ -21,4 +21,5 @@ public interface IRunningStatus {
 	 * @return
 	 */
 	public ManagerVo getManagerInstance(String ip, int port);
+	public boolean isUseManager(String ip, int port);
 }

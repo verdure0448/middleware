@@ -65,29 +65,11 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 		String plcIP = req.getParam().getPlcIp();
 		int plcPort = Integer.parseInt(req.getParam().getPlcPort());
 
-		
-		
-		///IS USE 등으로 변경 필요
-		ManagerVo managerVo = _manager.getManagerInstance(plcIP, plcPort);
-		MitsubishiQSeriesApi mqApi = null;
-
 		try {
-			// 이미 만들어진 객체가 존재한다면 기존의 객체를 이용하여 Read
-			if (managerVo != null) {
-				managerVo.isUse = true;
-				mqApi = managerVo.getMQApi();
-				
-				if (!mqApi.isConnected()) {
-					_log.debug("재연결 시도 1.");
-					try {
-						// 연결이 안되어있다면 재연결
-						mqApi.disconnect();
-						mqApi.reConnect();
-					} catch (Exception e) {
-						_log.err(e);
-						throw e;
-					}
-				}
+			MitsubishiQSeriesApi mqApi;
+			// 이미 만들어진 객체가 존재한다면 예외처리
+			if (_manager.isUseManager(plcIP, plcPort)) {
+				throw new ApplicationException("-33504", String.format("이미 기동중인 IP(%s), Port(%s)입니다", plcIP, plcPort));
 			}
 			// 기존의 객체가 존재하지 않는다면 객체를 만들어서 Read
 			else {
@@ -96,28 +78,19 @@ public class ReadOnceProcessHandler extends AbstractTransactionTimeoutFunctionHa
 			}
 
 			plcData = plcRead(mqApi, req);
-
 			sContents = ProtocolCollection.makeSucessReadOnceResJson(jsonID, plcData);
+			mqApi.disconnect();
 		}  catch (MCProtocolResponseException e) {
 			_log.warn(e.getMessage());
-			sContents = ProtocolCollection.makeFailStartResponseJson(jsonID, null, e.getCode(), e.getMsg());
+			sContents = ProtocolCollection.makeFailReadOnceResJson(jsonID, e.getCode(), e.getMsg());
 		} catch(ApplicationException e) {
 			_log.warn(e.getMessage());
-			sContents = ProtocolCollection.makeFailStartResponseJson(jsonID, null, e.getCode(), e.getMsg());
+			sContents = ProtocolCollection.makeFailReadOnceResJson(jsonID, e.getCode(), e.getMsg());
 		} catch (Exception e) {
 			_log.err(e);
 			// TODO 에러코드 할당후 수정 필요
 			sContents = ProtocolCollection.makeFailReadOnceResJson(jsonID, "-33500", e.getMessage());
-		} finally {
-			// 신규 생성한 MQ Api라면 해제 처리
-			if (managerVo == null) {
-				mqApi.disconnect();
-			}
-			// 기존의 MQ Api라면 아래를 처리함.
-			else {
-				managerVo.isUse = false;
-			}
-		}
+		} 
 
 		outboundCtx.getPaths().add("ack");
 		outboundCtx.setTID("this");
