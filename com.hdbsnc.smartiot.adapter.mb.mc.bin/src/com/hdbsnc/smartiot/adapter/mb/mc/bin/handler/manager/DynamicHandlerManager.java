@@ -237,6 +237,41 @@ public class DynamicHandlerManager implements ICreatePolling, IDeletePolling, IR
 
 		return null;
 	}
+	
+	/**
+	 * MQ API 검색 
+	 * ip, port에 해당하는 MQ API 검색
+	 * 존재할 경우 true
+	 * 존재하지 않을 경우 false 
+	 *  
+	 * @param ip
+	 * @param port
+	 * @return API 객체
+	 */
+	public synchronized boolean isUseManager(String ip, int port) {
+		if (_handleManager.size() == 0) {
+			return false;
+		} 
+
+		// 핸들러 이름은 틀리지만 이미 기동중인 IP, PORT가 있을 수 있으므로 전체에서 검색
+		// DEEP COPY
+		Map tmp = new HashMap();
+		tmp.putAll(_handleManager);
+
+		Iterator it = tmp.keySet().iterator();
+		String key;
+		MitsubishiQSeriesApi api;
+		while (it.hasNext()) {
+			key = (String) it.next();
+			api = _handleManager.get(key).api;
+
+			if (api.getIp().equals(ip) && api.getPort() == port) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**
 	 * @author user 핸들러 동적 생성 시 관리할 내용들을 저장할 클래스
