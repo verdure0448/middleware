@@ -14,7 +14,7 @@
 	<!-- log filesize total -->
 	<property name="LOG_TOTAL_FILESIZE" value="15GB" />
 	<!-- pattern -->
-	<property name="LOG_PATTERN" value="%level[%d{HH:mm:ss.SSS} %thread] %msg%n" />
+	<property name="LOG_PATTERN" value="%level[%d{HH:mm:ss.SSS} %thread - %logger{36}] %msg%n" />
 	<!-- LEVEL trace/debug/info/warn/error -->
 	<property name="LOG_OUTPUT_LEVEL" value="trace" />
 
