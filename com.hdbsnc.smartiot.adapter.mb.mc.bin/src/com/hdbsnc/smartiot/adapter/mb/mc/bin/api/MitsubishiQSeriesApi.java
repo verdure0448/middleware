@@ -191,7 +191,7 @@ public class MitsubishiQSeriesApi {
 
 		// 만약 에러코드가 날아오면 Exception 처리
 		if (!(frame.getResponseCode().equals("0000"))) {
-			throw new MCProtocolResponseException("-33000", String.format("PLC로부터 에러가 발생하였습니다(%s)", frame.getResponseData()));
+			throw new MCProtocolResponseException("-33000", String.format("PLC로부터 에러가 발생하였습니다(%s)", frame.getResponseCode()));
 		} else {
 			// 성공적이라면 데이터 부만 받아서 리턴
 			return frame.getResponseData();
